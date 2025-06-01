@@ -138,7 +138,6 @@ const handleEdit = (comp) => {
     status,
     notes,
   };
-https://control-panel-backend-eta.vercel.app/
   const request = editingUserId
     ? axios.put(`https://control-panel-backend-eta.vercel.app/compliance/${editingUserId}`, payload, config)
     : axios.post(`https://control-panel-backend-eta.vercel.app/compliance`, payload, config);
