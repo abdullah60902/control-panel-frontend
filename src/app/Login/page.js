@@ -171,7 +171,7 @@ const Page = () => {
             </button>
 
             <div className="text-center text-gray-500 dark:text-gray-400 text-sm mt-4">
-              <p>Hint: Use email "butt60902@gmail.com" and password "Test@123"</p>
+              <p>Hint: Use email {'"'}butt60902@gmail.com" and password{'"'} {'"'}Test@123{'"'}</p>
             </div>
           </form>
         </div>
