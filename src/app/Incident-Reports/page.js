@@ -234,7 +234,7 @@ const handleStatusChange = async (id, newStatus) => {
 
   useEffect(() => {
     if (!user) router.push('/Login');
-  }, [user]);
+  }, [user,router]);
 
   if (!user) return null;
 

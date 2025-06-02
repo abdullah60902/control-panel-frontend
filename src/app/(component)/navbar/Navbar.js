@@ -57,7 +57,7 @@ function Navbar() {
                                     <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <p className="text-sm font-medium text-gray-900 dark:text-white">Welcome to the System</p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            You've successfully logged in to the Care Home Management System
+                                            You{"'"}ve successfully logged in to the Care Home Management System
                                         </p>
                                         <p className="text-xs text-gray-400 mt-1">Just now</p>
                                     </div>

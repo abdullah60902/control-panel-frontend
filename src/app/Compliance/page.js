@@ -236,7 +236,7 @@ const { user, logout } = useAuth();
 
   useEffect(() => {
     if (!user) router.push('/Login');
-  }, [user]);
+  }, [user,router]);
 
   if (!user) return null;
 

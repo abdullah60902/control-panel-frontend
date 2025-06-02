@@ -31,7 +31,7 @@ import { toast } from 'react-toastify';
 
 
 
-const page = () => {
+const Page = () => {
   
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -577,7 +577,7 @@ toast.success("Add successfuly")
   
     useEffect(() => {
       if (!user) router.push('/Login');
-    }, [user]);
+    }, [user,router]);
   
     if (!user) return null;
   return (
@@ -1670,4 +1670,4 @@ toast.success("Add successfuly")
   );
 };
 
-export default page;
+export default Page;
