@@ -200,8 +200,8 @@ const handleDownloadPdf = async (item) => {
       notes,
     };
     const request = editingUserId
-      ? axios.put(`https://control-panel-frontend-sc75.vercel.app/compliance/${editingUserId}`, payload, config)
-      : axios.post(`https://control-panel-frontend-sc75.vercel.app/compliance`, payload, config);
+      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/compliance/${editingUserId}`, payload, config)
+      : axios.post(`https://control-panel-backend-k6fr.vercel.app/compliance`, payload, config);
 
     request
       .then(res => {
@@ -219,7 +219,7 @@ const handleDownloadPdf = async (item) => {
         setShowForm5(false);
         toast.success("Add successfuly")
         console.log("Fetching updated compliance data...");
-        return axios.get('https://control-panel-frontend-sc75.vercel.app/compliance', config);
+        return axios.get('https://control-panel-backend-k6fr.vercel.app/compliance', config);
       })
       .then(res => {
         console.log("Fetched data:", res.data);
@@ -265,7 +265,7 @@ const handleDownloadPdf = async (item) => {
       const fetchHR = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await axios.get("https://control-panel-frontend-sc75.vercel.app/compliance", {
+          const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/compliance", {
             headers: { Authorization: `Bearer ${token}` }
           });
           setStaffData(res.data); // no .users needed, your backend returns an array
@@ -283,7 +283,7 @@ const handleDownloadPdf = async (item) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`https://control-panel-frontend-sc75.vercel.app/compliance/${id}`, {
+    axios.delete(`https://control-panel-backend-k6fr.vercel.app/compliance/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }

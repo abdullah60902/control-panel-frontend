@@ -136,7 +136,7 @@ const [formData4, setFormData4] = useState({
     if (!token) return;
 
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/staff-documents", {
+      .get("https://control-panel-backend-k6fr.vercel.app/staff-documents", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -187,7 +187,7 @@ const [formData4, setFormData4] = useState({
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('https://control-panel-frontend-sc75.vercel.app/hr', {
+  axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(response => {
@@ -376,8 +376,8 @@ const handleSubmit4 = (e) => {
   });
 
   const request = editingUserId
-    ? axios.put(`https://control-panel-frontend-sc75.vercel.app/staff-documents/${editingUserId}`, data, config)
-    : axios.post(`https://control-panel-frontend-sc75.vercel.app/staff-documents`, data, config);
+    ? axios.put(`https://control-panel-backend-k6fr.vercel.app/staff-documents/${editingUserId}`, data, config)
+    : axios.post(`https://control-panel-backend-k6fr.vercel.app/staff-documents`, data, config);
 
   request
     .then((res) => {
@@ -393,7 +393,7 @@ const handleSubmit4 = (e) => {
       setLoading(false);
       toast.success("Saved successfully");
 
-      return axios.get(`https://control-panel-frontend-sc75.vercel.app/staff-documents`, config);
+      return axios.get(`https://control-panel-backend-k6fr.vercel.app/staff-documents`, config);
     })
     .then((res) => {
       setStaffData(res.data);
@@ -441,7 +441,7 @@ const handleDelete = (id) => {
 
   const token = localStorage.getItem("token");
   axios
-    .delete(`https://control-panel-frontend-sc75.vercel.app/staff-documents/${id}`, {
+    .delete(`https://control-panel-backend-k6fr.vercel.app/staff-documents/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
     .then(() => {

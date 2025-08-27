@@ -181,12 +181,12 @@ const handleChange6 = (e) => {
 
     const request = editingUserId
       ? axios.put(
-          `https://control-panel-frontend-sc75.vercel.app/user/${editingUserId}`,
+          `https://control-panel-backend-k6fr.vercel.app/user/${editingUserId}`,
           payload,
           config
         )
       : axios.post(
-          "https://control-panel-frontend-sc75.vercel.app/user/signup",
+          "https://control-panel-backend-k6fr.vercel.app/user/signup",
           { ...payload, confirmPassword },
           config
         ); // 🟢 Must include config here too
@@ -205,7 +205,7 @@ const handleChange6 = (e) => {
         });
         setShowForm6(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-frontend-sc75.vercel.app/user", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/user", config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -221,7 +221,7 @@ const handleChange6 = (e) => {
 
   useEffect(() => {
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/user", {
+      .get("https://control-panel-backend-k6fr.vercel.app/user", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -262,7 +262,7 @@ const handleChange6 = (e) => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-frontend-sc75.vercel.app/user/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -285,7 +285,7 @@ const handleChange6 = (e) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

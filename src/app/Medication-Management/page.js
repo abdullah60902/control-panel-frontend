@@ -187,11 +187,11 @@ const {hasClients} = useAuth()
 
     const request = editingCareId
       ? axios.put(
-          `https://control-panel-frontend-sc75.vercel.app/medications/${editingCareId}`,
+          `https://control-panel-backend-k6fr.vercel.app/medications/${editingCareId}`,
           formDataCare,
           config
         )
-      : axios.post(`https://control-panel-frontend-sc75.vercel.app/medications`, formDataCare, config);
+      : axios.post(`https://control-panel-backend-k6fr.vercel.app/medications`, formDataCare, config);
 
     request
       .then((res) => {
@@ -208,7 +208,7 @@ const {hasClients} = useAuth()
 
         toast.success("Add successfuly");
         setShowFormCare(false);
-        return axios.get("https://control-panel-frontend-sc75.vercel.app/medications", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/medications", config);
       })
       .then((res) => {
         setMedications(res.data);
@@ -226,7 +226,7 @@ const {hasClients} = useAuth()
       return;
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-frontend-sc75.vercel.app/medications/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/medications/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -250,7 +250,7 @@ const {hasClients} = useAuth()
       return;
 
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/medications", {
+      .get("https://control-panel-backend-k6fr.vercel.app/medications", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -281,7 +281,7 @@ const {hasClients} = useAuth()
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

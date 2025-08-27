@@ -331,11 +331,11 @@ const navItems = [
 
     const request = editingCareId
       ? axios.put(
-          `https://control-panel-frontend-sc75.vercel.app/carePlanning/${editingCareId}`,
+          `https://control-panel-backend-k6fr.vercel.app/carePlanning/${editingCareId}`,
           formData,
           config
         )
-      : axios.post(`https://control-panel-frontend-sc75.vercel.app/carePlanning`, formData, config);
+      : axios.post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config);
 
     request
       .then((res) => {
@@ -356,7 +356,7 @@ const navItems = [
           mood: "",
           dailyLog: "",
         });
-        return axios.get("https://control-panel-frontend-sc75.vercel.app/carePlanning", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/carePlanning", config);
       })
       .then((res) => {
         setCarePlans(res.data);
@@ -375,7 +375,7 @@ const navItems = [
       return;
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -399,7 +399,7 @@ const navItems = [
       return;
 
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/carePlanning", {
+      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -430,7 +430,7 @@ const navItems = [
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -541,7 +541,7 @@ const navItems = [
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}`,
+        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
         {
           status: "Accepted",
           signature: dataURL,
@@ -564,7 +564,7 @@ const navItems = [
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}`,
+        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
         {
           status: "Declined",
           declineReason: reason,
@@ -590,7 +590,7 @@ const navItems = [
       return;
 
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/carePlanning", {
+      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
