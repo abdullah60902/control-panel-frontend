@@ -44,15 +44,15 @@ export default function Page() {
       label: "Medication Management",
       href: "/Medication-Management",
     },
-    !hasClients && {
-      icon: <FaSearch />,
-      label: "Social Activity",
-      href: "/Social-Activity",
-    },
     {
       icon: <FaExclamationTriangle />,
       label: "Incident Reports",
       href: "/Incident-Reports",
+    },
+    !hasClients && {
+      icon: <FaSearch />,
+      label: "Social Activity",
+      href: "/Social-Activity",
     },
     !hasClients && {
       icon: <FaUsers />,

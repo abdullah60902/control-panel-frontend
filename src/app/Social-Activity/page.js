@@ -46,8 +46,8 @@ const Page = () => {
     { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
     { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
     { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity",active: true  },
     { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity",active: true  },
     { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
     {
       icon: <IoDocumentAttach />,

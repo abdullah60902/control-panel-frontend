@@ -37,15 +37,10 @@ export default function Page() {
     { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
     { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
     { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
     { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
     { icon: <FaUsers />, label: "HR Management", href: "/HR-Management", },
-    {
-      icon: <IoDocumentAttach />,
-      label: "Documents Management",
-      href: "/Documents-Management",
-      
-    },
+    {icon: <IoDocumentAttach />,label: "Documents Management",href: "/Documents-Management",},
     { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",active: true },
     { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },

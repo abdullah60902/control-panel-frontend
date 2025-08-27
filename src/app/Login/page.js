@@ -82,8 +82,8 @@ console.log('user', user.clients);
             <SidebarItem icon={<FaUser />} label="Resident Management" />
             <SidebarItem icon={<FaClipboardList />} label="Care Planning" />
             <SidebarItem icon={<MdMedicationLiquid />} label="Medication Management" />
-            <SidebarItem icon={<FaSearch />} label="Social Activity" />
             <SidebarItem icon={<FaExclamationTriangle />} label="Incident Reports" />
+            <SidebarItem icon={<FaSearch />} label="Social Activity" />
             <SidebarItem icon={<FaUsers />} label="HR Management" />
             <SidebarItem icon={<IoDocumentAttach />} label="Documents Management" />
             <SidebarItem icon={<GrDocumentPerformance  />} label="Performance-Manag.." />

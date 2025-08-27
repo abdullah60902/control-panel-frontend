@@ -2239,7 +2239,7 @@ const Page = () => {
                   </div>
                 </div>
               </Link>
-
+{ !hasClients && (
               <Link href="/HR-Management">
                 {/* HR Management */}
                 <div
@@ -2260,9 +2260,9 @@ const Page = () => {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </Link>)}
               {/* Training */}
-              <Link href="Training">
+             { !hasClients&&( <Link href="Training">
                 <div
                   className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
                   data-module="training"
@@ -2281,8 +2281,9 @@ const Page = () => {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </Link>)}
               {/* Compliance */}
+             {!hasClients && (
               <Link href="Compliance">
                 <div
                   className=" bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
@@ -2302,7 +2303,7 @@ const Page = () => {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </Link>)}
             </div>
           </div>
         </main>

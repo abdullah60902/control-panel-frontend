@@ -45,60 +45,31 @@ const StaffData = [
 ];
 
 const Page = () => {
+   const {hasClients} = useAuth()
+  
   // Define your navigation links here with proper routes
-  const navItems = [
-    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    {
-      icon: <FaUser />,
-      label: "Resident Management",
-      href: "/Client-Management",
-    },
-    {
-      icon: <FaClipboardList />,
-      label: "Care Planning",
-      href: "/Care-Planning",
-    },
-    {
-      icon: <MdMedicationLiquid />,
-      label: "Medication Management",
-      href: "/Medication-Management",
-    },
-         !hasClients &&{ icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    {
-      icon: <FaExclamationTriangle />,
-      label: "Incident Reports",
-      href: "/Incident-Reports",
-    },
-         !hasClients &&{
-      icon: <FaUsers />,
-      label: "HR Management",
-      href: "/HR-Management",
-      active: true,
-    },
-       !hasClients &&{
-      icon: <IoDocumentAttach />,
-      label: "Documents Management",
-      href: "/Documents-Management",
-      
-    },
-         !hasClients &&{
-      icon: <GrDocumentPerformance />,
-      label: "Performance-Manag..",
-      href: "/Performance-Management",
-    },
-         !hasClients &&{ icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-         !hasClients &&{
-      icon: <SiSimpleanalytics />,
-      label: "Reporting Analytics",
-      href: "/Analytics",
-    },
-         !hasClients &&{ icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-  ];
+ const navItems = [
+  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
+  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports"},
+  ...(hasClients
+    ? []
+    : [
+        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" ,active: true },
+        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance"  },
+        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+      ]),
+];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
-  const { hasClients } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState("All Staff");
   const filters = [
