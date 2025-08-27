@@ -179,8 +179,8 @@ const Page = () => {
     const payload = { fullName: name, age: age, roomNumber: room, careType: careType, admissionDate: admitDate };
 
     const request = editingUserId
-      ? axios.put(`http://localhost:3000/client/${editingUserId}`, payload, config)
-      : axios.post(`http://localhost:3000/client`, payload, config);
+      ? axios.put(`https://control-panel-frontend-sc75.vercel.app/client/${editingUserId}`, payload, config)
+      : axios.post(`https://control-panel-frontend-sc75.vercel.app/client`, payload, config);
 
     request
       .then(res => {
@@ -190,7 +190,7 @@ const Page = () => {
         setShowModal(false);
         setLoading(false);
         toast.success("Add successfly")
-        return axios.get('http://localhost:3000/client', config);
+        return axios.get('https://control-panel-frontend-sc75.vercel.app/client', config);
       })
       .then(res => {
         setStaffData(res.data.clients || res.data); // Adjust based on your API response structure
@@ -212,7 +212,7 @@ useEffect(() => {
     // Client login hua hai — unke attached clients ke IDs hain
     if (!Array.isArray(user.clients)) return;
 
-    axios.get("http://localhost:3000/client", {
+    axios.get("https://control-panel-frontend-sc75.vercel.app/client", {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then((res) => {
@@ -232,7 +232,7 @@ useEffect(() => {
 
   } else {
     // Admin or Staff — all clients
-    axios.get("http://localhost:3000/client", {
+    axios.get("https://control-panel-frontend-sc75.vercel.app/client", {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then((res) => {
@@ -276,7 +276,7 @@ useEffect(() => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`http://localhost:3000/client/${id}`, {
+    axios.delete(`https://control-panel-frontend-sc75.vercel.app/client/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }

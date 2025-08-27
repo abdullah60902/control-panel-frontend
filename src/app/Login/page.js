@@ -37,7 +37,7 @@ const Page = () => {
     setIsLoading(true); // Start loader immediately
 
     try {
-      const res = await axios.post('http://localhost:3000/user/login', {
+      const res = await axios.post('https://control-panel-frontend-sc75.vercel.app/user/login', {
         email,
         password,
       });

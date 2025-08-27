@@ -126,7 +126,7 @@ useEffect(() => {
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('http://localhost:3000/training', {
+  axios.get('https://control-panel-frontend-sc75.vercel.app/training', {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then(response => {
@@ -172,7 +172,7 @@ useEffect(() => {
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('http://localhost:3000/hr', {
+  axios.get('https://control-panel-frontend-sc75.vercel.app/hr', {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(response => {
@@ -383,8 +383,8 @@ const handleChange4 = (e) => {
   });
 
   const request = editingUserId
-    ? axios.put(`http://localhost:3000/training/${editingUserId}`, formData, config)
-    : axios.post(`http://localhost:3000/training`, formData, config);
+    ? axios.put(`https://control-panel-frontend-sc75.vercel.app/training/${editingUserId}`, formData, config)
+    : axios.post(`https://control-panel-frontend-sc75.vercel.app/training`, formData, config);
 
   request
     .then(res => {
@@ -396,7 +396,7 @@ const handleChange4 = (e) => {
       setLoading(false); // Reset loading state
       toast.success("Added successfully");
 
-      return axios.get(`http://localhost:3000/training`, config);
+      return axios.get(`https://control-panel-frontend-sc75.vercel.app/training`, config);
     })
     .then(res => {
       setStaffData(res.data);
@@ -414,7 +414,7 @@ const handleChange4 = (e) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`http://localhost:3000/training/${id}`, {
+    axios.delete(`https://control-panel-frontend-sc75.vercel.app/training/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }

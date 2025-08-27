@@ -106,7 +106,7 @@ export default function Page() {
   useEffect(() => {
     if (activeTab === "analytics") {
       axios
-        .get("http://localhost:3000/analytics/care-settings", {
+        .get("https://control-panel-frontend-sc75.vercel.app/analytics/care-settings", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => setAnalytics(res.data))
@@ -118,7 +118,7 @@ export default function Page() {
   useEffect(() => {
     if (activeTab === "compliance") {
       axios
-        .get("http://localhost:3000/compliance/audit-logs", {
+        .get("https://control-panel-frontend-sc75.vercel.app/compliance/audit-logs", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => setComplianceAuditLogs(res.data))
@@ -132,7 +132,7 @@ export default function Page() {
   useEffect(() => {
     if (activeTab === "careplan") {
       axios
-        .get("http://localhost:3000/carePlanning/audit-logs", {
+        .get("https://control-panel-frontend-sc75.vercel.app/carePlanning/audit-logs", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => setCarePlanAuditLogs(res.data))
@@ -147,7 +147,7 @@ export default function Page() {
     if (window.confirm("Delete this compliance audit log?")) {
       try {
         await axios.delete(
-          `http://localhost:3000/compliance/audit-logs/${id}`,
+          `https://control-panel-frontend-sc75.vercel.app/compliance/audit-logs/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -167,7 +167,7 @@ export default function Page() {
     if (window.confirm("Delete this care plan audit log?")) {
       try {
         await axios.delete(
-          `http://localhost:3000/care-planning/audit-logs/${id}`,
+          `https://control-panel-frontend-sc75.vercel.app/care-planning/audit-logs/${id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
