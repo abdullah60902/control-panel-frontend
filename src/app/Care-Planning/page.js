@@ -4,8 +4,10 @@ import Navbar from "../(component)/navbar/Navbar";
 import SignaturePad from "react-signature-canvas";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
-
+import Image from "next/image";
 import { BsArrowsFullscreen } from "react-icons/bs";
+import { IoDocumentAttach } from "react-icons/io5";
+
 
 import { useRef } from "react";
 import {
@@ -35,7 +37,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import { MdMedicationLiquid } from "react-icons/md";
 import { set } from "nprogress";
-import Image from "next/image";
+
 const CarePlans = [
   {
     Client: "Noman developer",
@@ -47,46 +49,27 @@ const CarePlans = [
 ];
 
 const Page = () => {
+  const {hasClients} = useAuth()
   // Define your navigation links here with proper routes
-  const navItems = [
-    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    {
-      icon: <FaUser />,
-      label: "Resident Management",
-      href: "/Client-Management",
-    },
-    {
-      icon: <FaClipboardList />,
-      label: "Care Planning",
-      href: "/Care-Planning",
-      active: true,
-    },
-    {
-      icon: <MdMedicationLiquid />,
-      label: "Medication Management",
-      href: "/Medication-Management",
-    },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    {
-      icon: <FaExclamationTriangle />,
-      label: "Incident Reports",
-      href: "/Incident-Reports",
-    },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-    {
-      icon: <GrDocumentPerformance />,
-      label: "Performance-Manag..",
-      href: "/Performance-Management",
-    },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    {
-      icon: <SiSimpleanalytics />,
-      label: "Reporting Analytics",
-      href: "/Analytics",
-    },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-  ];
+const navItems = [
+  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
+  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning",active: true },
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+  ...(hasClients
+    ? []
+    : [
+        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+      ]),
+];
   const [carePlans, setCarePlans] = useState([]);
   const [formDataCare, setFormDataCare] = useState({
     client: "",
@@ -114,7 +97,7 @@ const Page = () => {
   const [showFormCare, setShowFormCare] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [staffMembers, setStaffMembers] = useState([]); // For HR/staff members
-  const { user, logout } = useAuth();
+  const { user, logout ,  } = useAuth();
 
   // ViewData.apply...............................................................
 
@@ -348,11 +331,11 @@ const Page = () => {
 
     const request = editingCareId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/carePlanning/${editingCareId}`,
+          `http://localhost:3000/carePlanning/${editingCareId}`,
           formData,
           config
         )
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config);
+      : axios.post(`http://localhost:3000/carePlanning`, formData, config);
 
     request
       .then((res) => {
@@ -373,7 +356,7 @@ const Page = () => {
           mood: "",
           dailyLog: "",
         });
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/carePlanning", config);
+        return axios.get("http://localhost:3000/carePlanning", config);
       })
       .then((res) => {
         setCarePlans(res.data);
@@ -392,7 +375,7 @@ const Page = () => {
       return;
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`, {
+      .delete(`http://localhost:3000/carePlanning/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -416,7 +399,7 @@ const Page = () => {
       return;
 
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
+      .get("http://localhost:3000/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -447,7 +430,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -558,7 +541,7 @@ const Page = () => {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
+        `http://localhost:3000/carePlanning/${id}`,
         {
           status: "Accepted",
           signature: dataURL,
@@ -581,7 +564,7 @@ const Page = () => {
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
+        `http://localhost:3000/carePlanning/${id}`,
         {
           status: "Declined",
           declineReason: reason,
@@ -607,7 +590,7 @@ const Page = () => {
       return;
 
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
+      .get("http://localhost:3000/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -797,7 +780,7 @@ const Page = () => {
                             rel="noopener noreferrer"
                             className="flex flex-col items-center gap-2"
                           >
-                            <Image
+                            <img
                               src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
                               alt="PDF Icon"
                               className="w-12 h-12"
@@ -808,7 +791,7 @@ const Page = () => {
                           </a>
                         ) : (
                           <div className="relative group cursor-zoom-in">
-                            <Image
+                            <img
                               src={file}
                               alt={`Attachment ${index + 1}`}
                               className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
@@ -891,7 +874,7 @@ const Page = () => {
               {navItems.map((item, index) => (
                 <Link
                   key={index}
-                  href={item.href}
+                  href={item.href || "#"}
                   className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
                     item.active
                       ? "bg-primary-light bg-gray-700 text-primary-light"
@@ -959,12 +942,12 @@ const Page = () => {
                 </div>
 
                 {/* Create New Plan */}
-                <button
+                { !hasClients && <button
                   onClick={() => setShowFormCare(true)}
                   className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
                 >
                   <FaPlus className="mr-2" /> Create New Plan
-                </button>
+                </button>}
               </div>
             </div>
 
@@ -1149,14 +1132,14 @@ const Page = () => {
                             className="hover:text-blue-500 transition cursor-pointer"
                             onClick={() => handleView(item)}
                           />
-                          <FaEdit
+                          {!hasClients && <FaEdit
                             className="hover:text-yellow-500 transition cursor-pointer"
                             onClick={() => handleEditCare(item)}
-                          />
-                          <FaTrash
+                          />}
+                         {!hasClients && <FaTrash
                             className="hover:text-red-500 transition cursor-pointer"
                             onClick={() => handleDeleteCare(item._id)}
-                          />
+                          />}
                           <button
                             className="hover:text-green-600 transition cursor-pointer"
                             onClick={() => handleDownloadPdf(item)}

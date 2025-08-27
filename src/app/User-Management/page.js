@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SiSimpleanalytics } from "react-icons/si";
+import { IoDocumentAttach } from "react-icons/io5";
 
 import {
   FaThLarge,
@@ -70,6 +71,12 @@ const Page = () => {
     { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
     { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
     { icon: <FaUsers />, label: "HR Management", href: "/HR-Management",  },
+    {
+      icon: <IoDocumentAttach />,
+      label: "Documents Management",
+      href: "/Documents-Management",
+      
+    },
     { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",},
     { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
@@ -99,35 +106,25 @@ const Page = () => {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+const handleChange6 = (e) => {
+  const { name, value } = e.target;
+  console.log("Field changed:", name, "Value:", value);
 
-  const handleChange6 = (e) => {
-    const { name, value } = e.target;
-    console.log("Field changed:", name, "Value:", value);
-    "Field changed:", name, "Value:", value;
-    if (value == "Client") {
-      setFieldOpen(true); // Hide the field if role is not Client
+  setFormData6((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
 
-      setFormData6((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    } else if (
-      (value != "Client" || name == "password") ||
-      name == "confirmPassword"
-    ) {
-      setFieldOpen(false); // Show the field if role is Client
-      setFormData6((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+  // role field ke liye hi check karo
+  if (name === "role") {
+    if (value === "Client") {
+      setFieldOpen(true);   // Client select hone par open rakho
     } else {
-      setFieldOpen(false); // Hide the field if role is not Client
-      setFormData6((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+      setFieldOpen(false);  // warna hide karo
     }
-  };
+  }
+};
+
 
   const handleEdit = (user) => {
     setFormData6({
@@ -184,12 +181,12 @@ const Page = () => {
 
     const request = editingUserId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/user/${editingUserId}`,
+          `http://localhost:3000/user/${editingUserId}`,
           payload,
           config
         )
       : axios.post(
-          "https://control-panel-backend-k6fr.vercel.app/user/signup",
+          "http://localhost:3000/user/signup",
           { ...payload, confirmPassword },
           config
         ); // 🟢 Must include config here too
@@ -208,7 +205,7 @@ const Page = () => {
         });
         setShowForm6(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/user", config);
+        return axios.get("http://localhost:3000/user", config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -224,7 +221,7 @@ const Page = () => {
 
   useEffect(() => {
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/user", {
+      .get("http://localhost:3000/user", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -265,7 +262,7 @@ const Page = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/user/${id}`, {
+      .delete(`http://localhost:3000/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -288,7 +285,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

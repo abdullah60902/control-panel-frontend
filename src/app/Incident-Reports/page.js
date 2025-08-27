@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import { SiSimpleanalytics } from "react-icons/si";
+import { IoDocumentAttach } from "react-icons/io5";
+
 import Image from "next/image";
 import {
   FaThLarge,
@@ -35,46 +37,29 @@ import { set } from "nprogress";
 import { BsArrowsFullscreen } from "react-icons/bs";
 
 const Page = () => {
+  const {hasClients} = useAuth()
+
   // Define your navigation links here with proper routes
-  const navItems = [
-    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    {
-      icon: <FaUser />,
-      label: "Resident Management",
-      href: "/Client-Management",
-    },
-    {
-      icon: <FaClipboardList />,
-      label: "Care Planning",
-      href: "/Care-Planning",
-    },
-    {
-      icon: <MdMedicationLiquid />,
-      label: "Medication Management",
-      href: "/Medication-Management",
-    },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    {
-      icon: <FaExclamationTriangle />,
-      label: "Incident Reports",
-      href: "/Incident-Reports",
-      active: true,
-    },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-    {
-      icon: <GrDocumentPerformance />,
-      label: "Performance-Manag..",
-      href: "/Performance-Management",
-    },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    {
-      icon: <SiSimpleanalytics />,
-      label: "Reporting Analytics",
-      href: "/Analytics",
-    },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-  ];
+ const navItems = [
+  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
+  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports",active: true },
+  ...(hasClients
+    ? []
+    : [
+        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+      ]),
+];
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filteredIncidents, setFilteredIncidents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -122,7 +107,7 @@ const Page = () => {
     const fetchIncidents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", {
+        const res = await axios.get("http://localhost:3000/incident/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setIncidentData(res.data.incidents);
@@ -330,11 +315,11 @@ const Page = () => {
 
     const request = editingIncidentId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/incident/update/${editingIncidentId}`,
+          `http://localhost:3000/incident/update/${editingIncidentId}`,
           data,
           config
         )
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/incident/`, data, config);
+      : axios.post(`http://localhost:3000/incident/`, data, config);
 
     request
       .then((res) => {
@@ -357,7 +342,7 @@ const Page = () => {
         setAttachments([]);
         setShowModal2(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", config);
+        return axios.get("http://localhost:3000/incident/all", config);
       })
       .then((res) => {
         setIncidentData(res.data.incidents);
@@ -376,7 +361,7 @@ const Page = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/incident/delete/${id}`, {
+      .delete(`http://localhost:3000/incident/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -395,7 +380,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -421,14 +406,14 @@ const Page = () => {
       };
 
       await axios.put(
-        `https://control-panel-backend-k6fr.vercel.app/incident/update/${id}`,
+        `http://localhost:3000/incident/update/${id}`,
         { status: newStatus },
         config
       );
 
       // ✅ Just like handleSubmit2
       const response = await axios.get(
-        "https://control-panel-backend-k6fr.vercel.app/incident/all",
+        "http://localhost:3000/incident/all",
         config
       );
       setIncidentData(response.data.incidents);
@@ -440,7 +425,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
+      .get("http://localhost:3000/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -752,12 +737,12 @@ const Page = () => {
                     <FaSearch className="text-gray-500 text-sm" />
                   </div>
                 </div>
-                <button
+               {!hasClients && <button
                   onClick={() => setShowModal2(true)}
                   className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center justify-center"
                 >
                   <FaPlus className="mr-2" /> Report New Incident
-                </button>
+                </button>}
               </div>
             </div>
 
@@ -871,18 +856,18 @@ const Page = () => {
                             >
                               <FaEye />
                             </button>
-                            <button
+                            {!hasClients && <button
                               onClick={() => handleEdit(item)}
                               className="hover:text-yellow-500 transition cursor-pointer"
                             >
                               <FaEdit />
-                            </button>
-                            <button
+                            </button>}
+                            {!hasClients && <button
                               onClick={() => handleDelete(item._id)}
                               className="hover:text-red-500 cursor-pointer"
                             >
                               <FaTrash />
-                            </button>
+                            </button>}
                             <button
                               onClick={() => handleDownloadPdf(item)}
                               className="hover:text-green-600 transition cursor-pointer"

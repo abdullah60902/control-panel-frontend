@@ -9,14 +9,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // Prevent early rendering
   const [totalclientlength, setTotalClientLength] = useState(0);
   const [jaa, setJaa] = useState(false);
-const [userclient, setUserclient] = useState({
+
+  const [userclient, setUserclient] = useState({
     clients: [],
   });
+
+  // ✅ Check token on load
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       try {
         const decoded = JSON.parse(atob(storedToken.split('.')[1]));
+
+        // Check expiry
+        if (decoded.exp * 1000 < Date.now()) {
+          localStorage.removeItem('token');
+          setToken('');
+          setUser(null);
+          return;
+        }
+
         setToken(storedToken);
         setUser(decoded);
       } catch (err) {
@@ -24,7 +36,7 @@ const [userclient, setUserclient] = useState({
         localStorage.removeItem('token');
       }
     }
-    setLoading(false); // Finished initializing
+    setLoading(false);
   }, []);
 
   const login = (token, userInfo) => {
@@ -40,6 +52,9 @@ const [userclient, setUserclient] = useState({
     setUser(null);
   };
 
+  // ✅ Helper to check if user has clients
+  const hasClients = user?.clients && user.clients.length > 0;
+
   const contextValue = useMemo(() => ({
     user,
     token,
@@ -51,7 +66,8 @@ const [userclient, setUserclient] = useState({
     setJaa,
     userclient,
     setUser,
-  }), [user, token, totalclientlength, jaa]);
+    hasClients,
+  }), [user, token, totalclientlength, jaa, userclient]);
 
   // ✅ Wait until token/user are checked
   if (loading) return null;

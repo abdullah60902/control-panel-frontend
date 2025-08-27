@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { SiSimpleanalytics } from "react-icons/si";
+import { IoDocumentAttach } from "react-icons/io5";
 
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+
 import { GrDocumentPerformance } from "react-icons/gr";
 
 import {
@@ -35,7 +37,7 @@ const Page = () => {
     setIsLoading(true); // Start loader immediately
 
     try {
-      const res = await axios.post('https://control-panel-backend-k6fr.vercel.app/user/login', {
+      const res = await axios.post('http://localhost:3000/user/login', {
         email,
         password,
       });
@@ -83,6 +85,7 @@ console.log('user', user.clients);
             <SidebarItem icon={<FaSearch />} label="Social Activity" />
             <SidebarItem icon={<FaExclamationTriangle />} label="Incident Reports" />
             <SidebarItem icon={<FaUsers />} label="HR Management" />
+            <SidebarItem icon={<IoDocumentAttach />} label="Documents Management" />
             <SidebarItem icon={<GrDocumentPerformance  />} label="Performance-Manag.." />
             <SidebarItem icon={<FaGraduationCap />} label="Training" />
             <SidebarItem icon={<FaShieldAlt />} label="Compliance" />

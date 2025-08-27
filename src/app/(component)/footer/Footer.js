@@ -15,7 +15,7 @@ const Footer = () => {
     <div>
         <footer className="bg-gray-800 shadow ">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-sm text-gray-500 text-gray-400">
+            <p className="text-center text-sm  text-gray-400">
                 Care Home Management System © 2023
             </p>
         </div>

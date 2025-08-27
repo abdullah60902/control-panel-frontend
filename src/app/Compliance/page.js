@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
+import { IoDocumentAttach } from "react-icons/io5";
+
 
 
 import {
@@ -53,21 +55,28 @@ const StaffData = [
 
 const Page = () => {
 
+  const {hasClients} = useAuth()
+
   // Define your navigation links here with proper routes
-  const navItems = [
-    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-    { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-    { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",},
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance", active: true },
-    { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics",  },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-  ];
+ const navItems = [
+  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
+  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports"},
+  ...(hasClients
+    ? []
+    : [
+        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance",active: true  },
+        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+      ]),
+];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
@@ -75,7 +84,6 @@ const Page = () => {
   const [selected, setSelected] = useState("All Records");
   const filters = ["All Records", "Compliant", "Action Required", "Upcoming"];
   const [showForm5, setShowForm5] = useState(false);
-
   // Define your navigation links here with proper routes
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -192,8 +200,8 @@ const handleDownloadPdf = async (item) => {
       notes,
     };
     const request = editingUserId
-      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/compliance/${editingUserId}`, payload, config)
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/compliance`, payload, config);
+      ? axios.put(`http://localhost:3000/compliance/${editingUserId}`, payload, config)
+      : axios.post(`http://localhost:3000/compliance`, payload, config);
 
     request
       .then(res => {
@@ -211,7 +219,7 @@ const handleDownloadPdf = async (item) => {
         setShowForm5(false);
         toast.success("Add successfuly")
         console.log("Fetching updated compliance data...");
-        return axios.get('https://control-panel-backend-k6fr.vercel.app/compliance', config);
+        return axios.get('http://localhost:3000/compliance', config);
       })
       .then(res => {
         console.log("Fetched data:", res.data);
@@ -257,7 +265,7 @@ const handleDownloadPdf = async (item) => {
       const fetchHR = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/compliance", {
+          const res = await axios.get("http://localhost:3000/compliance", {
             headers: { Authorization: `Bearer ${token}` }
           });
           setStaffData(res.data); // no .users needed, your backend returns an array
@@ -275,7 +283,7 @@ const handleDownloadPdf = async (item) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`https://control-panel-backend-k6fr.vercel.app/compliance/${id}`, {
+    axios.delete(`http://localhost:3000/compliance/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
+import { IoDocumentAttach } from "react-icons/io5";
+
 
 import {
   FaThLarge,
@@ -61,36 +63,42 @@ const Page = () => {
       label: "Medication Management",
       href: "/Medication-Management",
     },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+         !hasClients &&{ icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
     {
       icon: <FaExclamationTriangle />,
       label: "Incident Reports",
       href: "/Incident-Reports",
     },
-    {
+         !hasClients &&{
       icon: <FaUsers />,
       label: "HR Management",
       href: "/HR-Management",
       active: true,
     },
-    {
+       !hasClients &&{
+      icon: <IoDocumentAttach />,
+      label: "Documents Management",
+      href: "/Documents-Management",
+      
+    },
+         !hasClients &&{
       icon: <GrDocumentPerformance />,
       label: "Performance-Manag..",
       href: "/Performance-Management",
     },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+         !hasClients &&{ icon: <FaGraduationCap />, label: "Training", href: "/Training" },
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    {
+         !hasClients &&{
       icon: <SiSimpleanalytics />,
       label: "Reporting Analytics",
       href: "/Analytics",
     },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+         !hasClients &&{ icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
   ];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
-  
+  const { hasClients } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState("All Staff");
   const filters = [
@@ -207,8 +215,8 @@ const Page = () => {
     };
 
     const request = editingUserId
-      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/hr/${editingUserId}`, payload, config)
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config);
+      ? axios.put(`http://localhost:3000/hr/${editingUserId}`, payload, config)
+      : axios.post(`http://localhost:3000/hr`, payload, config);
 
     request
       .then((res) => {
@@ -229,7 +237,7 @@ const Page = () => {
         });
         setShowModal3(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/hr", config);
+        return axios.get("http://localhost:3000/hr", config);
       })
       .then((res) => {
         setStaffData(res.data.allHr);
@@ -246,7 +254,7 @@ const Page = () => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
+        const res = await axios.get("http://localhost:3000/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStaffData(res.data.allHr); // no .users needed, your backend returns an array
@@ -294,7 +302,7 @@ const Page = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/hr/${id}`, {
+      .delete(`http://localhost:3000/hr/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

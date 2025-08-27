@@ -4,6 +4,8 @@ import Navbar from "../(component)/navbar/Navbar";
 import { BsArrowsFullscreen } from "react-icons/bs";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
+import { IoDocumentAttach } from "react-icons/io5";
+
 
 import Image from "next/image";
 
@@ -47,6 +49,12 @@ const Page = () => {
     { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity",active: true  },
     { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
     { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+    {
+      icon: <IoDocumentAttach />,
+      label: "Documents Management",
+      href: "/Documents-Management",
+      
+    },
     { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",},
     { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
@@ -140,8 +148,8 @@ const handleSubmit4 = (e) => {
   });
 
   const request = editingUserId
-    ? axios.put(`https://control-panel-backend-k6fr.vercel.app/social/${editingUserId}`, data, config)
-    : axios.post(`https://control-panel-backend-k6fr.vercel.app/social`, data, config);
+    ? axios.put(`http://localhost:3000/social/${editingUserId}`, data, config)
+    : axios.post(`http://localhost:3000/social`, data, config);
 
   request
     .then(res => {
@@ -159,7 +167,7 @@ const handleSubmit4 = (e) => {
       setAttachments([]);
 
       // ✅ FETCH updated data
-      return axios.get('https://control-panel-backend-k6fr.vercel.app/social', config);
+      return axios.get('http://localhost:3000/social', config);
     })
     .then(res => {
       setSocial(res.data); // social activity list update
@@ -177,7 +185,7 @@ const handleSubmit4 = (e) => {
 
 
   useEffect(() => {
-    axios.get('https://control-panel-backend-k6fr.vercel.app/social', {
+    axios.get('http://localhost:3000/social', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       }
@@ -200,7 +208,7 @@ const handleSubmit4 = (e) => {
 
  useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
+    axios.get('http://localhost:3000/hr', {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -233,7 +241,7 @@ const handleCancel12 = () => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`https://control-panel-backend-k6fr.vercel.app/social/${id}`, {
+    axios.delete(`http://localhost:3000/social/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -256,7 +264,7 @@ const handleCancel12 = () => {
 
 useEffect(() => {
   const token = localStorage.getItem('token');
-  axios.get('https://control-panel-backend-k6fr.vercel.app/client', {
+  axios.get('http://localhost:3000/client', {
     headers: {
       Authorization: `Bearer ${token}`,
     }
@@ -546,7 +554,7 @@ const router = useRouter();
                       rel="noopener noreferrer"
                       className="flex flex-col items-center gap-2"
                     >
-                      <Image
+                      <img
                         src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
                         alt="PDF Icon"
                         className="w-12 h-12"
@@ -557,7 +565,7 @@ const router = useRouter();
                     </a>
                   ) : (
                     <div className="relative group cursor-zoom-in">
-                      <Image
+                      <img
                         src={file}
                         alt={`Attachment ${index + 1}`}
                         className="w-full h-[200px] object-cover rounded-lg border border-gray-600"

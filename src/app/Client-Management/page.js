@@ -5,6 +5,8 @@ import { SiSimpleanalytics } from "react-icons/si";
 import Image from "next/image";
 import { MdMedicationLiquid } from "react-icons/md";
 import { GrDocumentPerformance } from "react-icons/gr";
+import { IoDocumentAttach } from "react-icons/io5";
+
 
 
 import {
@@ -53,23 +55,28 @@ const clients = [
 ];
 
 const Page = () => {
+  const {hasClients} = useAuth()
 
   // Define your navigation links here with proper routes
-  const navItems = [
-    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    { icon: <FaUser />, label: "Resident Management", href: "/Client-Management", active: true },
-    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-    { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-    { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management", },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-            { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics",  },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-    
-  ];
+ const navItems = [
+  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management",active: true  },
+  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+  ...(hasClients
+    ? []
+    : [
+        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+      ]),
+];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
@@ -78,7 +85,6 @@ const Page = () => {
   const filters = ["All Patients", "Nursing", "Residential", "Memory Care", "Respite"];
   const [totalclientlength, setTotalClientLength] = useState(0);
   const { user, logout,userclient } = useAuth();
-
   console.log("Total Clients:", totalclientlength);
 
 
@@ -173,8 +179,8 @@ const Page = () => {
     const payload = { fullName: name, age: age, roomNumber: room, careType: careType, admissionDate: admitDate };
 
     const request = editingUserId
-      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/client/${editingUserId}`, payload, config)
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/client`, payload, config);
+      ? axios.put(`http://localhost:3000/client/${editingUserId}`, payload, config)
+      : axios.post(`http://localhost:3000/client`, payload, config);
 
     request
       .then(res => {
@@ -184,7 +190,7 @@ const Page = () => {
         setShowModal(false);
         setLoading(false);
         toast.success("Add successfly")
-        return axios.get('https://control-panel-backend-k6fr.vercel.app/client', config);
+        return axios.get('http://localhost:3000/client', config);
       })
       .then(res => {
         setStaffData(res.data.clients || res.data); // Adjust based on your API response structure
@@ -206,7 +212,7 @@ useEffect(() => {
     // Client login hua hai — unke attached clients ke IDs hain
     if (!Array.isArray(user.clients)) return;
 
-    axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
+    axios.get("http://localhost:3000/client", {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then((res) => {
@@ -226,7 +232,7 @@ useEffect(() => {
 
   } else {
     // Admin or Staff — all clients
-    axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
+    axios.get("http://localhost:3000/client", {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then((res) => {
@@ -270,7 +276,7 @@ useEffect(() => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`https://control-panel-backend-k6fr.vercel.app/client/${id}`, {
+    axios.delete(`http://localhost:3000/client/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -488,12 +494,12 @@ const router = useRouter();
                     <FaSearch className="text-gray-500" />
                   </div>
                 </div>
-                <button
+                { !hasClients && <button
                   onClick={() => setShowModal(true)}
                   className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
                 >
                   <FaPlus className="mr-2" /> Add New Resident
-                </button>
+                </button>}
               </div>
             </div>
 
@@ -556,8 +562,8 @@ const router = useRouter();
                       <td className="px-4 py-7 flex gap-3 items-center text-sm text-white">
                         <FaEye className="hover:text-blue-500 transition cursor-pointer" onClick={() => handleView(client)} />
 
-                        <FaEdit className="cursor-pointer hover:text-yellow-500 transition" onClick={() => handleEdit(client)} />
-                        <FaTrash className="cursor-pointer hover:text-red-500 transition" onClick={() => handleDelete(client._id)} />
+                      { !hasClients && <FaEdit className="cursor-pointer hover:text-yellow-500 transition" onClick={() => handleEdit(client)} /> }
+                      { !hasClients && <FaTrash className="cursor-pointer hover:text-red-500 transition" onClick={() => handleDelete(client._id)} /> }
                         <button
                           className="hover:text-green-600 transition cursor-pointer"
                           onClick={() => handleDownloadPdf(client)}

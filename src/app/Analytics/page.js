@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import { GrDocumentPerformance } from "react-icons/gr";
 import { SiSimpleanalytics } from "react-icons/si";
+import { IoDocumentAttach } from "react-icons/io5";
+
 import {
   FaThLarge,
   FaUser,
@@ -23,21 +25,67 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-
 export default function Page() {
+  const { hasClients } = useAuth();
   const navItems = [
     { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-    { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-    { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+    {
+      icon: <FaUser />,
+      label: "Resident Management",
+      href: "/Client-Management",
+    },
+    {
+      icon: <FaClipboardList />,
+      label: "Care Planning",
+      href: "/Care-Planning",
+    },
+    {
+      icon: <MdMedicationLiquid />,
+      label: "Medication Management",
+      href: "/Medication-Management",
+    },
+    !hasClients && {
+      icon: <FaSearch />,
+      label: "Social Activity",
+      href: "/Social-Activity",
+    },
+    {
+      icon: <FaExclamationTriangle />,
+      label: "Incident Reports",
+      href: "/Incident-Reports",
+    },
+    !hasClients && {
+      icon: <FaUsers />,
+      label: "HR Management",
+      href: "/HR-Management",
+    },
+    !hasClients && {
+      icon: <IoDocumentAttach />,
+      label: "Documents Management",
+      href: "/Documents-Management",
+    },
+    !hasClients && {
+      icon: <GrDocumentPerformance />,
+      label: "Performance-Manag..",
+      href: "/Performance-Management",
+    },
+    !hasClients && {
+      icon: <FaGraduationCap />,
+      label: "Training",
+      href: "/Training",
+    },
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics", active: true },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+    !hasClients && {
+      icon: <SiSimpleanalytics />,
+      label: "Reporting Analytics",
+      href: "/Analytics",
+      active: true,
+    },
+    !hasClients && {
+      icon: <FaUserCog />,
+      label: "User Management",
+      href: "/User-Management",
+    },
   ];
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -58,7 +106,7 @@ export default function Page() {
   useEffect(() => {
     if (activeTab === "analytics") {
       axios
-        .get("https://control-panel-backend-k6fr.vercel.app/analytics/care-settings", {
+        .get("http://localhost:3000/analytics/care-settings", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => setAnalytics(res.data))
@@ -70,11 +118,13 @@ export default function Page() {
   useEffect(() => {
     if (activeTab === "compliance") {
       axios
-        .get("https://control-panel-backend-k6fr.vercel.app/compliance/audit-logs", {
+        .get("http://localhost:3000/compliance/audit-logs", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => setComplianceAuditLogs(res.data))
-        .catch((err) => console.error("Error loading compliance audit logs:", err));
+        .catch((err) =>
+          console.error("Error loading compliance audit logs:", err)
+        );
     }
   }, [activeTab]);
 
@@ -82,11 +132,13 @@ export default function Page() {
   useEffect(() => {
     if (activeTab === "careplan") {
       axios
-        .get("https://control-panel-backend-k6fr.vercel.app/carePlanning/audit-logs", {
+        .get("http://localhost:3000/carePlanning/audit-logs", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         })
         .then((res) => setCarePlanAuditLogs(res.data))
-        .catch((err) => console.error("Error loading care plan audit logs:", err));
+        .catch((err) =>
+          console.error("Error loading care plan audit logs:", err)
+        );
     }
   }, [activeTab]);
 
@@ -94,9 +146,14 @@ export default function Page() {
   const handleDeleteComplianceAudit = async (id) => {
     if (window.confirm("Delete this compliance audit log?")) {
       try {
-        await axios.delete(`https://control-panel-backend-k6fr.vercel.app/compliance/audit-logs/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        await axios.delete(
+          `http://localhost:3000/compliance/audit-logs/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         setComplianceAuditLogs((prev) => prev.filter((log) => log._id !== id));
         toast.success("Compliance audit log deleted");
       } catch (error) {
@@ -109,9 +166,14 @@ export default function Page() {
   const handleDeleteCarePlanAudit = async (id) => {
     if (window.confirm("Delete this care plan audit log?")) {
       try {
-        await axios.delete(`https://control-panel-backend-k6fr.vercel.app/care-planning/audit-logs/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        await axios.delete(
+          `http://localhost:3000/care-planning/audit-logs/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
         setCarePlanAuditLogs((prev) => prev.filter((log) => log._id !== id));
         toast.success("Care plan audit log deleted");
       } catch (error) {
@@ -237,18 +299,27 @@ export default function Page() {
                   </thead>
                   <tbody>
                     {analytics.map((row, i) => (
-                      <tr key={i} className="border-t border-gray-600 hover:bg-gray-700">
+                      <tr
+                        key={i}
+                        className="border-t border-gray-600 hover:bg-gray-700"
+                      >
                         <td className="p-3">{row.careSetting}</td>
                         <td className="p-3">{row.totalStaff}</td>
                         <td className="p-3">{row.totalClients}</td>
-                        <td className="p-3 text-green-400">{row.validTrainings}</td>
-                        <td className="p-3 text-red-400">{row.expiredTrainings}</td>
+                        <td className="p-3 text-green-400">
+                          {row.validTrainings}
+                        </td>
+                        <td className="p-3 text-red-400">
+                          {row.expiredTrainings}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
                 {analytics.length === 0 && (
-                  <p className="text-center py-4 text-gray-400">No analytics available.</p>
+                  <p className="text-center py-4 text-gray-400">
+                    No analytics available.
+                  </p>
                 )}
               </div>
             )}
@@ -276,7 +347,10 @@ export default function Page() {
                   <tbody>
                     {complianceAuditLogs.length > 0 ? (
                       complianceAuditLogs.map((log, i) => (
-                        <tr key={i} className="border-t border-gray-600 hover:bg-gray-700">
+                        <tr
+                          key={i}
+                          className="border-t border-gray-600 hover:bg-gray-700"
+                        >
                           <td className="p-3">{log.user || "N/A"}</td>
                           <td className="p-3">{log.action}</td>
                           <td className="p-3">{log.targetType}</td>
@@ -287,14 +361,19 @@ export default function Page() {
                           <td className="p-3">
                             <FaTrash
                               className="hover:text-red-500 cursor-pointer"
-                              onClick={() => handleDeleteComplianceAudit(log._id)}
+                              onClick={() =>
+                                handleDeleteComplianceAudit(log._id)
+                              }
                             />
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-4 text-gray-400">
+                        <td
+                          colSpan={6}
+                          className="text-center py-4 text-gray-400"
+                        >
                           No audit logs available.
                         </td>
                       </tr>
@@ -307,8 +386,12 @@ export default function Page() {
             {/* Care Planning Audit Logs */}
             {activeTab === "careplan" && (
               <div className="p-4 rounded-lg">
-                <h3 className="text-lg font-medium text-gray-200">Care Planning Audit Logs</h3>
-                <p className="text-sm text-gray-400 mb-4">Recent care planning activity</p>
+                <h3 className="text-lg font-medium text-gray-200">
+                  Care Planning Audit Logs
+                </h3>
+                <p className="text-sm text-gray-400 mb-4">
+                  Recent care planning activity
+                </p>
                 <table className="w-full table-auto text-sm">
                   <thead className="bg-gray-700 text-left">
                     <tr>
@@ -323,11 +406,16 @@ export default function Page() {
                   <tbody>
                     {carePlanAuditLogs.length > 0 ? (
                       carePlanAuditLogs.map((log, i) => (
-                        <tr key={i} className="border-t border-gray-600 hover:bg-gray-700">
+                        <tr
+                          key={i}
+                          className="border-t border-gray-600 hover:bg-gray-700"
+                        >
                           <td className="p-3">{log.user || "N/A"}</td>
                           <td className="p-3">{log.action}</td>
                           <td className="p-3">{log.targetType}</td>
-                          <td className="p-3">{log.client.fullName || "N/A"}</td>
+                          <td className="p-3">
+                            {log.client.fullName || "N/A"}
+                          </td>
                           <td className="p-3 text-gray-400">
                             {new Date(log.timestamp).toLocaleString()}
                           </td>
@@ -341,7 +429,10 @@ export default function Page() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="text-center py-4 text-gray-400">
+                        <td
+                          colSpan={6}
+                          className="text-center py-4 text-gray-400"
+                        >
                           No care planning audit logs available.
                         </td>
                       </tr>

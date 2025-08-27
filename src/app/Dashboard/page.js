@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import axios from "axios";
 import { SiSimpleanalytics } from "react-icons/si";
+import { IoDocumentAttach } from "react-icons/io5";
 
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -30,58 +31,37 @@ import {
 import { HiUsers } from "react-icons/hi2";
 import Link from "next/link";
 import { GrDocumentPerformance } from "react-icons/gr";
-import { inc } from "nprogress";
+import { inc, set } from "nprogress";
 import { toast } from "react-toastify";
 import { MdMedicationLiquid } from "react-icons/md";
 
 const Page = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { hasClients } = useAuth();
 
   const navItems = [
-    {
-      icon: <FaThLarge />,
-      label: "Dashboard",
-      href: "/Dashboard",
-      active: true,
-    },
-    {
-      icon: <FaUser />,
-      label: "Resident Management",
-      href: "/Client-Management",
-    },
-    {
-      icon: <FaClipboardList />,
-      label: "Care Planning",
-      href: "/Care-Planning",
-    },
-    {
-      icon: <MdMedicationLiquid />,
-      label: "Medication Management",
-      href: "/Medication-Management",
-    },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    {
-      icon: <FaExclamationTriangle />,
-      label: "Incident Reports",
-      href: "/Incident-Reports",
-    },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-    {
-      icon: <GrDocumentPerformance />,
-      label: "Performance-Manag..",
-      href: "/Performance-Management",
-    },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    {
-      icon: <SiSimpleanalytics />,
-      label: "Reporting Analytics",
-      href: "/Analytics",
-    },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-  ];
+  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard", active: true },
+  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
+  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+  ...(hasClients
+    ? []
+    : [
+        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+      ]),
+];
+
+
   // care plane ------------------------------------------------------------------------------------------------
-const [carePlans, setCarePlans] = useState([]);
+  const [carePlans, setCarePlans] = useState([]);
   const [formDataCare, setFormDataCare] = useState({
     client: "",
     planType: "",
@@ -96,7 +76,7 @@ const [carePlans, setCarePlans] = useState([]);
     careSetting: "", // ✅ NEW FIELD
   });
 
-    const hansleCloseFormCare = () => {
+  const hansleCloseFormCare = () => {
     setShowFormCare(false);
     setAttachments([]);
     setFormDataCare({
@@ -128,34 +108,32 @@ const [carePlans, setCarePlans] = useState([]);
     setAttachments(Array.from(e.target.files));
   };
 
-
   const [staffMembers, setStaffMembers] = useState([]); // For HR/staff members
 
   // Optional: Handle form submit
-const handleSubmitCare = (e) => {
+  const handleSubmitCare = (e) => {
     e.preventDefault();
     setLoading(true);
     const token = localStorage.getItem("token");
-    
+
     const formData = new FormData();
     for (let key in formDataCare) {
       formData.append(key, formDataCare[key]);
     }
 
     // Check if editing: add Cloudinary URLs (old ones) and new files
-    
-      // New upload
-      attachments.forEach((file) => {
-        formData.append("attachments", file);
-      });
-    
+
+    // New upload
+    attachments.forEach((file) => {
+      formData.append("attachments", file);
+    });
 
     const config = {
       headers: { Authorization: `Bearer ${token}` },
     };
 
-   
-    axios.post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config)
+    axios
+      .post(`http://localhost:3000/carePlanning`, formData, config)
       .then((res) => {
         toast.success("Care plan saved successfully");
         setShowFormCare(false);
@@ -174,24 +152,21 @@ const handleSubmitCare = (e) => {
           dailyLog: "",
           careSetting: "",
           attachments: [],
-
         });
         console.log("Care plan saved successfully:", res.data);
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.error("Error:", err.response?.data || err.message);
         setError(err.response?.data?.msg || "An error occurred");
         toast.error(err.response?.data?.msg || "An error occurred");
         setLoading(false); // Reset loading state on error
       });
-
-     
-      
   };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -210,7 +185,7 @@ const handleSubmitCare = (e) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -229,7 +204,7 @@ const handleSubmitCare = (e) => {
     const fetchIncidents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", {
+        const res = await axios.get("http://localhost:3000/incident/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setsixmont(res.data.recentIncidentsCount);
@@ -246,12 +221,12 @@ const handleSubmitCare = (e) => {
   const handleFileChangeincident = (e) => {
     setAttachmentsincidebt(Array.from(e.target.files));
   };
-   const handleChange2incident = (e) => {
+  const handleChange2incident = (e) => {
     const { name, value } = e.target;
     setFormData2((prev) => ({ ...prev, [name]: value }));
   };
 
- const [showModal2, setShowModal2] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
   const [formData2, setFormData2] = useState({
     incidentDate: "",
     incidentType: "",
@@ -288,7 +263,8 @@ const handleSubmitCare = (e) => {
       data.append("attachments", file);
     });
 
-   axios.post(`https://control-panel-backend-k6fr.vercel.app/incident/`, data, config)
+    axios
+      .post(`http://localhost:3000/incident/`, data, config)
       .then((res) => {
         setLoading(false);
         setFormData2({
@@ -305,11 +281,12 @@ const handleSubmitCare = (e) => {
           staffInvolved: "",
         });
         console.log("Incident added successfully:", res.data);
-        
+
         setAttachmentsincidebt([]);
         setShowModal2(false);
         toast.success("Add successfuly");
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.error(err);
         setLoading(false);
         setError(err.response?.data?.msg || "Error occurred");
@@ -336,9 +313,7 @@ const handleSubmitCare = (e) => {
     setError(""); // Clear any error messages
   };
 
-
-
-// add staf -------------------------------------------------------------------------------------------------------------
+  // add staf -------------------------------------------------------------------------------------------------------------
   const [showModal3, setShowModal3] = useState(false);
   const [formData3, setFormData3] = useState({
     name: "",
@@ -349,7 +324,6 @@ const handleSubmitCare = (e) => {
     startDate: "",
   });
 
-  
   const handleCancel10 = () => {
     setShowModal3(false);
     setFormData3({
@@ -369,7 +343,7 @@ const handleSubmitCare = (e) => {
     const fetchHR0 = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
+        const res = await axios.get("http://localhost:3000/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTotalStaffno(res.data.totalstaff);
@@ -381,8 +355,6 @@ const handleSubmitCare = (e) => {
   }, []);
 
   const [staffData, setStaffData] = useState([]);
-
-  
 
   const handleChange3 = (e) => {
     const { name, value } = e.target;
@@ -410,9 +382,10 @@ const handleSubmitCare = (e) => {
       startDate: startDate,
     };
 
-    axios.post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config)
-    
-    .then((res) => {
+    axios
+      .post(`http://localhost:3000/hr`, payload, config)
+
+      .then((res) => {
         setLoading(false); // Reset loading state
         setFormData3({
           name: "",
@@ -445,7 +418,7 @@ const handleSubmitCare = (e) => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
+        const res = await axios.get("http://localhost:3000/client", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTotalClients(res.data.totalClients);
@@ -501,7 +474,7 @@ const handleSubmitCare = (e) => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/client`, payload, config)
+      .post(`http://localhost:3000/client`, payload, config)
       .then((res) => {
         setFormData({
           name: "",
@@ -514,7 +487,7 @@ const handleSubmitCare = (e) => {
         setShowModal(false);
         toast.success("Add successfuly");
 
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/client", config);
+        return axios.get("http://localhost:3000/client", config);
       })
       .then((res) => {
         console.log("Updated Client Data:", res.data.clients);
@@ -533,41 +506,44 @@ const handleSubmitCare = (e) => {
 
   // shedule staff training-------------------------------------------------------------------------------------------------------------------
   const [attachmentsTraining, setAttachmentsTraining] = useState([]);
-  
-const trainingRecommendations = {
-  "Residential Care": ["Safeguarding", "Dementia Care", "Fire Safety"],
-  "Nursing Homes": ["First Aid", "Medication Administration", "Infection Control"],
-  "Learning Disabilities": ["Autism & Learning Disabilities", "Epilepsy"],
-  "Supported Living": ["Fire Safety", "Diabetes", "Moving & Handling"],
-  "Mental Health Support": ["Mental Health", "Safeguarding", "GDPR"],
-  "Domiciliary Care": ["Infection Control", "Moving & Handling", "GDPR"],
-  "Other Services": ["First Aid", "Fire Safety", "Safeguarding"]
-};
 
-const handleFileChangeTraining = (e) => {
-  setAttachmentsTraining(Array.from(e.target.files));
-};
+  const trainingRecommendations = {
+    "Residential Care": ["Safeguarding", "Dementia Care", "Fire Safety"],
+    "Nursing Homes": [
+      "First Aid",
+      "Medication Administration",
+      "Infection Control",
+    ],
+    "Learning Disabilities": ["Autism & Learning Disabilities", "Epilepsy"],
+    "Supported Living": ["Fire Safety", "Diabetes", "Moving & Handling"],
+    "Mental Health Support": ["Mental Health", "Safeguarding", "GDPR"],
+    "Domiciliary Care": ["Infection Control", "Moving & Handling", "GDPR"],
+    "Other Services": ["First Aid", "Fire Safety", "Safeguarding"],
+  };
+
+  const handleFileChangeTraining = (e) => {
+    setAttachmentsTraining(Array.from(e.target.files));
+  };
 
   const handleCancel9 = () => {
     setShowForm4(false);
     setFormData4({
-      staffName: '',
-      trainingType: '',
-      completionDate: '',
-      expiryDate: '',
-      notes: '',
+      staffName: "",
+      trainingType: "",
+      completionDate: "",
+      expiryDate: "",
+      notes: "",
     });
     setAttachmentsTraining([]);
-  }
+  };
 
   const [recommendedTrainings, setRecommendedTrainings] = useState([]);
 
-const getRecommendedTrainings = (staffId) => {
-  const staff = staffMembers2.find(s => s._id === staffId);
-  if (!staff || !staff.careSetting) return [];
-  return trainingRecommendations[staff.careSetting] || [];
-};
-
+  const getRecommendedTrainings = (staffId) => {
+    const staff = staffMembers2.find((s) => s._id === staffId);
+    if (!staff || !staff.careSetting) return [];
+    return trainingRecommendations[staff.careSetting] || [];
+  };
 
   const [showForm4, setShowForm4] = useState(false);
   const [formData4, setFormData4] = useState({
@@ -579,69 +555,81 @@ const getRecommendedTrainings = (staffId) => {
   });
 
   const handleChange4 = (e) => {
-  const { name, value } = e.target;
+    const { name, value } = e.target;
 
-  setFormData4(prev => ({
-    ...prev,
-    [name]: value,
-  }));
+    setFormData4((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
-  // When staff is selected, fetch recommendations
-  if (name === "staffName") {
-    const rec = getRecommendedTrainings(value);
-    setRecommendedTrainings(rec);
-  }
-};
-  
- const handleSubmit4 = (e) => {
-  e.preventDefault();
-  setLoading(true); // Set loading state to true
-  const { staffName, trainingType, completionDate, expiryDate, notes } = formData4;
-
-  const token = localStorage.getItem('token');
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data'
+    // When staff is selected, fetch recommendations
+    if (name === "staffName") {
+      const rec = getRecommendedTrainings(value);
+      setRecommendedTrainings(rec);
     }
   };
 
-  const formData = new FormData();
-  formData.append('staffMember', staffName);
-  formData.append('trainingType', trainingType);
-  formData.append('completionDate', completionDate);
-  formData.append('expiryDate', expiryDate);
-  formData.append('notes', notes);
+  const handleSubmit4 = (e) => {
+    e.preventDefault();
+    setLoading(true); // Set loading state to true
+    const { staffName, trainingType, completionDate, expiryDate, notes } =
+      formData4;
 
-  attachmentsTraining.forEach(file => {
-    formData.append('attachments', file); // same name used in backend
-  });
+    const token = localStorage.getItem("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
 
-  axios.post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config)
-    .then(res => {
-      setMessage(editingUserId ? 'Training updated successfully' : 'Training added successfully');
-      setEditingUserId(null);
-      setFormData4({ staffName: '', trainingType: '', completionDate: '', expiryDate: '', notes: '' });
-      setAttachmentsTraining([]);
-      setShowForm4(false);
-      setLoading(false); // Reset loading state
-      toast.success("Added successfully");
+    const formData = new FormData();
+    formData.append("staffMember", staffName);
+    formData.append("trainingType", trainingType);
+    formData.append("completionDate", completionDate);
+    formData.append("expiryDate", expiryDate);
+    formData.append("notes", notes);
 
-      return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
-    })
-    .catch(err => {
-      setLoading(false); // Reset loading state
-      setError(err.response?.data?.msg || 'An error occurred');
-      toast.error(err.response?.data?.msg || 'An error occurred');
+    attachmentsTraining.forEach((file) => {
+      formData.append("attachments", file); // same name used in backend
     });
-};
+
+    axios
+      .post(`http://localhost:3000/training`, formData, config)
+      .then((res) => {
+        setMessage(
+          editingUserId
+            ? "Training updated successfully"
+            : "Training added successfully"
+        );
+        setEditingUserId(null);
+        setFormData4({
+          staffName: "",
+          trainingType: "",
+          completionDate: "",
+          expiryDate: "",
+          notes: "",
+        });
+        setAttachmentsTraining([]);
+        setShowForm4(false);
+        setLoading(false); // Reset loading state
+        toast.success("Added successfully");
+
+        return axios.get(`http://localhost:3000/training`, config);
+      })
+      .catch((err) => {
+        setLoading(false); // Reset loading state
+        setError(err.response?.data?.msg || "An error occurred");
+        toast.error(err.response?.data?.msg || "An error occurred");
+      });
+  };
 
   const [staffMembers2, setStaffMembers2] = useState([]); // For HR/staff members
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
+      .get("http://localhost:3000/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -653,8 +641,6 @@ const getRecommendedTrainings = (staffId) => {
         setError(error.response?.data?.msg || "Failed to fetch staff");
       });
   }, []);
-
-
 
   //  ---------------------------------------------------------------------------------------------------------
   const { user, logout } = useAuth();
@@ -695,23 +681,26 @@ const getRecommendedTrainings = (staffId) => {
             </div>
 
             {/* Nav Items */}
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-                    item.active
-                      ? "bg-gray-700 text-gray-200"
-                      : "hover:bg-gray-700 hover:text-gray-200"
-                  }`}
-                  onClick={() => setSidebarOpen(false)} // close on mobile
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+           <div className="flex-1 px-2 py-4 overflow-y-auto">
+  {navItems
+    .filter(Boolean) // removes false/null/undefined
+    .map((item, index) => (
+      <Link
+        key={index}
+        href={item.href || "#"}
+        className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+          item.active
+            ? "bg-gray-700 text-gray-200"
+            : "hover:bg-gray-700 hover:text-gray-200"
+        }`}
+        onClick={() => setSidebarOpen(false)}
+      >
+        <span className="mr-3">{item.icon}</span>
+        {item.label}
+      </Link>
+    ))}
+</div>
+
 
             {/* User Info */}
             <div className="p-4 border-t border-gray-700">
@@ -808,70 +797,68 @@ const getRecommendedTrainings = (staffId) => {
           {/* Quick Actions */}
 
           {/* <div className="mt-8"> */}
-         <div className="mt-8 bg-gray-800 p-6 mb-8 rounded-lg shadow-sm border border-gray-700">
-  <h3 className="text-lg font-medium text-gray-200 mb-4">
-    Quick Actions
-  </h3>
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="mt-8 bg-gray-800 p-6 mb-8 rounded-lg shadow-sm border border-gray-700">
+            <h3 className="text-lg font-medium text-gray-200 mb-4">
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {/* Add Resident */}
+              <button
+                onClick={() => setShowModal(hasClients ? false : true)}
+                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
+                  <FaUserPlus className="text-xl text-white" />
+                </div>
+                <span className="text-sm text-gray-300">Add Resident</span>
+              </button>
 
-    {/* Add Resident */}
-    <button
-      onClick={() => setShowModal(true)}
-      className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-    >
-      <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-        <FaUserPlus className="text-xl text-white" />
-      </div>
-      <span className="text-sm text-gray-300">Add Resident</span>
-    </button>
+              {/* New Care Plan */}
+              <button
+                onClick={() => setShowFormCare(hasClients ? false : true)}
+                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
+                  <FaFileMedical className="text-xl text-white" />
+                </div>
+                <span className="text-sm text-gray-300">New Care Plan</span>
+              </button>
 
-    {/* New Care Plan */}
-    <button
-      onClick={() => setShowFormCare(true)}
-      className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-    >
-      <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-        <FaFileMedical className="text-xl text-white" />
-      </div>
-      <span className="text-sm text-gray-300">New Care Plan</span>
-    </button>
+              {/* Report Incident */}
+              <button
+                onClick={() => setShowModal2(hasClients ? false : true)}
+                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
+                  <FaExclamationTriangle className="text-xl text-white" />
+                </div>
+                <span className="text-sm text-gray-300">Report Incident</span>
+              </button>
 
-    {/* Report Incident */}
-    <button
-      onClick={() => setShowModal2(true)}
-      className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-    >
-      <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-        <FaExclamationTriangle className="text-xl text-white" />
-      </div>
-      <span className="text-sm text-gray-300">Report Incident</span>
-    </button>
+              {/* Add Staff */}
+              <button
+                onClick={() => setShowModal3(hasClients ? false : true)}
+                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
+                  <FaUserTie className="text-xl text-white" />
+                </div>
+                <span className="text-sm text-gray-300">Add Staff</span>
+              </button>
 
-    {/* Add Staff */}
-    <button
-      onClick={() => setShowModal3(true)}
-      className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-    >
-      <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-        <FaUserTie className="text-xl text-white" />
-      </div>
-      <span className="text-sm text-gray-300">Add Staff</span>
-    </button>
-
-    {/* Staff Schedule */}
-    <button
-      onClick={() => setShowForm4(true)}
-      className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-      data-module="hr"
-    >
-      <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-        <FaCalendarAlt   size={20} className="text-xl text-white" />
-      </div>
-      <span className="text-sm text-gray-300">Staff Schedule</span>
-    </button>
-
-  </div>
-</div>
+              {/* Staff Schedule */}
+              <button
+                onClick={() => setShowForm4(hasClients ? false : true)}
+                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                data-module="hr"
+              >
+                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
+                  <FaCalendarAlt size={20} className="text-xl text-white" />
+                </div>
+                <span className="text-sm text-gray-300">Staff Schedule</span>
+              </button>
+            </div>
+          </div>
 
           <div>
             {/* Add Client Button */}
@@ -1028,136 +1015,702 @@ const getRecommendedTrainings = (staffId) => {
               </div>
             )}
 
-                {/* Modal care plan form */}
-          {showFormCare && (
-            <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
-              <div className="bg-gray-800 rounded-lg pt-4 shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
-                <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
-                  {/* Care Planning */}
-                  {"Add New Care Plan"}
-                </h2>
-                <form
-                  id="add-care-plan-form"
-                  className="p-4"
-                  onSubmit={handleSubmitCare}
-                  encType="multipart/form-data"
-                >
-                  {/* Client ID */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="clientId"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Patient
-                    </label>
-                    <select
-                      id="client"
-                      name="client"
-                      value={formDataCare.client}
-                      onChange={handleChangeCare}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    >
-                      <option value="">Select Patient</option>
-                      {staffMembers
-                        .filter(
-                          (client) =>
-                            user?.role !== "Client" ||
-                            user.clients.includes(client._id)
-                        )
-                        .map((client) => (
-                          <option key={client._id} value={client._id}>
-                            {client.fullName}
+            {/* Modal care plan form */}
+            {showFormCare && (
+              <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
+                <div className="bg-gray-800 rounded-lg pt-4 shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                  <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
+                    {/* Care Planning */}
+                    {"Add New Care Plan"}
+                  </h2>
+                  <form
+                    id="add-care-plan-form"
+                    className="p-4"
+                    onSubmit={handleSubmitCare}
+                    encType="multipart/form-data"
+                  >
+                    {/* Client ID */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="clientId"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Patient
+                      </label>
+                      <select
+                        id="client"
+                        name="client"
+                        value={formDataCare.client}
+                        onChange={handleChangeCare}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      >
+                        <option value="">Select Patient</option>
+                        {staffMembers
+                          .filter(
+                            (client) =>
+                              user?.role !== "Client" ||
+                              user.clients.includes(client._id)
+                          )
+                          .map((client) => (
+                            <option key={client._id} value={client._id}>
+                              {client.fullName}
+                            </option>
+                          ))}
+                      </select>
+                      <input
+                        type="hidden"
+                        name="clientName"
+                        id="clientName"
+                        value={formDataCare.client.fullName}
+                      />
+                    </div>
+
+                    {/* Plan Type */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="planType"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Plan Type
+                      </label>
+                      <select
+                        id="planType"
+                        name="planType"
+                        value={formDataCare.planType}
+                        onChange={handleChangeCare}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      >
+                        <option value="">Select Plan Type</option>
+                        <option value="Nursing">Nursing</option>
+                        <option value="Nutrition">Nutrition</option>
+                        <option value="Mobility">Mobility</option>
+                        <option value="Personal Care">Personal Care</option>
+                        <option value="Social">Social</option>
+                        <option value="routine">Routine</option>
+                        <option value="safety">Safety</option>
+                        <option value="communication">Communication</option>
+                      </select>
+                    </div>
+
+                    {/* Creation Date */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="createDate"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Creation Date
+                      </label>
+                      <input
+                        id="creationDate"
+                        name="creationDate"
+                        type="date"
+                        value={formDataCare.creationDate}
+                        onChange={handleChangeCare}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+
+                    {/* Review Date */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="reviewDate"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Review Date
+                      </label>
+                      <input
+                        id="reviewDate"
+                        name="reviewDate"
+                        type="date"
+                        value={formDataCare.reviewDate}
+                        onChange={handleChangeCare}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label
+                        htmlFor="careSetting"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Care Setting / Service Type
+                      </label>
+                      <select
+                        id="careSetting"
+                        name="careSetting"
+                        value={formDataCare.careSetting}
+                        onChange={handleChangeCare}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      >
+                        <option value="">Select Care Setting</option>
+                        <option value="Residential Care">
+                          Residential Care
+                        </option>
+                        <option value="Nursing Homes">Nursing Homes</option>
+                        <option value="Learning Disabilities">
+                          Learning Disabilities
+                        </option>
+                        <option value="Supported Living">
+                          Supported Living
+                        </option>
+                        <option value="Mental Health Support">
+                          Mental Health Support
+                        </option>
+                        <option value="Domiciliary Care">
+                          Domiciliary Care Organisations
+                        </option>
+                        <option value="Other Services">Other Services</option>
+                      </select>
+                    </div>
+                    {/* Details */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="details"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Care Plan Details
+                      </label>
+                      <textarea
+                        id="carePlanDetails"
+                        name="carePlanDetails"
+                        rows="4"
+                        value={formDataCare.carePlanDetails}
+                        onChange={handleChangeCare}
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      ></textarea>
+                    </div>
+                    {/* Care Setting */}
+
+                    {/* Health & Wellbeing Recordings Section */}
+                    <div className="mb-6 border-t border-gray-700 pt-4 ">
+                      <h3 className="text-lg font-semibold text-gray-200 mb-4">
+                        Health & Wellbeing Recordings
+                      </h3>
+
+                      {/* Bristol Stool Chart */}
+                      <div className="mb-4">
+                        <label className="block text-gray-300 text-sm font-medium mb-2">
+                          Bristol Stool Chart
+                        </label>
+                        <input
+                          type="text"
+                          name="bristolStoolChart"
+                          value={formDataCare.bristolStoolChart}
+                          onChange={handleChangeCare}
+                          placeholder="Type or score..."
+                          className="w-full px-3 py-2  rounded bg-gray-700 text-white"
+                        />
+                      </div>
+
+                      {/* MUST Score */}
+                      <div className="mb-4">
+                        <label className="block text-gray-300 text-sm font-medium mb-2">
+                          MUST Score
+                        </label>
+                        <input
+                          type="text"
+                          name="mustScore"
+                          value={formDataCare.mustScore}
+                          onChange={handleChangeCare}
+                          placeholder="e.g., 0, 1, 2..."
+                          className="w-full px-3 py-2  rounded bg-gray-700 text-white"
+                        />
+                      </div>
+
+                      {/* Heart Rate */}
+                      <div className="mb-4">
+                        <label className="block text-gray-300 text-sm font-medium mb-2">
+                          Heart Rate (bpm)
+                        </label>
+                        <input
+                          type="number"
+                          name="heartRate"
+                          value={formDataCare.heartRate}
+                          onChange={handleChangeCare}
+                          placeholder="e.g., 72"
+                          className="w-full px-3 py-2  rounded bg-gray-700 text-white"
+                        />
+                      </div>
+
+                      {/* Mood Tracker */}
+                      <div className="mb-4">
+                        <label className="block  text-gray-300 text-sm font-medium mb-2">
+                          Mood Tracker
+                        </label>
+                        <select
+                          name="mood"
+                          value={formDataCare.mood}
+                          onChange={handleChangeCare}
+                          className="w-full px-3 py-2  rounded bg-gray-700 text-white"
+                        >
+                          <option value="">Select mood</option>
+                          <option value="😊">😊 Happy</option>
+                          <option value="😐">😐 Neutral</option>
+                          <option value="😔">😔 Sad</option>
+                          <option value="😡">😡 Angry</option>
+                          <option value="😴">😴 Tired</option>
+                        </select>
+                      </div>
+                      <div className="mb-4">
+                        <label className="block  text-gray-300 text-sm font-medium mb-2">
+                          Attach Photo/Document
+                        </label>
+                        <input
+                          type="file"
+                          name="attachments"
+                          onChange={handleFileChange}
+                          multiple
+                          className="w-full px-3 py-2  rounded bg-gray-700 text-white"
+                        />
+                      </div>
+                      {/* Daily Log */}
+                      <div className="mb-4">
+                        <label className="block text-gray-300 text-sm font-medium mb-2">
+                          Daily Log
+                        </label>
+                        <textarea
+                          name="dailyLog"
+                          value={formDataCare.dailyLog}
+                          onChange={handleChangeCare}
+                          rows="3"
+                          placeholder="Write log with timestamp and caregiver info..."
+                          className="w-full px-3 py-2  rounded bg-gray-700 text-white"
+                        />
+                      </div>
+
+                      {/* Attach File */}
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex justify-end pt-4 border-t border-gray-700">
+                      <button
+                        type="button"
+                        onClick={hansleCloseFormCare}
+                        className="bg-gray-700 cursor-pointer hover:bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded mr-2"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
+                          loading ? "opacity-70 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        {loading ? (
+                          <>
+                            <svg
+                              className="animate-spin h-5 w-5 text-white mr-2"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                              ></path>
+                            </svg>
+                            Please wait...
+                          </>
+                        ) : (
+                          "Create Care Plan"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal incident */}
+            {showModal2 && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-auto">
+                <div className="bg-gray-800 p-6 rounded-lg max-w-lg w-full shadow-lg max-h-[90vh] overflow-y-auto">
+                  <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
+                    Add Incident Report
+                  </h2>
+                  <form
+                    id="add-incident-form"
+                    className="p-4"
+                    onSubmit={handleSubmit2}
+                  >
+                    {/* Client */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="clientId"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Patient
+                      </label>
+                      <select
+                        id="client"
+                        name="client"
+                        value={formData2.client}
+                        onChange={handleChange2}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      >
+                        <option value="">Select Patient</option>
+                        {inci
+                          .filter(
+                            (client) =>
+                              user?.role !== "Client" ||
+                              user.clients.includes(client._id)
+                          )
+                          .map((client) => (
+                            <option key={client._id} value={client._id}>
+                              {client.fullName}
+                            </option>
+                          ))}
+                      </select>
+                      <input
+                        type="hidden"
+                        name="clientName"
+                        id="clientName"
+                        value={formData2.client.fullName}
+                      />
+                    </div>
+
+                    {/* Date */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="incidentDate"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Incident Date
+                      </label>
+                      <input
+                        type="date"
+                        id="incidentDate"
+                        name="incidentDate"
+                        value={formData2.incidentDate}
+                        onChange={handleChange2}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Incident Type */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="incidentType"
+                        className="block  text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Incident Type
+                      </label>
+                      <select
+                        id="incidentType"
+                        name="incidentType"
+                        value={formData2.incidentType}
+                        onChange={handleChange2}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      >
+                        <option value="">Select Incident Type</option>
+                        <option value="Fall">Fall</option>
+                        <option value="Medication Error">
+                          Medication Error
+                        </option>
+                        <option value="Behavioral">Behavioral</option>
+                        <option value="Property Damage">Property Damage</option>
+                        <option value="Injury">Injury</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    {/* Severity */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="severity"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Severity
+                      </label>
+                      <select
+                        id="severity"
+                        name="severity"
+                        value={formData2.severity}
+                        onChange={handleChange2}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      >
+                        <option value="">Select Severity</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                      </select>
+                    </div>
+
+                    {/* Reported By */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="reportedBy"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Reported By
+                      </label>
+                      <input
+                        type="text"
+                        id="reportedBy"
+                        name="reportedBy"
+                        value={formData2.reportedBy}
+                        onChange={handleChange2}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      />
+                    </div>
+                    {/* Details */}
+                    <div className="mb-4">
+                      <label
+                        htmlFor="incidentDetails"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Incident Details
+                      </label>
+                      <textarea
+                        id="incidentDetails"
+                        name="incidentDetails"
+                        rows="4"
+                        value={formData2.incidentDetails}
+                        onChange={handleChange2}
+                        required
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label
+                        htmlFor="immediateActions"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Immediate Actions Taken
+                      </label>
+                      <textarea
+                        id="immediateActions"
+                        name="immediateActions"
+                        rows="3"
+                        value={formData2.immediateActions}
+                        onChange={handleChange2}
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label
+                        htmlFor="peopleNotified"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        People Notified (comma-separated)
+                      </label>
+                      <input
+                        type="text"
+                        id="peopleNotified"
+                        name="peopleNotified"
+                        value={formData2.peopleNotified}
+                        onChange={handleChange2}
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label
+                        htmlFor="outcomeStatus"
+                        className="block text-gray-300 text-sm font-medium mb-2"
+                      >
+                        Outcome / Resolution Status
+                      </label>
+                      <input
+                        type="text"
+                        id="outcomeStatus"
+                        name="outcomeStatus"
+                        value={formData2.outcomeStatus}
+                        onChange={handleChange2}
+                        className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-300">
+                        Staff Involved
+                      </label>
+                      <select
+                        name="staffInvolved"
+                        value={formData2.staffInvolved}
+                        onChange={handleChange2}
+                        required
+                        className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                      >
+                        <option value="">Select Staff Member</option>
+                        {staffMembers2.map((staff) => (
+                          <option key={staff._id} value={staff._id}>
+                            {staff.fullName}
                           </option>
                         ))}
-                    </select>
+                      </select>
+                    </div>
+
+                    {/* Attachments */}
+                    <div className="mb-4">
+                      <label className="block text-gray-300 text-sm font-medium mb-2">
+                        Attach Photo/Document
+                      </label>
+                      <input
+                        type="file"
+                        name="attachments"
+                        onChange={handleFileChangeincident}
+                        multiple
+                        className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
+                      />
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex justify-between pt-4 border-t border-gray-700">
+                      <button
+                        type="button"
+                        onClick={handleCancel11}
+                        className=" bg-gray-700 cursor-pointer hover:bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
+                          loading ? "opacity-70 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        {loading ? (
+                          <>
+                            <svg
+                              className="animate-spin h-5 w-5 text-white mr-2"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                              ></path>
+                            </svg>
+                            Please wait...
+                          </>
+                        ) : (
+                          "Report Incident"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Form add staf */}
+            {showModal3 && (
+              <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center overflow-auto p-4">
+                <form
+                  onSubmit={handleSubmitStaff}
+                  className="bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
+                >
+                  <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
+                    Add Staff Member
+                  </h2>
+                  {/* Full Name */}
+                  <div className="mb-4">
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Full Name
+                    </label>
                     <input
-                      type="hidden"
-                      name="clientName"
-                      id="clientName"
-                      value={formDataCare.client.fullName}
+                      name="name"
+                      type="text"
+                      value={formData3.name}
+                      onChange={handleChange3}
+                      required
+                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
                     />
                   </div>
 
-                  {/* Plan Type */}
+                  {/* Email */}
                   <div className="mb-4">
-                    <label
-                      htmlFor="planType"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Plan Type
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      name="email"
+                      type="email"
+                      value={formData3.email}
+                      onChange={handleChange3}
+                      required
+                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Position */}
+                  <div className="mb-4">
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Position
+                    </label>
+                    <input
+                      name="position"
+                      type="text"
+                      value={formData3.position}
+                      onChange={handleChange3}
+                      required
+                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600  text-gray-300 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Department */}
+                  <div className="mb-4">
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Department
                     </label>
                     <select
-                      id="planType"
-                      name="planType"
-                      value={formDataCare.planType}
-                      onChange={handleChangeCare}
+                      name="department"
+                      value={formData3.department}
+                      onChange={handleChange3}
                       required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600  text-gray-300 focus:outline-none"
                     >
-                      <option value="">Select Plan Type</option>
+                      <option value="">Select Department</option>
                       <option value="Nursing">Nursing</option>
-                      <option value="Nutrition">Nutrition</option>
-                      <option value="Mobility">Mobility</option>
-                      <option value="Personal Care">Personal Care</option>
-                      <option value="Social">Social</option>
-                      <option value="routine">Routine</option>
-                      <option value="safety">Safety</option>
-                      <option value="communication">Communication</option>
+                      <option value="Care">Care</option>
+                      <option value="Administration">Administration</option>
+                      <option value="Management">Management</option>
+                      <option value="Support">Support</option>
                     </select>
                   </div>
-
-                  {/* Creation Date */}
+                  {/* Care Setting / Service Type */}
                   <div className="mb-4">
-                    <label
-                      htmlFor="createDate"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Creation Date
-                    </label>
-                    <input
-                      id="creationDate"
-                      name="creationDate"
-                      type="date"
-                      value={formDataCare.creationDate}
-                      onChange={handleChangeCare}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    />
-                  </div>
-
-                  {/* Review Date */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="reviewDate"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Review Date
-                    </label>
-                    <input
-                      id="reviewDate"
-                      name="reviewDate"
-                      type="date"
-                      value={formDataCare.reviewDate}
-                      onChange={handleChangeCare}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="careSetting"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
                       Care Setting / Service Type
                     </label>
                     <select
-                      id="careSetting"
                       name="careSetting"
-                      value={formDataCare.careSetting}
-                      onChange={handleChangeCare}
+                      value={formData3.careSetting}
+                      onChange={handleChange3}
                       required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
+                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
                     >
                       <option value="">Select Care Setting</option>
                       <option value="Residential Care">Residential Care</option>
@@ -1169,415 +1722,23 @@ const getRecommendedTrainings = (staffId) => {
                       <option value="Mental Health Support">
                         Mental Health Support
                       </option>
-                      <option value="Domiciliary Care">
-                        Domiciliary Care Organisations
-                      </option>
+                      <option value="Domiciliary Care">Domiciliary Care</option>
                       <option value="Other Services">Other Services</option>
                     </select>
                   </div>
-                  {/* Details */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="details"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Care Plan Details
-                    </label>
-                    <textarea
-                      id="carePlanDetails"
-                      name="carePlanDetails"
-                      rows="4"
-                      value={formDataCare.carePlanDetails}
-                      onChange={handleChangeCare}
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    ></textarea>
-                  </div>
-                  {/* Care Setting */}
 
-                  {/* Health & Wellbeing Recordings Section */}
-                  <div className="mb-6 border-t border-gray-700 pt-4 ">
-                    <h3 className="text-lg font-semibold text-gray-200 mb-4">
-                      Health & Wellbeing Recordings
-                    </h3>
-
-                    {/* Bristol Stool Chart */}
-                    <div className="mb-4">
-                      <label className="block text-gray-300 text-sm font-medium mb-2">
-                        Bristol Stool Chart
-                      </label>
-                      <input
-                        type="text"
-                        name="bristolStoolChart"
-                        value={formDataCare.bristolStoolChart}
-                        onChange={handleChangeCare}
-                        placeholder="Type or score..."
-                        className="w-full px-3 py-2  rounded bg-gray-700 text-white"
-                      />
-                    </div>
-
-                    {/* MUST Score */}
-                    <div className="mb-4">
-                      <label className="block text-gray-300 text-sm font-medium mb-2">
-                        MUST Score
-                      </label>
-                      <input
-                        type="text"
-                        name="mustScore"
-                        value={formDataCare.mustScore}
-                        onChange={handleChangeCare}
-                        placeholder="e.g., 0, 1, 2..."
-                        className="w-full px-3 py-2  rounded bg-gray-700 text-white"
-                      />
-                    </div>
-
-                    {/* Heart Rate */}
-                    <div className="mb-4">
-                      <label className="block text-gray-300 text-sm font-medium mb-2">
-                        Heart Rate (bpm)
-                      </label>
-                      <input
-                        type="number"
-                        name="heartRate"
-                        value={formDataCare.heartRate}
-                        onChange={handleChangeCare}
-                        placeholder="e.g., 72"
-                        className="w-full px-3 py-2  rounded bg-gray-700 text-white"
-                      />
-                    </div>
-
-                    {/* Mood Tracker */}
-                    <div className="mb-4">
-                      <label className="block  text-gray-300 text-sm font-medium mb-2">
-                        Mood Tracker
-                      </label>
-                      <select
-                        name="mood"
-                        value={formDataCare.mood}
-                        onChange={handleChangeCare}
-                        className="w-full px-3 py-2  rounded bg-gray-700 text-white"
-                      >
-                        <option value="">Select mood</option>
-                        <option value="😊">😊 Happy</option>
-                        <option value="😐">😐 Neutral</option>
-                        <option value="😔">😔 Sad</option>
-                        <option value="😡">😡 Angry</option>
-                        <option value="😴">😴 Tired</option>
-                      </select>
-                    </div>
-                    <div className="mb-4">
-                      <label className="block  text-gray-300 text-sm font-medium mb-2">
-                        Attach Photo/Document
-                      </label>
-                      <input
-                        type="file"
-                        name="attachments"
-                        onChange={handleFileChange}
-                        multiple
-                        className="w-full px-3 py-2  rounded bg-gray-700 text-white"
-                      />
-                    </div>
-                    {/* Daily Log */}
-                    <div className="mb-4">
-                      <label className="block text-gray-300 text-sm font-medium mb-2">
-                        Daily Log
-                      </label>
-                      <textarea
-                        name="dailyLog"
-                        value={formDataCare.dailyLog}
-                        onChange={handleChangeCare}
-                        rows="3"
-                        placeholder="Write log with timestamp and caregiver info..."
-                        className="w-full px-3 py-2  rounded bg-gray-700 text-white"
-                      />
-                    </div>
-
-                    {/* Attach File */}
-                  </div>
-
-                  {/* Buttons */}
-                  <div className="flex justify-end pt-4 border-t border-gray-700">
-                    <button
-                      type="button"
-                      onClick={hansleCloseFormCare}
-                      className="bg-gray-700 cursor-pointer hover:bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded mr-2"
-                    >
-                      Cancel
-                    </button>
-                
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
-                        loading ? "opacity-70 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {loading ? (
-                        <>
-                          <svg
-                            className="animate-spin h-5 w-5 text-white mr-2"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            ></path>
-                          </svg>
-                          Please wait...
-                        </>
-                      ): (
-                        "Create Care Plan"
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-            {/* Modal incident */}
-          {showModal2 && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-auto">
-              <div className="bg-gray-800 p-6 rounded-lg max-w-lg w-full shadow-lg max-h-[90vh] overflow-y-auto">
-                <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
-                  Add Incident Report
-                </h2>
-                <form
-                  id="add-incident-form"
-                  className="p-4"
-                  onSubmit={handleSubmit2}
-                >
-                  {/* Client */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="clientId"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Patient
-                    </label>
-                    <select
-                      id="client"
-                      name="client"
-                      value={formData2.client}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    >
-                      <option value="">Select Patient</option>
-                      {inci
-                        .filter(
-                          (client) =>
-                            user?.role !== "Client" ||
-                            user.clients.includes(client._id)
-                        )
-                        .map((client) => (
-                          <option key={client._id} value={client._id}>
-                            {client.fullName}
-                          </option>
-                        ))}
-                    </select>
-                    <input
-                      type="hidden"
-                      name="clientName"
-                      id="clientName"
-                      value={formData2.client.fullName}
-                    />
-                  </div>
-
-                  {/* Date */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="incidentDate"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Incident Date
-                    </label>
-                    <input
-                      type="date"
-                      id="incidentDate"
-                      name="incidentDate"
-                      value={formData2.incidentDate}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Incident Type */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="incidentType"
-                      className="block  text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Incident Type
-                    </label>
-                    <select
-                      id="incidentType"
-                      name="incidentType"
-                      value={formData2.incidentType}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    >
-                      <option value="">Select Incident Type</option>
-                      <option value="Fall">Fall</option>
-                      <option value="Medication Error">Medication Error</option>
-                      <option value="Behavioral">Behavioral</option>
-                      <option value="Property Damage">Property Damage</option>
-                      <option value="Injury">Injury</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-
-                  {/* Severity */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="severity"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Severity
-                    </label>
-                    <select
-                      id="severity"
-                      name="severity"
-                      value={formData2.severity}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    >
-                      <option value="">Select Severity</option>
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
-                    </select>
-                  </div>
-
-                  {/* Reported By */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="reportedBy"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Reported By
-                    </label>
-                    <input
-                      type="text"
-                      id="reportedBy"
-                      name="reportedBy"
-                      value={formData2.reportedBy}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    />
-                  </div>
-                  {/* Details */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="incidentDetails"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Incident Details
-                    </label>
-                    <textarea
-                      id="incidentDetails"
-                      name="incidentDetails"
-                      rows="4"
-                      value={formData2.incidentDetails}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="immediateActions"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Immediate Actions Taken
-                    </label>
-                    <textarea
-                      id="immediateActions"
-                      name="immediateActions"
-                      rows="3"
-                      value={formData2.immediateActions}
-                      onChange={handleChange2}
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="peopleNotified"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      People Notified (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      id="peopleNotified"
-                      name="peopleNotified"
-                      value={formData2.peopleNotified}
-                      onChange={handleChange2}
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="outcomeStatus"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Outcome / Resolution Status
-                    </label>
-                    <input
-                      type="text"
-                      id="outcomeStatus"
-                      name="outcomeStatus"
-                      value={formData2.outcomeStatus}
-                      onChange={handleChange2}
-                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300">
-                      Staff Involved
-                    </label>
-                    <select
-                      name="staffInvolved"
-                      value={formData2.staffInvolved}
-                      onChange={handleChange2}
-                      required
-                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-                    >
-                      <option value="">Select Staff Member</option>
-                      {staffMembers2.map((staff) => (
-                        <option key={staff._id} value={staff._id}>
-                          {staff.fullName}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Attachments */}
+                  {/* Start Date */}
                   <div className="mb-4">
                     <label className="block text-gray-300 text-sm font-medium mb-2">
-                      Attach Photo/Document
+                      Start Date
                     </label>
                     <input
-                      type="file"
-                      name="attachments"
-                      onChange={handleFileChangeincident}
-                      multiple
-                      className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
+                      name="startDate"
+                      type="date"
+                      value={formData3.startDate}
+                      onChange={handleChange3}
+                      required
+                      className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
                     />
                   </div>
 
@@ -1585,7 +1746,7 @@ const getRecommendedTrainings = (staffId) => {
                   <div className="flex justify-between pt-4 border-t border-gray-700">
                     <button
                       type="button"
-                      onClick={handleCancel11}
+                      onClick={handleCancel10}
                       className=" bg-gray-700 cursor-pointer hover:bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded"
                     >
                       Cancel
@@ -1622,365 +1783,208 @@ const getRecommendedTrainings = (staffId) => {
                           </svg>
                           Please wait...
                         </>
-                      ): (
-                        "Report Incident"
+                      ) : (
+                        "Add Member"
                       )}
                     </button>
                   </div>
                 </form>
               </div>
-            </div>
-          )}
-
-            {/* Modal Form add staf */}
-              {showModal3 && (
-            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center overflow-auto p-4">
-              <form
-                onSubmit={handleSubmitStaff}
-                className="bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
-              >
-                <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
-                 Add Staff Member
-                </h2>
-                {/* Full Name */}
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    name="name"
-                    type="text"
-                    value={formData3.name}
-                    onChange={handleChange3}
-                    required
-                    className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    value={formData3.email}
-                    onChange={handleChange3}
-                    required
-                    className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                  />
-                </div>
-
-                {/* Position */}
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Position
-                  </label>
-                  <input
-                    name="position"
-                    type="text"
-                    value={formData3.position}
-                    onChange={handleChange3}
-                    required
-                    className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600  text-gray-300 focus:outline-none"
-                  />
-                </div>
-
-                {/* Department */}
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Department
-                  </label>
-                  <select
-                    name="department"
-                    value={formData3.department}
-                    onChange={handleChange3}
-                    required
-                    className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600  text-gray-300 focus:outline-none"
-                  >
-                    <option value="">Select Department</option>
-                    <option value="Nursing">Nursing</option>
-                    <option value="Care">Care</option>
-                    <option value="Administration">Administration</option>
-                    <option value="Management">Management</option>
-                    <option value="Support">Support</option>
-                  </select>
-                </div>
-                {/* Care Setting / Service Type */}
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Care Setting / Service Type
-                  </label>
-                  <select
-                    name="careSetting"
-                    value={formData3.careSetting}
-                    onChange={handleChange3}
-                    required
-                    className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                  >
-                    <option value="">Select Care Setting</option>
-                    <option value="Residential Care">Residential Care</option>
-                    <option value="Nursing Homes">Nursing Homes</option>
-                    <option value="Learning Disabilities">
-                      Learning Disabilities
-                    </option>
-                    <option value="Supported Living">Supported Living</option>
-                    <option value="Mental Health Support">
-                      Mental Health Support
-                    </option>
-                    <option value="Domiciliary Care">Domiciliary Care</option>
-                    <option value="Other Services">Other Services</option>
-                  </select>
-                </div>
-
-                {/* Start Date */}
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Start Date
-                  </label>
-                  <input
-                    name="startDate"
-                    type="date"
-                    value={formData3.startDate}
-                    onChange={handleChange3}
-                    required
-                    className="shadow-sm border rounded w-full py-2 px-3 bg-gray-700 border-gray-600 text-gray-300 focus:outline-none"
-                  />
-                </div>
-
-                {/* Buttons */}
-                <div className="flex justify-between pt-4 border-t border-gray-700">
-                  <button
-                    type="button"
-                    onClick={handleCancel10}
-                    className=" bg-gray-700 cursor-pointer hover:bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
-                      loading ? "opacity-70 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {loading ? (
-                      <>
-                        <svg
-                          className="animate-spin h-5 w-5 text-white mr-2"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                          ></path>
-                        </svg>
-                        Please wait...
-                      </>
-                    ) : (
-                      "Add Member"
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+            )}
             {/* training----------------------------------------------------------------------------- */}
 
-                 {showForm4 && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-auto p-4">
-    <form
-      onSubmit={handleSubmit4}
-      className="bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
-    >
-      <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
-        Add Training Record
-      </h2>
- 
-      {/* Staff Member */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-300">Staff Member</label>
-        <select
-          name="staffName"
-          value={formData4.staffName}
-          onChange={handleChange4}
-          required
-          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-        >
-          <option value="">Select Staff Member</option>
-         {staffMembers2.map((staff) => (
+            {showForm4 && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-auto p-4">
+                <form
+                  onSubmit={handleSubmit4}
+                  className="bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
+                >
+                  <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
+                    Add Training Record
+                  </h2>
+
+                  {/* Staff Member */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300">
+                      Staff Member
+                    </label>
+                    <select
+                      name="staffName"
+                      value={formData4.staffName}
+                      onChange={handleChange4}
+                      required
+                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                    >
+                      <option value="">Select Staff Member</option>
+                      {staffMembers2.map((staff) => (
                         <option key={staff._id} value={staff._id}>
                           {staff.fullName}
                         </option>
                       ))}
-        </select>
-      </div>
+                    </select>
+                  </div>
 
-      {/* Training Type */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-300">Training Type</label>
-        <select
-          name="trainingType"
-          value={formData4.trainingType}
-          onChange={handleChange4}
-          required
-          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-        >
-          <option value="">Select Training Type</option>
-          {recommendedTrainings.length > 0
-            ? recommendedTrainings.map((type, i) => (
-                <option key={i} value={type}>{type}</option>
-              ))
-            : [
-                "First Aid",
-                "Fire Safety",
-                "Moving & Handling",
-                "Safeguarding",
-                "GDPR",
-                "Infection Control",
-                "Medication Administration",
-                "Dementia Care",
-                "Autism & Learning Disabilities",
-                "Epilepsy",
-                "Mental Health",
-                "Diabetes"
-              ].map((type, i) => (
-                <option key={i} value={type}>{type}</option>
-              ))}
-        </select>
-      </div>
+                  {/* Training Type */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300">
+                      Training Type
+                    </label>
+                    <select
+                      name="trainingType"
+                      value={formData4.trainingType}
+                      onChange={handleChange4}
+                      required
+                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                    >
+                      <option value="">Select Training Type</option>
+                      {recommendedTrainings.length > 0
+                        ? recommendedTrainings.map((type, i) => (
+                            <option key={i} value={type}>
+                              {type}
+                            </option>
+                          ))
+                        : [
+                            "First Aid",
+                            "Fire Safety",
+                            "Moving & Handling",
+                            "Safeguarding",
+                            "GDPR",
+                            "Infection Control",
+                            "Medication Administration",
+                            "Dementia Care",
+                            "Autism & Learning Disabilities",
+                            "Epilepsy",
+                            "Mental Health",
+                            "Diabetes",
+                          ].map((type, i) => (
+                            <option key={i} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                    </select>
+                  </div>
 
-      {/* Suggested Trainings Section */}
-      {recommendedTrainings.length > 0 && (
-        <div className="mt-2 text-sm text-gray-300 bg-gray-700 p-3 rounded mb-4">
-          <p className="font-medium text-primary-light mb-1">
-            Recommended Trainings for this Care Setting:
-          </p>
-          <ul className="list-disc list-inside text-green-400">
-            {recommendedTrainings.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  {/* Suggested Trainings Section */}
+                  {recommendedTrainings.length > 0 && (
+                    <div className="mt-2 text-sm text-gray-300 bg-gray-700 p-3 rounded mb-4">
+                      <p className="font-medium text-primary-light mb-1">
+                        Recommended Trainings for this Care Setting:
+                      </p>
+                      <ul className="list-disc list-inside text-green-400">
+                        {recommendedTrainings.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-      {/* Completion Date */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium  text-gray-300">Completion Date</label>
-        <input
-          type="date"
-          name="completionDate"
-          value={formData4.completionDate}
-          onChange={handleChange4}
-          required
-          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-        />
-      </div>
+                  {/* Completion Date */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium  text-gray-300">
+                      Completion Date
+                    </label>
+                    <input
+                      type="date"
+                      name="completionDate"
+                      value={formData4.completionDate}
+                      onChange={handleChange4}
+                      required
+                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                    />
+                  </div>
 
-      {/* Expiry Date */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-300">Expiry Date</label>
-        <input
-          type="date"
-          name="expiryDate"
-          value={formData4.expiryDate}
-          onChange={handleChange4}
-          required
-          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-        />
-      </div>
+                  {/* Expiry Date */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300">
+                      Expiry Date
+                    </label>
+                    <input
+                      type="date"
+                      name="expiryDate"
+                      value={formData4.expiryDate}
+                      onChange={handleChange4}
+                      required
+                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                    />
+                  </div>
 
+                  {/* Attachments */}
+                  <div className="mb-4">
+                    <label className="block text-gray-300 text-sm font-medium mb-2">
+                      Attach Photo/Document
+                    </label>
+                    <input
+                      type="file"
+                      name="attachments"
+                      onChange={handleFileChangeTraining}
+                      multiple
+                      className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
+                    />
+                  </div>
 
-      {/* Attachments */}
-      <div className="mb-4">
-        <label className="block text-gray-300 text-sm font-medium mb-2">
-          Attach Photo/Document
-        </label>
-        <input
-          type="file"
-          name="attachments"
-          onChange={handleFileChangeTraining}
-          multiple
-          className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
-        />
-      </div>
+                  {/* Notes */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-300">
+                      Notes
+                    </label>
+                    <textarea
+                      name="notes"
+                      value={formData4.notes}
+                      onChange={handleChange4}
+                      rows="4"
+                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                    />
+                  </div>
+                  {/* Buttons */}
+                  <div className="flex justify-between pt-4 border-t border-gray-700">
+                    <button
+                      type="button"
+                      onClick={handleCancel9}
+                      className=" bg-gray-700 hover:bg-gray-600 cursor-pointer text-gray-200 font-bold py-2 px-4 rounded"
+                    >
+                      {/* setShowForm4(false) */}
+                      Cancel
+                    </button>
 
-      {/* Notes */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-300">Notes</label>
-        <textarea
-          name="notes"
-          value={formData4.notes}
-          onChange={handleChange4}
-          rows="4"
-          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-        />
-      </div>
-      {/* Buttons */}
-      <div className="flex justify-between pt-4 border-t border-gray-700">
-        <button
-          type="button"
-          onClick={handleCancel9}
-          className=" bg-gray-700 hover:bg-gray-600 cursor-pointer text-gray-200 font-bold py-2 px-4 rounded"
-        >
-          {/* setShowForm4(false) */}
-          Cancel
-        </button>
-    
-
-          <button
-        type="submit"
-        disabled={loading}
-        className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
-          loading ? "opacity-70 cursor-not-allowed" : ""
-        }`}
-      >
-        {loading ? (
-          <>
-            <svg
-              className="animate-spin h-5 w-5 text-white mr-2"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              ></path>
-            </svg>
-            Please wait...
-          </>
-        ) : (
-                  "Add Record"
-        )}
-      </button>
-      </div>
-    </form>
-  </div>
-)}
-           
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
+                        loading ? "opacity-70 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {loading ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5 text-white mr-2"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                          Please wait...
+                        </>
+                      ) : (
+                        "Add Record"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-6">

@@ -4,6 +4,8 @@ import Navbar from "../(component)/navbar/Navbar";
 import { BsArrowsFullscreen } from "react-icons/bs";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
+import { IoDocumentAttach } from "react-icons/io5";
+
 import Image from "next/image";
 
 import Link from "next/link"; // <-- import Next.js Link
@@ -46,6 +48,12 @@ const Page = () => {
     { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
     { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
     { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+    {
+      icon: <IoDocumentAttach />,
+      label: "Documents Management",
+      href: "/Documents-Management",
+      
+    },
     { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",},
     { icon: <FaGraduationCap />, label: "Training", href: "/Training", active: true },
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
@@ -82,8 +90,6 @@ const [viewAttachments, setViewAttachments] = useState([]);
   // Define your navigation links here with proper routes
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-
   const [showForm4, setShowForm4] = useState(false);
   const [formData4, setFormData4] = useState({
     staffName: '',
@@ -120,7 +126,7 @@ useEffect(() => {
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('https://control-panel-backend-k6fr.vercel.app/training', {
+  axios.get('http://localhost:3000/training', {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then(response => {
@@ -166,7 +172,7 @@ useEffect(() => {
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
+  axios.get('http://localhost:3000/hr', {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(response => {
@@ -377,8 +383,8 @@ const handleChange4 = (e) => {
   });
 
   const request = editingUserId
-    ? axios.put(`https://control-panel-backend-k6fr.vercel.app/training/${editingUserId}`, formData, config)
-    : axios.post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config);
+    ? axios.put(`http://localhost:3000/training/${editingUserId}`, formData, config)
+    : axios.post(`http://localhost:3000/training`, formData, config);
 
   request
     .then(res => {
@@ -390,7 +396,7 @@ const handleChange4 = (e) => {
       setLoading(false); // Reset loading state
       toast.success("Added successfully");
 
-      return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
+      return axios.get(`http://localhost:3000/training`, config);
     })
     .then(res => {
       setStaffData(res.data);
@@ -408,7 +414,7 @@ const handleChange4 = (e) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`https://control-panel-backend-k6fr.vercel.app/training/${id}`, {
+    axios.delete(`http://localhost:3000/training/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -453,8 +459,6 @@ const handleChange4 = (e) => {
     "Completion Date": viewCompletionDate,
     "Expiry Date": viewExpiryDate,
     "Notes": viewNotes,
-
-
   }
 
 
@@ -529,7 +533,7 @@ useEffect(() => {
                       rel="noopener noreferrer"
                       className="flex flex-col items-center gap-2"
                     >
-                      <Image
+                      <img
                         src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
                         alt="PDF Icon"
                         className="w-12 h-12"
@@ -540,7 +544,8 @@ useEffect(() => {
                     </a>
                   ) : (
                     <div className="relative group cursor-zoom-in">
-                      <Image
+                      <img
+                        
                         src={file}
                         alt={`Attachment ${index + 1}`}
                         className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
@@ -721,7 +726,7 @@ useEffect(() => {
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-white text-blue-500 flex items-center justify-center rounded-full border border-gray-600">
  {
-                        (staffMembers.find(staff => staff._id === item.staffMember)?.fullName || "U")
+                        (staffMembers.find(staff => staff._id === item.staffMember._id)?.fullName || "U")
                           .split(" ")
                           .map(word => word[0])
                           .join("")
@@ -729,7 +734,7 @@ useEffect(() => {
                       }                            </div>
                             <div>
                               <div className="text-[12px] font-medium text-white">
-                                {staffMembers.find(staff => staff._id === item.staffMember)?.fullName || "Unknown"}   </div>
+                                {staffMembers.find(staff => staff._id === item.staffMember._id)?.fullName || "Unknown"}   </div>
                               <div className="text-sm text-gray-400"></div>
                             </div>
                           </div>
