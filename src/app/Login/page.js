@@ -148,7 +148,7 @@ const [forgotEmail, setForgotEmail] = useState('');
       </button>
 
 
-      <p className="text-gray-300"> Hint: Use email "mds@gmail.com" and password "mdssupport" </p>
+      <p className="text-gray-300"> Hint: Use email {`"`}mds@gmail.com{`"`} and password {`"`}mdssupport{`"`} </p>
     </>
   ) : (
     // 🔹 Forgot Form
