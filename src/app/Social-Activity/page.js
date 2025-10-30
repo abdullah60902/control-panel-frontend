@@ -5,6 +5,8 @@ import { BsArrowsFullscreen } from "react-icons/bs";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
 import { IoDocumentAttach } from "react-icons/io5";
+import { LuLayoutTemplate } from "react-icons/lu";
+import { TbClockRecord } from "react-icons/tb";
 
 
 import Image from "next/image";
@@ -38,41 +40,103 @@ import { MdMedicationLiquid } from "react-icons/md";
 
 
 const Page = () => {
+    const { hasClients } = useAuth();
+
+  const { user, logout } = useAuth();
 
 
   // Define your navigation links here with proper routes
   const navItems = [
     { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-    { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity",active: true  },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
     {
-      icon: <IoDocumentAttach />,
-      label: "Documents Management",
-      href: "/Documents-Management",
+      icon: <FaUser />,
+      label: "Resident Management",
+      href: "/Client-Management",
+    },
+    {
+      icon: <FaClipboardList />,
+      label: "Care Planning",
+      href: "/Care-Planning",
+    },
+    {
+      icon: <FaExclamationTriangle />,
+      label: "Incident Reports",
+      href: "/Incident-Reports",
+    },
+    {
+      icon: <LuLayoutTemplate />,
+      label: "Template",
+      href: "/Template",
       
     },
-    { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",},
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-    { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics",  },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
+    {
+      icon: <FaSearch />,
+      label: "Social Activity",
+      href: "/Social-Activity",active: true
+    },
+    {
+      icon: <MdMedicationLiquid />,
+      label: "Medication Management",
+      href: "/Medication-Management",
+    },
+    
+    ...(hasClients
+      ? []
+      : [
+                        { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record" },
+
+          { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+          {
+            icon: <IoDocumentAttach />,
+            label: "Documents Management",
+            href: "/Documents-Management",
+          },
+          {
+            icon: <GrDocumentPerformance />,
+            label: "Performance Management",
+            href: "/Performance-Management",
+          },
+          { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+          { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+          {
+            icon: <SiSimpleanalytics />,
+            label: "Analytics",
+            href: "/Analytics",
+          },
+          {
+            icon: <FaUserCog />,
+            label: "User Management",
+            href: "/User-Management",
+          },
+        ]),
   ];
+   const allowedNavItems =
+  user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+    ? navItems
+    : user?.role === "External" && Array.isArray(user.allowedPages)
+    ? navItems.filter((item) =>
+        user.allowedPages.some(
+          (page) =>
+            page.toLowerCase().replace(/\s+/g, "") ===
+            item.label.toLowerCase().replace(/\s+/g, "")
+        )
+      )
+    : [];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [social, setSocial] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selected, setSelected] = useState('All Activity');
+    const { hasLowStock, setHasLowStock } = useAuth();
+
   const [staffMembers, setStaffMembers] = useState([]); // For HR/staff members
     const [staffMembers2, setStaffMembers2] = useState([]); // For client/staff members
     const [previewImage, setPreviewImage] = useState(null);
+      const { hasReviews, setHasReviews } = useAuth();
+
 
 
  
-  const { user, logout } = useAuth();
   // Define your navigation links here with proper routes
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -102,6 +166,8 @@ const Page = () => {
     description: activity.description,
     date: activity.date?.slice(0, 10),
   });
+  console.log("Editing activity:", activity._id);
+  
   setEditingUserId(activity._id);
   setShowForm4(true);
   setAttachments(activity.attachments || []); // Set existing attachments if any
@@ -110,6 +176,7 @@ const Page = () => {
 
 
 
+const [previewVideo, setPreviewVideo] = useState(null);
 
 
 const [attachments, setAttachments] = useState([]);
@@ -148,13 +215,12 @@ const handleSubmit4 = (e) => {
   });
 
   const request = editingUserId
-    ? axios.put(`https://control-panel-backend-k6fr.vercel.app/social/${editingUserId}`, data, config)
-    : axios.post(`https://control-panel-backend-k6fr.vercel.app/social`, data, config);
+    ? axios.put(`http://localhost:3000/social/${editingUserId}`, data, config)
+    : axios.post(`http://localhost:3000/social`, data, config);
 
   request
     .then(res => {
       toast.success(editingUserId ? "Activity updated successfully" : "Activity added successfully");
-      setEditingUserId(null);
       setLoading(false);
       setShowForm4(false);
       setFormData4({
@@ -167,7 +233,7 @@ const handleSubmit4 = (e) => {
       setAttachments([]);
 
       // ✅ FETCH updated data
-      return axios.get('https://control-panel-backend-k6fr.vercel.app/social', config);
+      return axios.get('http://localhost:3000/social', config);
     })
     .then(res => {
       setSocial(res.data); // social activity list update
@@ -185,7 +251,7 @@ const handleSubmit4 = (e) => {
 
 
   useEffect(() => {
-    axios.get('https://control-panel-backend-k6fr.vercel.app/social', {
+    axios.get('http://localhost:3000/social', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       }
@@ -208,7 +274,7 @@ const handleSubmit4 = (e) => {
 
  useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
+    axios.get('http://localhost:3000/hr', {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -241,7 +307,7 @@ const handleCancel12 = () => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`https://control-panel-backend-k6fr.vercel.app/social/${id}`, {
+    axios.delete(`http://localhost:3000/social/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -264,7 +330,7 @@ const handleCancel12 = () => {
 
 useEffect(() => {
   const token = localStorage.getItem('token');
-  axios.get('https://control-panel-backend-k6fr.vercel.app/client', {
+  axios.get('http://localhost:3000/client', {
     headers: {
       Authorization: `Bearer ${token}`,
     }
@@ -306,6 +372,46 @@ const [viewActivityDate, setViewActivityDate] = useState(null);
 const [viewDescription, setViewDescription] = useState(null);
 const [showModals, setShowModals] = useState(false);
 const [viewAttachments, setViewAttachments] = useState([]);
+
+// 🔍 Filter Patients  // serche Patient form data 
+   const [patientDropdownOpen, setPatientDropdownOpen] = useState(false);
+  const [staffDropdownOpen, setStaffDropdownOpen] = useState(false);
+  const [patientSearchTerm, setPatientSearchTerm] = useState("");
+  const [staffSearchTerm, setStaffSearchTerm] = useState("");
+
+  // 🔍 Filter Patients
+  const visiblePatients = staffMembers2.filter(
+    (p) =>
+      (user?.role !== "Client" || user.clients.includes(p._id)) &&
+      p.fullName.toLowerCase().includes(patientSearchTerm.toLowerCase())
+  );
+
+  // 🔍 Filter Staff Members
+  const visibleStaff = staffMembers.filter((s) =>
+    s.fullName.toLowerCase().includes(staffSearchTerm.toLowerCase())
+  );
+
+  // ✅ Handle patient selection
+  const handleSelectPatient = (patient) => {
+    setFormData4((prev) => ({
+      ...prev,
+      client: patient._id,
+      clientName: patient.fullName,
+    }));
+    setPatientDropdownOpen(false);
+  };
+
+  // ✅ Handle staff selection
+  const handleSelectStaffMember = (staff) => {
+    setFormData4((prev) => ({
+      ...prev,
+      caregiver: staff._id,
+      caregiverName: staff.fullName,
+    }));
+    setStaffDropdownOpen(false);
+  };
+
+
 const handleView = (activity) => {
   setViewClientName(activity.client?.fullName || "Unknown Client");
   setViewCaregiverName(activity.caregiver?.fullName || "Unknown Caregiver");
@@ -327,11 +433,43 @@ const handleView = (activity) => {
 
 
 
+  
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
-// downnload pdf........................................................
+  // Function to toggle dropdown for a specific client
+  const toggleDropdown = (id) => {
+    setOpenDropdownId((prevId) => (prevId === id ? null : id));
+  };
+
+
+
+
+// ✅ CSV Download Function
+const handleDownloadCsv = (item) => {
+  const headers = ["Field,Value"];
+  const rows = [
+    `Client,${item.client?.fullName || "—"}`,
+    `Caregiver,${item.caregiver?.fullName || "—"}`,
+    `Activity Type,${item.activityType || "—"}`,
+    `Date,${item.date?.slice(0, 10) || "—"}`,
+    `Description,${item.description || "—"}`,
+  ];
+
+  const csvContent = [...headers, ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${item.client?.fullName || "activity"}_record.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+// ✅ PDF Download Function
 const handleDownloadPdf = async (item) => {
-  const jsPDF = (await import('jspdf')).default;
-  const autoTable = (await import('jspdf-autotable')).default;
+  const jsPDF = (await import("jspdf")).default;
+  const autoTable = (await import("jspdf-autotable")).default;
 
   const doc = new jsPDF();
   doc.setFontSize(16);
@@ -352,7 +490,7 @@ const handleDownloadPdf = async (item) => {
 
   let currentY = doc.lastAutoTable.finalY + 10;
 
-  // ✅ Nested function to handle attachments
+  // ✅ Attachments (images, pdfs, videos)
   async function addAttachments() {
     if (item.attachments?.length > 0) {
       doc.setFontSize(12);
@@ -361,10 +499,10 @@ const handleDownloadPdf = async (item) => {
 
       for (let i = 0; i < item.attachments.length; i++) {
         const url = item.attachments[i];
-        const ext = url.split('.').pop().toLowerCase();
+        const ext = url.split(".").pop().toLowerCase();
 
-        // 🖼️ Handle images without numbering
-        if (["jpg", "jpeg", "png"].includes(ext)) {
+        // 🖼️ IMAGES
+        if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
           try {
             const res = await fetch(url);
             const blob = await res.blob();
@@ -374,30 +512,28 @@ const handleDownloadPdf = async (item) => {
             await new Promise((resolve) => {
               reader.onloadend = function () {
                 const base64data = reader.result;
-
-                // Page break if needed
                 if (currentY + 60 > 280) {
                   doc.addPage();
                   currentY = 20;
                 }
-
-                doc.addImage(base64data, 'JPEG', 14, currentY, 50, 50);
+                doc.addImage(base64data, "JPEG", 14, currentY, 50, 50);
                 currentY += 60;
                 resolve();
               };
             });
           } catch (e) {
             doc.setTextColor(255, 0, 0);
-            doc.text(`Image failed to load`, 14, currentY);
+            doc.text("Image failed to load", 14, currentY);
             doc.setTextColor(0, 0, 0);
             currentY += 10;
           }
         }
 
-        // 📄 Handle PDF with icon only — no numbering
+        // 📄 PDF ICON
         else if (ext === "pdf") {
           try {
-            const iconUrl = "https://cdn-icons-png.flaticon.com/512/337/337946.png"; // ✅ PNG icon
+            const iconUrl =
+              "https://cdn-icons-png.flaticon.com/512/337/337946.png";
             const res = await fetch(iconUrl);
             const blob = await res.blob();
             const reader = new FileReader();
@@ -406,14 +542,10 @@ const handleDownloadPdf = async (item) => {
             await new Promise((resolve) => {
               reader.onloadend = function () {
                 const iconBase64 = reader.result;
-
-                // Page break if needed
                 if (currentY + 22 > 280) {
                   doc.addPage();
                   currentY = 20;
                 }
-
-                // Show only icon + clickable link
                 doc.addImage(iconBase64, "PNG", 14, currentY, 16, 16);
                 doc.link(14, currentY, 16, 16, { url });
                 currentY += 22;
@@ -427,18 +559,46 @@ const handleDownloadPdf = async (item) => {
             currentY += 10;
           }
         }
+
+        // 🎥 VIDEOS
+        else if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) {
+          try {
+            const videoIcon =
+              "https://cdn-icons-png.flaticon.com/512/727/727245.png"; // 🎥 icon
+            const res = await fetch(videoIcon);
+            const blob = await res.blob();
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+
+            await new Promise((resolve) => {
+              reader.onloadend = function () {
+                const iconBase64 = reader.result;
+                if (currentY + 22 > 280) {
+                  doc.addPage();
+                  currentY = 20;
+                }
+                doc.addImage(iconBase64, "PNG", 14, currentY, 18, 18);
+                doc.link(14, currentY, 18, 18, { url });
+                currentY += 24;
+                resolve();
+              };
+            });
+          } catch (e) {
+            doc.setTextColor(255, 0, 0);
+            doc.text("Video icon failed to load", 14, currentY);
+            doc.setTextColor(0, 0, 0);
+            currentY += 10;
+          }
+        }
       }
     }
   }
 
-  // ✅ Wait for all attachments
   await addAttachments();
 
   const fileName = `${item.client?.fullName || "activity"}_record.pdf`;
   doc.save(fileName);
 };
-
-
 
 
 
@@ -539,14 +699,19 @@ const router = useRouter();
             </svg>
             Attachments
           </h3>
+
           <div className="grid sm:grid-cols-2 gap-4">
             {viewAttachments.map((file, index) => {
-              const isPDF = file.toLowerCase().endsWith(".pdf");
+              const ext = file.split('.').pop().toLowerCase();
+              const isPDF = ext === "pdf";
+              const isVideo = ["mp4", "mov", "avi", "mkv", "webm"].includes(ext);
+
               return (
                 <div
                   key={index}
                   className="relative bg-[#1e212a] p-3 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all overflow-hidden"
                 >
+                  {/* 📄 PDF */}
                   {isPDF ? (
                     <a
                       href={file}
@@ -563,8 +728,24 @@ const router = useRouter();
                         PDF Attachment {index + 1}
                       </p>
                     </a>
+                  ) : isVideo ? (
+                    // 🎥 VIDEO PREVIEW
+                    <div className="relative group cursor-pointer">
+                      <video
+                        src={file}
+                        className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
+                        onClick={() => setPreviewVideo(file)}
+                      />
+                      <div
+                        onClick={() => setPreviewVideo(file)}
+                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"
+                      >
+                        <BsArrowsFullscreen className="text-white text-2xl" />
+                      </div>
+                    </div>
                   ) : (
-                    <div className="relative group cursor-zoom-in">
+                    // 🖼️ IMAGE PREVIEW
+                    <div className="relative group cursor-pointer">
                       <img
                         src={file}
                         alt={`Attachment ${index + 1}`}
@@ -588,21 +769,55 @@ const router = useRouter();
     </div>
   </div>
 )}
+
+{/* 🖼️ Image Full Preview */}
 {previewImage && (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
     <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-4xl w-full">
       <button
         onClick={() => setPreviewImage(null)}
-        className="absolute top-3 right-3 w-10 h-10 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow"
+        className="absolute cursor-pointer top-3 right-3 text-white hover:text-red-500"
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <Image
+      <img
         src={previewImage}
         alt="Full View"
         className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"
+      />
+    </div>
+  </div>
+)}
+
+{/* 🎥 Video Full Preview */}
+{previewVideo && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-3xl w-full">
+      <button
+        onClick={() => setPreviewVideo(null)}
+        className="absolute top-3 cursor-pointer right-3 z-[10000] w-9 h-9 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow transition-all duration-200"
+      >
+        <svg
+          className="w-5 h-5 cursor-pointer"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+      <video
+        src={previewVideo}
+        controls
+        autoPlay
+        className="w-full h-auto rounded-xl max-h-[75vh] mx-auto"
       />
     </div>
   </div>
@@ -636,22 +851,34 @@ const router = useRouter();
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
 
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${item.active
-                    ? "bg-primary-light bg-gray-700 text-primary-light"
+         {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
                     : "hover:bg-gray-700 hover:text-primary-light"
-                    }`}
-                  onClick={() => setSidebarOpen(false)} // close sidebar on mobile after click
-                >
-                  <span className="mr-3">{item.icon}</span>
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+
+                <span className="flex items-center">
                   {item.label}
-                </Link>
-              ))}
-            </div>
+
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
 
             <div className="p-4 border-t border-gray-700">
               <div className="flex items-center">
@@ -701,12 +928,12 @@ const router = useRouter();
                     <FaSearch className="text-gray-500" />
                   </div>
                 </div>
-                <button
+                {!hasClients &&  <button
                   onClick={() => setShowForm4(true)}
                   className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-4 py-2 rounded-md text-[10px] font-medium transition-colors flex items-center"
                 >
                   <FaPlus className="mr-2" /> Add New Activity
-                </button>
+                </button>}
               </div>
             </div>
 
@@ -762,22 +989,74 @@ const router = useRouter();
                         <td className="px-4 py-4 text-sm text-white">{item.activityType}</td>
                         <td className="px-4 py-4 text-sm text-white">{item.date.slice(0, 10)}</td>
                         <td className="px-4 py-4 text-sm text-white">Active</td>
-                        <td className="px-4 py-4">
-                          <div className="flex space-x-2 text-white">
-                            <button className="hover:text-blue-500 transition cursor-pointer" onClick={() => handleView(item)}>
-                              <FaEye />
-                            </button>
-                            <button className="cursor-pointer hover:text-yellow-500 transition" onClick={() => handleEdit(item)}>
-                              <FaEdit />
-                            </button>
-                            <button className="cursor-pointer hover:text-red-500 transition" onClick={() => handleDelete(item._id)}>
-                              <FaTrash />
-                            </button>
-                            <button className="hover:text-green-600 transition cursor-pointer" onClick={() => handleDownloadPdf(item)}>
-                              <FaDownload />
-                            </button>
-                          </div>
-                        </td>
+                  <td className="px-4 py-4">
+  <div className="flex space-x-3 text-white items-center">
+    {/* 👁 View Button */}
+    <button
+      className="hover:text-blue-500 transition cursor-pointer"
+      onClick={() => handleView(item)}
+    >
+      <FaEye />
+    </button>
+
+    {/* ✏️ Edit Button */}
+    {!hasClients &&  <button
+      className="cursor-pointer hover:text-yellow-500 transition"
+      onClick={() => handleEdit(item)}
+    >
+      <FaEdit />
+    </button>}
+
+    {/* 🗑 Delete Button */}
+     {!hasClients && <button
+      className="cursor-pointer hover:text-red-500 transition"
+      onClick={() => handleDelete(item._id)}
+    >
+      <FaTrash />
+    </button>}
+
+    {/* 📥 Download Dropdown (PDF + CSV) */}
+    <div className="relative">
+      <button
+        onClick={() =>
+          setOpenDropdownId(openDropdownId === item._id ? null : item._id)
+        }
+        className="hover:text-green-500 transition cursor-pointer"
+      >
+        <FaDownload />
+      </button>
+
+      {openDropdownId === item._id && (
+        <div
+          className="absolute right-0 mt-2 
+             bg-white/20 backdrop-blur-xl border border-white/30 
+             shadow-lg rounded-md z-10 w-36 
+             transition-all duration-200"
+                            >
+          <button
+            onClick={() => {
+              handleDownloadPdf(item);
+              setOpenDropdownId(null);
+            }}
+ className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition"          >
+            Download PDF
+          </button>
+          <button
+            onClick={() => {
+              handleDownloadCsv(item);
+              setOpenDropdownId(null);
+            }}
+ className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition"          >
+            Download CSV
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+</td>
+
                       </tr>
                     ))
                   ) : (
@@ -804,46 +1083,129 @@ const router = useRouter();
 </h2>
 
 
-      {/* client */}
-  {/* Client ID */}
-          <div className="mb-4">
-            <label htmlFor="clientId" className="block text-gray-300 text-sm font-medium mb-2">Patient</label>
-            <select
-              id="client"
-              name="client"
-              value={formData4.client}
-              onChange={handleChange4}
-              required
-              className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-            >
-              <option value="">Select Patient</option>
-             {staffMembers2
-  .filter(client => user?.role !== 'Client' || user.clients.includes(client._id))
-  .map(client => (
-    <option key={client._id} value={client._id}>{client.fullName}</option>
-))}
-            </select>
-                <input type="hidden" name="clientName" id="clientName" value={formData4.client.fullName} />
+  {/* 🧍 Patient Dropdown */}
+      <div className="mb-4 relative">
+        <label
+          htmlFor="clientId"
+          className="block text-gray-300 text-sm font-medium mb-2"
+        >
+          Patient
+        </label>
 
-          </div>
+        <div
+          onClick={() => {
+            setPatientDropdownOpen(!patientDropdownOpen);
+            setStaffDropdownOpen(false);
+          }}
+          className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 cursor-pointer select-none"
+        >
+          {formData4.client
+            ? staffMembers2.find((c) => c._id === formData4.client)?.fullName
+            : "Select Patient"}
+        </div>
 
-        <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-300">Staff Member</label>
-                  <select
-                    name="caregiver"
-                    value={formData4.caregiver}
-                    onChange={handleChange4}
-                    required
-                    className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+        {patientDropdownOpen && (
+          <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg p-2">
+            <input
+              type="text"
+              placeholder="Search patient..."
+              value={patientSearchTerm}
+              onChange={(e) => setPatientSearchTerm(e.target.value)}
+              className="w-full rounded-md border border-gray-600 px-3 py-1 mb-2 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+            />
+
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {visiblePatients.length > 0 ? (
+                visiblePatients.map((p) => (
+                  <div
+                    key={p._id}
+                    onClick={() => handleSelectPatient(p)}
+                    className={`px-2 py-1 rounded-md hover:bg-gray-600 text-gray-200 text-sm cursor-pointer ${
+                      formData4.client === p._id ? "bg-gray-700" : ""
+                    }`}
                   >
-                    <option value="">Select Staff Member</option>
-                    {staffMembers.map((staff) => (
-                      <option key={staff._id} value={staff._id}>
-                        {staff.fullName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    {p.fullName}
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm text-center">
+                  No patients found
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <input type="hidden" name="client" value={formData4.client} />
+        <input
+          type="hidden"
+          name="clientName"
+          value={formData4.clientName || ""}
+        />
+      </div>
+
+      {/* 👨‍⚕️ Staff Dropdown */}
+      <div className="mb-4 relative">
+        <label className="block text-sm font-medium text-gray-300">
+          Staff Member
+        </label>
+
+        <div
+          onClick={() => {
+            setStaffDropdownOpen(!staffDropdownOpen);
+            setPatientDropdownOpen(false);
+          }}
+          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600 cursor-pointer select-none"
+        >
+          {formData4.caregiver
+            ? staffMembers.find((s) => s._id === formData4.caregiver)?.fullName
+            : "Select Staff Member"}
+        </div>
+
+        {staffDropdownOpen && (
+          <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg p-2">
+            <input
+              type="text"
+              placeholder="Search staff..."
+              value={staffSearchTerm}
+              onChange={(e) => setStaffSearchTerm(e.target.value)}
+              className="w-full rounded-md border border-gray-600 px-3 py-1 mb-2 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+            />
+
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {visibleStaff.length > 0 ? (
+                visibleStaff.map((s) => (
+                  <div
+                    key={s._id}
+                    onClick={() => handleSelectStaffMember(s)}
+                    className={`px-2 py-1 rounded-md hover:bg-gray-600 text-gray-200 text-sm cursor-pointer ${
+                      formData4.caregiver === s._id ? "bg-gray-700" : ""
+                    }`}
+                  >
+                    {s.fullName}
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm text-center">
+                  No staff found
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <input
+          type="hidden"
+          name="caregiver"
+          value={formData4.caregiver || ""}
+        />
+        <input
+          type="hidden"
+          name="caregiverName"
+          value={formData4.caregiverName || ""}
+        />
+      </div>
+    
 
       {/* Family Visits */}
       <div className="mb-4">

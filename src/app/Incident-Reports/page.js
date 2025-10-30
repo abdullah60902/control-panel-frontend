@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoDocumentAttach } from "react-icons/io5";
+import { LuLayoutTemplate } from  "react-icons/lu";
+
+import { TbClockRecord } from "react-icons/tb";
 
 import Image from "next/image";
 import {
@@ -38,28 +41,44 @@ import { BsArrowsFullscreen } from "react-icons/bs";
 
 const Page = () => {
   const {hasClients} = useAuth()
+  const { user, logout } = useAuth();
 
   // Define your navigation links here with proper routes
  const navItems = [
   { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
   { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
   { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
-  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
   { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports",active: true },
+  { icon: <LuLayoutTemplate />, label: "Template", href: "/Template", }, 
+  { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
+
   ...(hasClients
     ? []
     : [
-        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+                { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record" },
+
         { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
         { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
-        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Management", href: "/Performance-Management" },
         { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
         { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <SiSimpleanalytics />, label: "Analytics", href: "/Analytics" },
         { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
       ]),
 ];
-
+const allowedNavItems =
+  user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+    ? navItems
+    : user?.role === "External" && Array.isArray(user.allowedPages)
+    ? navItems.filter((item) =>
+        user.allowedPages.some(
+          (page) =>
+            page.toLowerCase().replace(/\s+/g, "") ===
+            item.label.toLowerCase().replace(/\s+/g, "")
+        )
+      )
+    : [];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filteredIncidents, setFilteredIncidents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,6 +86,8 @@ const Page = () => {
   const filters = ["All Incidents", "Open", "Under Investigation", "Resolved"];
   const [patient, setPatient] = useState([]); // For HR/staff members
   const [previewImage, setPreviewImage] = useState(null);
+    const { hasLowStock, setHasLowStock } = useAuth();
+
   const [staff, setStaff] = useState([]);
   const [incidentData, setIncidentData] = useState([]);
   const [attachments, setAttachments] = useState([]);
@@ -80,6 +101,9 @@ const Page = () => {
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+const [previewVideo, setPreviewVideo] = useState(null);
+
 
   const [showModal2, setShowModal2] = useState(false);
   const [formData2, setFormData2] = useState({
@@ -98,7 +122,6 @@ const Page = () => {
   const [editingIncidentId, setEditingIncidentId] = useState(null);
 
   const router = useRouter();
-  const { user, logout } = useAuth();
 
   // Redirect to login if not authenticated
 
@@ -107,7 +130,7 @@ const Page = () => {
     const fetchIncidents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", {
+        const res = await axios.get("http://localhost:3000/incident/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setIncidentData(res.data.incidents);
@@ -187,6 +210,10 @@ const Page = () => {
     setMessage(""); // Clear any success messages
   };
 
+    const [openDropdownId, setOpenDropdownId] = useState(null); // ✅ Add this
+  const toggleDropdown = (id) => {
+    setOpenDropdownId((prevId) => (prevId === id ? null : id));
+  };
   const handleDownloadPdf = async (item) => {
     const jsPDF = (await import("jspdf")).default;
     const autoTable = (await import("jspdf-autotable")).default;
@@ -199,23 +226,22 @@ const Page = () => {
       startY: 25,
       head: [["Field", "Value"]],
       body: [
-        ["IncidentDate", item.incidentDate.slice(0, 10)],
-        ["IncidentType", item.incidentType],
-        ["Severity", item.severity],
-        ["ReportedBy", item.reportedBy],
-        ["IncidentDetails", item.incidentDetails],
-        ["Status", item.status],
-        ["Patient", item.client.fullName],
+        ["IncidentDate", item.incidentDate?.slice(0, 10) || ""],
+        ["IncidentType", item.incidentType || ""],
+        ["Severity", item.severity || ""],
+        ["ReportedBy", item.reportedBy || ""],
+        ["IncidentDetails", item.incidentDetails || ""],
+        ["Status", item.status || ""],
+        ["Patient", item.client?.fullName || ""],
         ["ImmediateActions", item.immediateActions || ""],
         ["PeopleNotified", item.peopleNotified || ""],
         ["OutcomeStatus", item.outcomeStatus || ""],
-        ["StaffInvolved", staff.find((staff) => staff._id === staff._id).fullName || ""],
+        ["StaffInvolved", item.staffInvolved || ""],
       ],
     });
 
     let currentY = doc.lastAutoTable.finalY + 15;
 
-    // ✅ Handle attachments cleanly — no numbering
     async function addAttachments() {
       if (item.attachments?.length > 0) {
         doc.setFontSize(14);
@@ -226,8 +252,30 @@ const Page = () => {
           const url = item.attachments[i];
           const ext = url.split(".").pop().toLowerCase();
 
-          // 🖼️ Images: show as thumbnails, no numbering
-          if (["jpg", "jpeg", "png"].includes(ext)) {
+          const imageFormats = ["jpg", "jpeg", "png", "webp", "gif", "bmp", "tiff", "heic"];
+          const videoFormats = ["mp4", "mov", "mkv", "webm", "avi"];
+
+          if (ext === "pdf") {
+            const iconUrl = "https://cdn-icons-png.flaticon.com/512/337/337946.png";
+            const res = await fetch(iconUrl);
+            const blob = await res.blob();
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+
+            await new Promise((resolve) => {
+              reader.onloadend = function () {
+                const base64 = reader.result;
+                if (currentY + 20 > 280) {
+                  doc.addPage();
+                  currentY = 20;
+                }
+                doc.addImage(base64, "PNG", 14, currentY, 14, 14);
+                doc.link(14, currentY, 14, 14, { url });
+                currentY += 20;
+                resolve();
+              };
+            });
+          } else if (imageFormats.includes(ext)) {
             try {
               const res = await fetch(url);
               const blob = await res.blob();
@@ -236,31 +284,24 @@ const Page = () => {
 
               await new Promise((resolve) => {
                 reader.onloadend = function () {
-                  const base64data = reader.result;
-
+                  const base64 = reader.result;
                   if (currentY + 60 > 280) {
                     doc.addPage();
                     currentY = 20;
                   }
-
-                  // 🖼️ Image preview without label
-                  doc.addImage(base64data, "JPEG", 14, currentY, 50, 50);
+                  doc.addImage(base64, "JPEG", 14, currentY, 60, 50);
                   currentY += 60;
                   resolve();
                 };
               });
             } catch (err) {
-              doc.setTextColor(200, 0, 0);
+              doc.setTextColor(255, 0, 0);
               doc.text(`Image failed to load`, 14, currentY);
               currentY += 10;
             }
-          }
-
-          // 📄 PDFs: show only icon, no label
-          else if (ext === "pdf") {
-            const iconUrl =
-              "https://cdn-icons-png.flaticon.com/512/337/337946.png"; // ✅ PNG icon
-            const res = await fetch(iconUrl);
+          } else if (videoFormats.includes(ext)) {
+            const videoIcon = "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+            const res = await fetch(videoIcon);
             const blob = await res.blob();
             const reader = new FileReader();
             reader.readAsDataURL(blob);
@@ -268,19 +309,22 @@ const Page = () => {
             await new Promise((resolve) => {
               reader.onloadend = function () {
                 const iconBase64 = reader.result;
-
-                if (currentY + 22 > 280) {
+                if (currentY + 25 > 280) {
                   doc.addPage();
                   currentY = 20;
                 }
-
-                // ✅ Add icon only and make it clickable
-                doc.addImage(iconBase64, "PNG", 14, currentY, 16, 16);
-                doc.link(14, currentY, 16, 16, { url }); // make it clickable
-                currentY += 22;
+                doc.addImage(iconBase64, "PNG", 14, currentY, 18, 18);
+                doc.setTextColor(0, 122, 255);
+                doc.textWithLink("View Video", 36, currentY + 14, { url });
+                doc.setTextColor(0, 0, 0);
+                currentY += 25;
                 resolve();
               };
             });
+          } else {
+            doc.setTextColor(200, 0, 0);
+            doc.text(`Unsupported File: ${url}`, 14, currentY);
+            currentY += 10;
           }
         }
       }
@@ -288,9 +332,39 @@ const Page = () => {
 
     await addAttachments();
 
-    const fileName = `${item.client?.fullName || "activity"}_record.pdf`;
+    const fileName = `${item.client?.fullName || "incident"}_record.pdf`;
     doc.save(fileName);
   };
+
+  // 🧮 CSV Export
+ // ✅ Function to handle CSV download for Incident Reports
+const handleDownloadCsv = (item) => {
+  const headers = ["Field,Value"];
+  const rows = [
+    `Incident Date,${item.incidentDate?.slice(0, 10) || "—"}`,
+    `Incident Type,${item.incidentType || "—"}`,
+    `Severity,${item.severity || "—"}`,
+    `Reported By,${item.reportedBy || "—"}`,
+    `Incident Details,${item.incidentDetails || "—"}`,
+    `Status,${item.status || "—"}`,
+    `Patient,${item.client?.fullName || "—"}`,
+    `Immediate Actions,${item.immediateActions || "—"}`,
+    `People Notified,${item.peopleNotified || "—"}`,
+    `Outcome Status,${item.outcomeStatus || "—"}`,
+    `Staff Involved,${item.staffInvolved || "—"}`,
+  ];
+
+  const csvContent = [...headers, ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${item.client?.fullName || "incident"}_record.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 
 
 
@@ -315,11 +389,11 @@ const Page = () => {
 
     const request = editingIncidentId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/incident/update/${editingIncidentId}`,
+          `http://localhost:3000/incident/update/${editingIncidentId}`,
           data,
           config
         )
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/incident/`, data, config);
+      : axios.post(`http://localhost:3000/incident/`, data, config);
 
     request
       .then((res) => {
@@ -342,7 +416,7 @@ const Page = () => {
         setAttachments([]);
         setShowModal2(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", config);
+        return axios.get("http://localhost:3000/incident/all", config);
       })
       .then((res) => {
         setIncidentData(res.data.incidents);
@@ -361,7 +435,7 @@ const Page = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/incident/delete/${id}`, {
+      .delete(`http://localhost:3000/incident/delete/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -380,7 +454,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -406,14 +480,14 @@ const Page = () => {
       };
 
       await axios.put(
-        `https://control-panel-backend-k6fr.vercel.app/incident/update/${id}`,
+        `http://localhost:3000/incident/update/${id}`,
         { status: newStatus },
         config
       );
 
       // ✅ Just like handleSubmit2
       const response = await axios.get(
-        "https://control-panel-backend-k6fr.vercel.app/incident/all",
+        "http://localhost:3000/incident/all",
         config
       );
       setIncidentData(response.data.incidents);
@@ -425,7 +499,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
+      .get("http://localhost:3000/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -452,6 +526,45 @@ const Page = () => {
   const [viewPeopleNotified, setViewPeopleNotified] = useState(null);
   const [viewOutcomeStatus, setViewOutcomeStatus] = useState(null);
   const [viewImmediateActions, setViewImmediateActions] = useState(null);
+    const { hasReviews, setHasReviews } = useAuth();
+
+
+   // serche Patient form data 
+   const [openPatient, setOpenPatient] = useState(false);
+  const [openStaff, setOpenStaff] = useState(false);
+  const [searchPatient, setSearchPatient] = useState("");
+  const [searchStaff, setSearchStaff] = useState("");
+
+  // Patient filtering
+  const filteredPatients = patient.filter(
+    (client) =>
+      (user?.role !== "Client" || user.clients.includes(client._id)) &&
+      client.fullName.toLowerCase().includes(searchPatient.toLowerCase())
+  );
+
+  // Staff filtering
+  const filteredStaff = staff.filter((s) =>
+    s.fullName.toLowerCase().includes(searchStaff.toLowerCase())
+  );
+
+  // Handle selections
+  const handlePatientSelect = (client) => {
+    setFormData2((prev) => ({
+      ...prev,
+      client: client._id,
+      clientName: client.fullName,
+    }));
+    setOpenPatient(false);
+  };
+
+  const handleStaffSelect = (member) => {
+    setFormData2((prev) => ({
+      ...prev,
+      staffInvolved: member._id,
+      staffName: member.fullName,
+    }));
+    setOpenStaff(false);
+  };
 
   const handleView = (item) => {
     setViewClient(item.client.fullName);
@@ -463,18 +576,19 @@ const Page = () => {
     setViewdate(item.incidentDate.slice(0, 10)); // Format date to YYYY-MM-DD
     setViewAttachments(item.attachments || []); // Set attachments for viewing
     setViewStaffInvolved(
-      staff.find((staff) => staff._id === staff._id).fullName
-    ); // Handle staff involved
+ patient.find(
+                                  (staff) => staff._id === item.client?._id
+                                )?.fullName || "Unknown"); // Handle staff involved
     setViewPeopleNotified(item.peopleNotified || "N/A"); // Handle people notified
     console.log(
       "jkjdfkjkjkf",
       
     );
+    setShowModals(true);
 
     setViewOutcomeStatus(item.outcomeStatus || "N/A"); // Handle outcome status
     setViewImmediateActions(item.immediateActions || "N/A"); // Handle immediate actions
 
-    setShowModals(true);
   };
 
   const data = {
@@ -501,144 +615,219 @@ const Page = () => {
     <div className="bg-[#111827] min-h-screen">
       <Navbar />
 
-      {showModals && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-auto">
-          <div className="relative w-full max-w-3xl rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] border border-gray-700 bg-gradient-to-br from-[#1b1e25] to-[#111319] text-white px-8 py-10 max-h-[90vh] overflow-y-auto">
-            {/* ❌ Close Button */}
-            <button
-              onClick={() => setShowModals(false)}
-              className="absolute top-4 right-4 w-11 h-11 cursor-pointer bg-[#2b2e3a] hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:rotate-90 transition-all duration-300"
-              aria-label="Close"
+{showModals && (
+  <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-auto">
+    <div className="relative w-full max-w-3xl rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] border border-gray-700 bg-gradient-to-br from-[#1b1e25] to-[#111319] text-white px-8 py-10 max-h-[90vh] overflow-y-auto">
+      {/* ❌ Close Button */}
+      <button
+        onClick={() => setShowModals(false)}
+        className="absolute top-4 right-4 w-11 h-11 cursor-pointer bg-[#2b2e3a] hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:rotate-90 transition-all duration-300"
+        aria-label="Close"
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
+      {/* 🧾 Heading */}
+      <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8 md:mb-10 flex items-center justify-center gap-2 sm:gap-3">
+        Incident Record Details
+      </h2>
+
+      {/* 📄 Info Fields */}
+      <div className="space-y-5 mb-6">
+        {Object.entries(data).map(([field, value]) => (
+          <div
+            key={field}
+            className="flex justify-between items-start bg-[#1e212a] p-4 rounded-xl border border-gray-700"
+          >
+            <span className="font-semibold text-gray-300">{field}</span>
+            <span className="text-right text-gray-400 max-w-[60%]">
+              {value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* 📎 Attachments */}
+      {viewAttachments?.length > 0 && (
+        <div className="mt-10">
+          <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-white">
+            <svg
+              className="w-6 h-6 text-purple-400"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+              <path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586M16 3a4 4 0 015.656 5.656L9.414 21H4v-5.414L16 3z" />
+            </svg>
+            Attachments
+          </h3>
 
-            {/* 🧾 Heading */}
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8 md:mb-10 flex items-center justify-center gap-2 sm:gap-3">
-              Incident Record Details
-            </h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {viewAttachments.map((file, index) => {
+              const lower = file.toLowerCase();
+              const isPDF = lower.endsWith(".pdf");
+              const isVideo = /\.(mp4|mov|mkv|webm|avi)$/i.test(lower);
+              const isAudio = /\.(mp3|wav|ogg|m4a)$/i.test(lower);
 
-            {/* 📄 Info Fields */}
-            <div className="space-y-5 mb-6">
-              {Object.entries(data).map(([field, value]) => (
+              return (
                 <div
-                  key={field}
-                  className="flex justify-between items-start bg-[#1e212a] p-4 rounded-xl border border-gray-700"
+                  key={index}
+                  className="relative bg-[#1e212a] p-3 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all overflow-hidden"
                 >
-                  <span className="font-semibold text-gray-300">{field}</span>
-                  <span className="text-right text-gray-400 max-w-[60%]">
-                    {value}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* 📎 Attachments */}
-            {viewAttachments?.length > 0 && (
-              <div className="mt-10">
-                <h3 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-white">
-                  <svg
-                    className="w-6 h-6 text-purple-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586M16 3a4 4 0 015.656 5.656L9.414 21H4v-5.414L16 3z" />
-                  </svg>
-                  Attachments
-                </h3>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {viewAttachments.map((file, index) => {
-                    const isPDF = file.toLowerCase().endsWith(".pdf");
-                    return (
-                      <div
-                        key={index}
-                        className="relative bg-[#1e212a] p-3 rounded-2xl border border-gray-700 shadow-md hover:shadow-xl transition-all overflow-hidden"
-                      >
-                        {isPDF ? (
-                          <a
-                            href={file}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-col items-center gap-2"
-                          >
-                            <Image
-                              src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
-                              alt="PDF Icon"
-                              className="w-12 h-12"
-                            />
-                            <p className="text-sm text-gray-300 font-medium text-center">
-                              PDF Attachment {index + 1}
-                            </p>
-                          </a>
-                        ) : (
-                          <div className="relative group cursor-zoom-in">
-                            <Image
-                              src={file}
-                              alt={`Attachment ${index + 1}`}
-                              className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
-                              onClick={() => setPreviewImage(file)}
-                            />
-                            <div
-                              onClick={() => setPreviewImage(file)}
-                              className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"
-                            >
-                              <BsArrowsFullscreen className="text-white w-6 h-6" />
-                            </div>
-                          </div>
-                        )}
+                  {isPDF ? (
+                    <a
+                      href={file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center gap-2"
+                    >
+                      <img
+                        src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
+                        alt="PDF Icon"
+                        className="w-12 h-12"
+                      />
+                      <p className="text-sm text-gray-300 font-medium text-center">
+                        PDF Attachment {index + 1}
+                      </p>
+                    </a>
+                  ) : isVideo ? (
+                    // 🎥 VIDEO VIEW + CLICK PREVIEW
+                    <div
+                      className="relative group cursor-zoom-in"
+                      onClick={() =>
+                        setPreviewVideo(file) // 👈 show video preview modal
+                      }
+                    >
+                      <video
+                        src={file}
+                        className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                        <BsArrowsFullscreen className="text-white w-6 h-6" />
                       </div>
-                    );
-                  })}
+                    </div>
+                  ) : isAudio ? (
+                    <div className="flex flex-col items-center p-4">
+                      <audio controls className="w-full">
+                        <source src={file} />
+                        Your browser does not support the audio element.
+                      </audio>
+                      <p className="text-sm text-gray-300 font-medium mt-2">
+                        Audio File {index + 1}
+                      </p>
+                    </div>
+                  ) : (
+                    // 🖼️ IMAGE VIEW
+                    <div
+                      className="relative group cursor-zoom-in"
+                      onClick={() => setPreviewImage(file)}
+                    >
+                      <img
+                        src={file}
+                        alt={`Attachment ${index + 1}`}
+                        className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                        <BsArrowsFullscreen className="text-white w-6 h-6" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
         </div>
       )}
+    </div>
+  </div>
+)}
 
-      {previewImage && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-4xl w-full">
-            <button
-              onClick={() => setPreviewImage(null)}
-              className="absolute top-3 right-3 w-10 h-10 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow"
-            >
-              <svg
-                className="w-5 h-5 cursor-pointer"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-            <Image
-              src={previewImage}
-              alt="Full View"
-              className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"
-            />
-          </div>
-        </div>
-      )}
+{/* 🖼️ IMAGE PREVIEW MODAL */}
+{previewImage && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-4xl w-full">
+      <button
+        onClick={() => setPreviewImage(null)}
+        className="absolute top-3 right-3 w-10 h-10 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow"
+      >
+        <svg
+          className="w-5 h-5 cursor-pointer"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+      <img
+        src={previewImage}
+        alt="Full View"
+        className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"
+      />
+    </div>
+  </div>
+)}
+
+{/* 🎥 VIDEO PREVIEW MODAL */}
+{previewVideo && (
+  <div
+    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+    onClick={() => setPreviewVideo(null)} // ✅ Click outside closes modal
+  >
+    <div
+      className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-3xl w-full"
+      onClick={(e) => e.stopPropagation()} // ❌ Prevent closing when clicking inside video area
+    >
+      {/* ❌ Close Button */}
+      <button
+        onClick={() => setPreviewVideo(null)}
+        className="absolute top-3 right-3 z-[10000] w-9 h-9 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow transition-all duration-200"
+      >
+        <svg
+          className="w-5 h-5 cursor-pointer"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
+      {/* 🎥 Video Preview */}
+      <video
+        src={previewVideo}
+        controls
+        autoPlay
+        className="w-full h-auto rounded-xl max-h-[60vh] mx-auto"
+      />
+    </div>
+  </div>
+)}
+
+
 
       {/* Mobile Navbar Toggle */}
       <div className="lg:hidden flex items-center justify-end px-4 py-3 bg-gray-800 shadow relative">
@@ -666,24 +855,34 @@ const Page = () => {
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
 
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-                    item.active
-                      ? "bg-gray-700 text-primary-light"
-                      : "hover:bg-gray-700 hover:text-primary-light"
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+                {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
 
+                <span className="flex items-center">
+                  {item.label}
+
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
             <div className="p-4 border-t border-gray-700">
               <div className="flex items-center">
                 <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#EEEEFF] flex items-center justify-center text-[#4A49B0] font-medium">
@@ -795,7 +994,7 @@ const Page = () => {
                               {(
                                 patient.find(
                                   (staff) => staff._id === item.client?._id
-                                )?.fullName || "U"
+                                )?.fullName || item.client?.fullName || "Unknown" 
                               )
                                 .split(" ")
                                 .map((word) => word[0])
@@ -805,7 +1004,7 @@ const Page = () => {
                             <div className="text-xs sm:text-sm font-medium text-white">
                               {patient.find(
                                 (staff) => staff._id === item.client?._id
-                              )?.fullName || "Unknown"}
+                              )?.fullName || item.client?.fullName || "Unknown"}
                             </div>
                           </div>
                         </td>
@@ -819,63 +1018,117 @@ const Page = () => {
                           {item.severity}
                         </td>
                         {/* <td className="px-2 sm:px-2 py-3 text-white">{item.reportedBy}</td> */}
-                        <td className="px-1 sm:px-1 py-3 text-white">
-                          <select
-                            className="bg-[#1E2939] border border-gray-600 text-white lg:text-[10px] text-[8px] px-1 sm:px-1 py-1 rounded outline-nun "
-                            value={item.status}
-                            onChange={(e) =>
-                              handleStatusChange(item._id, e.target.value)
-                            }
-                          >
-                            <option
-                              className="bg-[#1E2939] text-white lg:text-[12px] text-[8px]"
-                              value="Open"
-                            >
-                              Open
-                            </option>
-                            <option
-                              className="bg-[#1E2939] text-white lg:text-[12px] text-[8px]"
-                              value="Under Investigation"
-                            >
-                              Under Investigation
-                            </option>
-                            <option
-                              className="bg-[#1E2939] text-white lg:text-[12px] text-[8px]"
-                              value="Resolved"
-                            >
-                              Resolved
-                            </option>
-                          </select>
-                        </td>
+                      <td className="px-1 sm:px-1 py-3 text-white">
+  {/* Only show dropdown if not Client or External */}
+  {!hasClients && user.role !== "External" ? (
+    <select
+      className="bg-[#1E2939] border border-gray-600 text-white lg:text-[10px] text-[8px] px-1 sm:px-1 py-1 rounded outline-none"
+      value={item.status}
+      onChange={(e) => handleStatusChange(item._id, e.target.value)}
+    >
+      <option
+        className="bg-[#1E2939] text-white lg:text-[12px] text-[8px]"
+        value="Open"
+      >
+        Open
+      </option>
+      <option
+        className="bg-[#1E2939] text-white lg:text-[12px] text-[8px]"
+        value="Under Investigation"
+      >
+        Under Investigation
+      </option>
+      <option
+        className="bg-[#1E2939] text-white lg:text-[12px] text-[8px]"
+        value="Resolved"
+      >
+        Resolved
+      </option>
+    </select>
+  ) : (
+    // ✅ Client or External — read-only badge
+    <span
+      className={`px-2 py-1 rounded text-[10px] ${
+        item.status === "Resolved"
+          ? "bg-green-700 text-white"
+          : item.status === "Under Investigation"
+          ? "bg-yellow-700 text-white"
+          : "bg-red-700 text-white"
+      }`}
+    >
+      {item.status || "Open"}
+    </span>
+  )}
+</td>
 
-                        <td className="px-2 sm:px-2 py-3 text-white">
-                          <div className="flex space-x-1 sm:space-x-2 text-sm">
-                            <button
-                              onClick={() => handleView(item)}
-                              className="hover:text-blue-500 transition cursor-pointer"
-                            >
-                              <FaEye />
-                            </button>
-                            {!hasClients && <button
-                              onClick={() => handleEdit(item)}
-                              className="hover:text-yellow-500 transition cursor-pointer"
-                            >
-                              <FaEdit />
-                            </button>}
-                            {!hasClients && <button
-                              onClick={() => handleDelete(item._id)}
-                              className="hover:text-red-500 cursor-pointer"
-                            >
-                              <FaTrash />
-                            </button>}
-                            <button
-                              onClick={() => handleDownloadPdf(item)}
-                              className="hover:text-green-600 transition cursor-pointer"
-                            >
-                              <FaDownload />
-                            </button>
-                          </div>
-                        </td>
+
+                      <td className="px-2 sm:px-2 py-3 text-white">
+  <div className="flex items-center space-x-2 relative">
+    <button
+      onClick={() => handleView(item)}
+      className="hover:text-blue-500 transition cursor-pointer"
+    >
+      <FaEye />
+    </button>
+
+    {!hasClients && (
+      <button
+        onClick={() => handleEdit(item)}
+        className="hover:text-yellow-500 transition cursor-pointer"
+      >
+        <FaEdit />
+      </button>
+    )}
+
+    {!hasClients && (
+      <button
+        onClick={() => handleDelete(item._id)}
+        className="hover:text-red-500 cursor-pointer"
+      >
+        <FaTrash />
+      </button>
+    )}
+
+    {/* ⬇ Download Dropdown */}
+    <div className="relative">
+      <FaDownload
+        className="hover:text-green-500 transition cursor-pointer"
+        onClick={() => toggleDropdown(item._id)}
+      />
+
+      {openDropdownId === item._id && (
+        <div
+          className="absolute right-0 mt-2 
+          bg-white/20 backdrop-blur-xl border border-white/30 
+          shadow-lg rounded-md z-10 w-36 transition-all duration-200"
+        >
+          <button
+            onClick={() => {
+              handleDownloadPdf(item);
+              setOpenDropdownId(null);
+            }}
+            className="block w-full text-left px-3 py-2 
+            text-sm text-white hover:bg-white/10 transition"
+          >
+            Export as PDF
+          </button>
+
+          <button
+            onClick={() => {
+              handleDownloadCsv(item);
+              setOpenDropdownId(null);
+            }}
+            className="block w-full text-left px-3 py-2 
+            text-sm text-white hover:bg-white/10 transition"
+          >
+            Export as CSV
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+</td>
+
                       </tr>
                     ))
                   ) : (
@@ -907,42 +1160,67 @@ const Page = () => {
                   className="p-4"
                   onSubmit={handleSubmit2}
                 >
-                  {/* Client */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="clientId"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Patient
-                    </label>
-                    <select
-                      id="client"
-                      name="client"
-                      value={formData2.client}
-                      onChange={handleChange2}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    >
-                      <option value="">Select Patient</option>
-                      {patient
-                        .filter(
-                          (client) =>
-                            user?.role !== "Client" ||
-                            user.clients.includes(client._id)
-                        )
-                        .map((client) => (
-                          <option key={client._id} value={client._id}>
-                            {client.fullName}
-                          </option>
-                        ))}
-                    </select>
-                    <input
-                      type="hidden"
-                      name="clientName"
-                      id="clientName"
-                      value={formData2.client.fullName}
-                    />
+                  {/* Patient Dropdown */}
+      <div className="mb-4 relative">
+        <label
+          htmlFor="clientId"
+          className="block text-gray-300 text-sm font-medium mb-2"
+        >
+          Patient
+        </label>
+
+        <div
+          onClick={() => {
+            setOpenPatient(!openPatient);
+            setOpenStaff(false);
+          }}
+          className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 cursor-pointer select-none"
+        >
+          {formData2.client
+            ? patient.find((c) => c._id === formData2.client)?.fullName
+            : "Select Patient"}
+        </div>
+
+        {openPatient && (
+          <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg p-2">
+            <input
+              type="text"
+              placeholder="Search patient..."
+              value={searchPatient}
+              onChange={(e) => setSearchPatient(e.target.value)}
+              className="w-full rounded-md border border-gray-600 px-3 py-1 mb-2 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+            />
+
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {filteredPatients.length > 0 ? (
+                filteredPatients.map((client) => (
+                  <div
+                    key={client._id}
+                    onClick={() => handlePatientSelect(client)}
+                    className={`px-2 py-1 rounded-md hover:bg-gray-600 text-gray-200 text-sm cursor-pointer ${
+                      formData2.client === client._id ? "bg-gray-700" : ""
+                    }`}
+                  >
+                    {client.fullName}
                   </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm text-center">
+                  No patients found
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <input type="hidden" name="client" value={formData2.client} />
+        <input
+          type="hidden"
+          name="clientName"
+          value={formData2.clientName || ""}
+        />
+      </div>
+
 
                   {/* Date */}
                   <div className="mb-4">
@@ -1097,25 +1375,69 @@ const Page = () => {
                     />
                   </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-300">
-                      Staff Involved
-                    </label>
-                    <select
-                      name="staffInvolved"
-                      value={formData2.staffInvolved}
-                      onChange={handleChange2}
-                      required
-                      className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-                    >
-                      <option value="">Select Staff Member</option>
-                      {staff.map((staff) => (
-                        <option key={staff._id} value={staff._id}>
-                          {staff.fullName}
-                        </option>
-                      ))}
-                    </select>
+               {/* Staff Dropdown */}
+      <div className="mb-4 relative">
+        <label className="block text-sm font-medium text-gray-300">
+          Staff Involved
+        </label>
+
+        <div
+          onClick={() => {
+            setOpenStaff(!openStaff);
+            setOpenPatient(false);
+          }}
+          className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600 cursor-pointer select-none"
+        >
+          {formData2.staffInvolved
+            ? staff.find((s) => s._id === formData2.staffInvolved)?.fullName
+            : "Select Staff Member"}
+        </div>
+
+        {openStaff && (
+          <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg p-2">
+            <input
+              type="text"
+              placeholder="Search staff..."
+              value={searchStaff}
+              onChange={(e) => setSearchStaff(e.target.value)}
+              className="w-full rounded-md border border-gray-600 px-3 py-1 mb-2 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+            />
+
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {filteredStaff.length > 0 ? (
+                filteredStaff.map((member) => (
+                  <div
+                    key={member._id}
+                    onClick={() => handleStaffSelect(member)}
+                    className={`px-2 py-1 rounded-md hover:bg-gray-600 text-gray-200 text-sm cursor-pointer ${
+                      formData2.staffInvolved === member._id
+                        ? "bg-gray-700"
+                        : ""
+                    }`}
+                  >
+                    {member.fullName}
                   </div>
+                ))
+              ) : (
+                <p className="text-gray-400 text-sm text-center">
+                  No staff found
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <input
+          type="hidden"
+          name="staffInvolved"
+          value={formData2.staffInvolved}
+        />
+        <input
+          type="hidden"
+          name="staffName"
+          value={formData2.staffName || ""}
+        />
+      </div>
 
                   {/* Attachments */}
                   <div className="mb-4">

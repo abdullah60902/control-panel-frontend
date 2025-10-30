@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoDocumentAttach } from "react-icons/io5";
+import { LuLayoutTemplate } from "react-icons/lu";
+
+import { TbClockRecord } from "react-icons/tb";
 
 import {
   FaThLarge,
@@ -32,26 +35,45 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 export default function Page() {
+    const { user, logout } = useAuth();
+  
   const navItems = [
       { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-    { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+    { icon: <FaUser />,label: "Resident Management", href: "/Client-Management",    },
+    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning", },
+    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports", },
+    { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
     { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management", },
-    {icon: <IoDocumentAttach />,label: "Documents Management",href: "/Documents-Management",},
-    { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",active: true },
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+    { icon: <MdMedicationLiquid />,label: "Medication Management",href: "/Medication-Management", },
+    { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record"},
+    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+    { icon: <IoDocumentAttach />,label: "Documents Management",href: "/Documents-Management",},
+    { icon: <GrDocumentPerformance />, label: "Performance Management", href: "/Performance-Management" , active: true,},
+    { icon: <FaGraduationCap />, label: "Training", href: "/Training"},
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics",  },
+    { icon: <SiSimpleanalytics />, label: "Analytics", href: "/Analytics" },
     { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
   ];
+   const allowedNavItems =
+  user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+    ? navItems
+    : user?.role === "External" && Array.isArray(user.allowedPages)
+    ? navItems.filter((item) =>
+        user.allowedPages.some(
+          (page) =>
+            page.toLowerCase().replace(/\s+/g, "") ===
+            item.label.toLowerCase().replace(/\s+/g, "")
+        )
+      )
+    : [];
 const [sidebarOpen, setSidebarOpen] = useState(false);
 const [performanceData, setPerformanceData] = useState([]);
 const [filteredPerformance, setFilteredPerformance] = useState([]);
 const [searchQuery, setSearchQuery] = useState('');
 const [selected, setSelected] = useState("All Records");
+  const { hasLowStock, setHasLowStock } = useAuth();
+  const { hasReviews, setHasReviews } = useAuth();
+
 const filters = ["All Records", "Upcoming", "Overdue"];
 const [showForm, setShowForm] = useState(false);
 const [message, setMessage] = useState('');
@@ -69,7 +91,6 @@ const [loading, setLoading] = useState(false);
 const [showModal, setShowModal] = useState(false);
 const [viewData, setViewData] = useState({});
 const [staffMembers,setStaffMembers] = useState()
-  const { user, logout } = useAuth();
 
 const handleEdit = (item) => {
   setFormData({
@@ -116,8 +137,8 @@ const handleSubmit = async (e) => {
   console.log("Payload:", payload); // ✅ DEBUG payload
 
   const request = editingId
-    ? axios.put(`https://control-panel-backend-k6fr.vercel.app/performance/${editingId}`, payload, config)
-    : axios.post(`https://control-panel-backend-k6fr.vercel.app/performance`, payload, config);
+    ? axios.put(`http://localhost:3000/performance/${editingId}`, payload, config)
+    : axios.post(`http://localhost:3000/performance`, payload, config);
 
   request
     .then(res => {
@@ -136,7 +157,7 @@ const handleSubmit = async (e) => {
         feedbackNotes: '',
         appraisalReminderDate: ''
       });
-      return axios.get("https://control-panel-backend-k6fr.vercel.app/performance", config)
+      return axios.get("http://localhost:3000/performance", config)
         .then(res => {
           setPerformanceData(res.data.data);
           setFilteredPerformance(res.data.data);
@@ -154,7 +175,7 @@ const fetchPerformance = async () => {
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
   try {
-    const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/performance", config);
+    const res = await axios.get("http://localhost:3000/performance", config);
     setPerformanceData(res.data.data);
     setFilteredPerformance(res.data.data);
   } catch (err) {
@@ -165,7 +186,7 @@ const handleDelete = async (id) => {
   if (!window.confirm("Confirm delete?")) return;
   const token = localStorage.getItem("token");
   try {
-    await axios.delete(`https://control-panel-backend-k6fr.vercel.app/performance/${id}`, {
+    await axios.delete(`http://localhost:3000/performance/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     toast.success("Record deleted successfully");
@@ -211,7 +232,7 @@ useEffect(() => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
+    axios.get('http://localhost:3000/hr', {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -233,7 +254,7 @@ useEffect(() => {
 
   const checkReminders = async () => {
     try {
-      const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/performance/reminders/due", {
+      const res = await axios.get("http://localhost:3000/performance/reminders/due", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -299,37 +320,64 @@ const data = {
 
 
 
+ const [openMenu, setOpenMenu] = useState(false);
+
+  // 📄 PDF Download
   const handleDownloadPdf = async (item) => {
     const jsPDF = (await import("jspdf")).default;
     const autoTable = (await import("jspdf-autotable")).default;
 
-    const patientName = item.staff?.fullName || "Unknown Patient";
+    const staffName = item.staff?.fullName || "Unknown Staff";
 
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text("Medication Details", 14, 15);
+    doc.text("Staff Appraisal Details", 14, 15);
 
-    // Main table
     autoTable(doc, {
       startY: 25,
       head: [["Field", "Value"]],
       body: [
-        ["Staff", patientName],
-        ["Supervisions", item.supervisions],
-        ["Appraisals", item.appraisals],
-        ["Objectives / KPIs", item.objectivesKpi],
-        ["Feedback Notes", item.feedbackNotes],
-        ["Scheduled Appraisals Reminder", item.appraisalReminderDate ? item.appraisalReminderDate.slice(0, 10) : "Not Set"],
+        ["Staff", staffName],
+        ["Supervisions", item.supervisions || "N/A"],
+        ["Appraisals", item.appraisals || "N/A"],
+        ["Objectives / KPIs", item.objectivesKpi || "N/A"],
+        ["Feedback Notes", item.feedbackNotes || "N/A"],
+        [
+          "Scheduled Appraisals Reminder",
+          item.appraisalReminderDate ? item.appraisalReminderDate.slice(0, 10) : "Not Set",
+        ],
       ],
     });
 
-    doc.save(`${patientName}_medication.pdf`);
+    doc.save(`${staffName}_appraisal.pdf`);
   };
 
+  // 📊 CSV Download (same style as PDF)
+  const handleDownloadCsv = (item) => {
+    const staffName = item.staff?.fullName || "Unknown Staff";
 
+    const headers = ["Field,Value"];
+    const rows = [
+      `Staff,${staffName}`,
+      `Supervisions,${item.supervisions || "N/A"}`,
+      `Appraisals,${item.appraisals || "N/A"}`,
+      `Objectives / KPIs,${item.objectivesKpi || "N/A"}`,
+      `Feedback Notes,${item.feedbackNotes || "N/A"}`,
+      `Scheduled Appraisals Reminder,${
+        item.appraisalReminderDate ? item.appraisalReminderDate.slice(0, 10) : "Not Set"
+      }`,
+    ];
 
+    const csvContent = [...headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
 
-
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${staffName}_appraisal.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
 
 
@@ -431,23 +479,35 @@ const data = {
             <div className="p-4 border-b border-gray-700">
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`flex items-center px-4 py-3 rounded-md transition-colors ${
-                    item.active
-                      ? "bg-gray-700 text-white"
-                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3">{item.icon}</span>
+                 {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+
+                <span className="flex items-center">
                   {item.label}
-                </Link>
-              ))}
-            </div>
+
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
+
           </nav>
         </aside>
 
@@ -521,18 +581,56 @@ const data = {
                       <td className="px-4 py-4">{staff.appraisals}</td>
                       <td className="px-4 py-4">{staff.objectivesKpi}</td>
                       <td className="px-4 py-4">{staff.appraisalReminderDate ? staff.appraisalReminderDate.slice(0, 10) : ""}</td>
-                      <td className="px-4 py-4 flex gap-3">
-                        <FaEye className="cursor-pointer hover:text-blue-500" onClick={() => handleView(staff)} />
-                        <FaEdit className="cursor-pointer hover:text-yellow-500" onClick={() => handleEdit(staff)} />
-                        <FaTrash className="cursor-pointer hover:text-red-500" onClick={() => handleDelete(staff._id)} />
-                           <button
-                                                      className="hover:text-green-600 transition cursor-pointer"
-                                                      onClick={() => handleDownloadPdf(staff)}
-                                                    >
-                                                      <FaDownload
-                                                       />
-                                                    </button>
-                      </td>
+                      <td className="px-4 py-4 flex gap-3 relative">
+      {/* Action Buttons */}
+      <FaEye
+        className="cursor-pointer hover:text-blue-500"
+        onClick={() => handleView(staff)}
+      />
+      <FaEdit
+        className="cursor-pointer hover:text-yellow-500"
+        onClick={() => handleEdit(staff)}
+      />
+      <FaTrash
+        className="cursor-pointer hover:text-red-500"
+        onClick={() => handleDelete(staff._id)}
+      />
+
+      {/* 📥 Download Dropdown (PDF + CSV) */}
+      <div className="relative">
+        <FaDownload
+          className="cursor-pointer hover:text-green-600"
+          onClick={() => setOpenMenu((prev) => !prev)}
+        />
+
+        {openMenu && (
+          <div   className="absolute right-0 mt-2 
+             bg-white/20 backdrop-blur-xl border border-white/30 
+             shadow-lg rounded-md z-10 w-36 
+             transition-all duration-200 cursor-pointer">
+            <button
+              onClick={() => {
+                handleDownloadPdf(staff);
+                setOpenMenu(false);
+              }}
+ className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition cursor-pointer"            >
+              Download PDF
+            </button>
+
+            <button
+              onClick={() => {
+                handleDownloadCsv(staff);
+                setOpenMenu(false);
+              }}
+ className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition cursor-pointer"            >
+              Download CSV
+            </button>
+          </div>
+        )}
+      </div>
+    </td>
                     </tr>
                   ))}
                 </tbody>
@@ -557,7 +655,7 @@ const data = {
                 <form onSubmit={handleSubmit} className="p-4 " >
         
         {/* Staff Name */}
-                   <div className="mb-4">
+                   <div className="mb-2">
         <label className="block text-sm font-medium text-gray-300">Staff Member</label>
         <select
           name="staff"
@@ -586,7 +684,23 @@ const data = {
             value={formData.supervisions}
             onChange={handleChange}
             placeholder="e.g. 2 per month"
-            className="w-full bg-gray-700 text-white rounded p-2"
+            className="w-full bg-gray-700 text-white rounded p-2 mb-2"
+          />
+        </div>
+
+
+
+ {/* Scheduled Appraisals Reminder */}
+        <div>
+          <label className="block text-gray-300 text-sm font-medium mb-2">
+            Scheduled Appraisals Reminder
+          </label>
+          <input
+            type="date"
+            name="appraisalReminderDate"
+            value={formData.appraisalReminderDate || ""}
+            onChange={handleChange}
+            className="w-full bg-gray-700 text-white rounded p-2 mb-2"
           />
         </div>
 
@@ -601,7 +715,7 @@ const data = {
             value={formData.appraisals}
             onChange={handleChange}
             placeholder="e.g. Quarterly"
-            className="w-full bg-gray-700 text-white rounded p-2"
+            className="w-full bg-gray-700 text-white rounded p-2 mb-2"
           />
         </div>
 
@@ -616,7 +730,7 @@ const data = {
             value={formData.objectivesKpi}
             onChange={handleChange}
             placeholder="Enter objectives or KPIs"
-            className="w-full bg-gray-700 text-white rounded p-2"
+            className="w-full bg-gray-700 text-white rounded p-2 mb-2"
           />
         </div>
 
@@ -637,20 +751,7 @@ const data = {
 
        
 
-        {/* Scheduled Appraisals Reminder */}
-        <div>
-          <label className="block text-gray-300 text-sm font-medium mb-2">
-            Scheduled Appraisals Reminder
-          </label>
-          <input
-            type="date"
-            name="appraisalReminderDate"
-            value={formData.appraisalReminderDate || ""}
-            onChange={handleChange}
-            className="w-full bg-gray-700 text-white rounded p-2"
-          />
-        </div>
-
+       
         {/* Buttons */}
                 <div className="flex justify-between pt-4 border-t border-gray-700">
           <button

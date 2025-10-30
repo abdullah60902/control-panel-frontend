@@ -58,8 +58,18 @@ const Page = () => {
       label: "Incident Reports",
       href: "/Incident-Reports",
     },
-    { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
-    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+    {
+      icon: <LuLayoutTemplate />,
+      label: "Template",
+      href: "/Template",
+      active: true,
+    },
+    {
+      icon: <FaSearch />,
+      label: "Social Activity",
+      href: "/Social-Activity",
+    },
+    
     {
       icon: <MdMedicationLiquid />,
       label: "Medication Management",
@@ -68,22 +78,17 @@ const Page = () => {
     ...(hasClients
       ? []
       : [
-          {
-            icon: <TbClockRecord />,
-            label: "Medication-Record",
-            href: "/Medication-Record",
-          },
+                  { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record" },
 
           { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
           {
             icon: <IoDocumentAttach />,
             label: "Documents Management",
             href: "/Documents-Management",
-            active: true,
           },
           {
             icon: <GrDocumentPerformance />,
-            label: "Performance Management",
+            label: "Performance-Management",
             href: "/Performance-Management",
           },
           { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
@@ -117,193 +122,86 @@ const Page = () => {
   const [filteredStaff, setFilteredStaff] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState("All Records");
-  const filters = ["All Records", "Valid", "Expiring Soon", "Expired"];
-  const [previewImage, setPreviewImage] = useState(null);
-  const [editingUserId, setEditingUserId] = useState(null); // track if editing
-  const [loading, setLoading] = useState(false); // track loading state
-  const [viewName, setViewName] = useState(null);
-  const [viewExpiryDate, setViewExpiryDate] = useState(null);
-  const { hasLowStock, setHasLowStock } = useAuth();
+  const { hasLowStock, setHasLowStock} = useAuth();
+  const { hasReviews, setHasReviews} = useAuth();
 
-  const [viewNotes, setViewNotes] = useState(null);
-  const [viewAttachments, setViewAttachments] = useState([]);
-  const [showModals, setShowModals] = useState(false);
-  const [previewVideo, setPreviewVideo] = useState(null);
-
-  const [staffMembers, setStaffMembers] = useState([]); // For HR/staff members
-  const emptyAttachments = {
-    employmentContracts: [],
-    dbsCertificates: [],
-    idDocuments: [],
-    trainingCertificates: [],
-    appraisalsReviews: [],
-    disciplinaryRecords: [],
-  };
+  const filters = ["All Records"];
+  const [showForm5, setShowForm5] = useState(false);
   // Define your navigation links here with proper routes
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [showForm4, setShowForm4] = useState(false);
-  const [formData4, setFormData4] = useState({
-    staffName: "", // backend me "staff" hai, staffMember nahi
-    expiryDate: "",
-    notes: "",
+
+  const [formData5, setFormData5] = useState({
+    title: "",
+    visibility: "Admin Only",
+    attachments: [],
   });
 
-  const handleCancel9 = () => {
-    setShowForm4(false);
-    setFormData4({
-      staffName: "",
-      expiryDate: "",
-      notes: "",
-    });
-    setAttachments([]);
-    setEditingUserId(null);
-  };
-
-  const [attachments, setAttachments] = useState(emptyAttachments);
-  const router = useRouter();
-
-  // 1️⃣ Training data fetch
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    axios
-      .get("http://localhost:3000/staff-documents", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        console.log("Fetched users:", response.data);
-        setStaffData(response.data);
-        console.log("Filtered users:", response.data);
-
-        setFilteredStaff(response.data);
-        setMessage("Users fetched successfully");
-        setError("");
-      })
-      .catch((error) => {
-        console.error(
-          "Error fetching users:",
-          error.response?.data || error.message
-        );
-        setError(error.response?.data?.msg || "Failed to fetch users");
-      });
-  }, []);
-
-  // 2️⃣ Filter staff on search or selection change
-  useEffect(() => {
-    const now = new Date();
-
-    const filtered = StaffData.filter((staff) => {
-      const expiry = staff.expiryDate ? new Date(staff.expiryDate) : null;
-      if (!expiry) return false;
-
-      const diffInDays = (expiry - now) / (1000 * 60 * 60 * 24);
-      const fullName = staff.staffMember?.fullName?.toLowerCase() || "";
-
-      const matchesSelected =
-        selected === "All Records" ||
-        (selected === "Valid" && expiry > now && diffInDays > 30) ||
-        (selected === "Expiring Soon" && expiry > now && diffInDays <= 30) ||
-        (selected === "Expired" && expiry < now);
-
-      const matchesSearch = fullName.includes(searchQuery.toLowerCase());
-
-      return matchesSelected && matchesSearch;
-    });
-
-    setFilteredStaff(filtered);
-  }, [selected, StaffData, searchQuery]);
-
-  // 3️⃣ HR data fetch
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    axios
-      .get("http://localhost:3000/hr", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((response) => {
-        setStaffMembers(response.data.allHr);
-        setMessage("Staff fetched successfully");
-      })
-      .catch((error) => {
-        setError(error.response?.data?.msg || "Failed to fetch staff");
-      });
-  }, []);
+  const [attachments, setAttachments] = useState([]);
 
   const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    setAttachments({
-      ...attachments,
-      [name]: Array.from(files), // multiple files
-    });
+    setAttachments(Array.from(e.target.files));
   };
 
-  const handleEdit = (doc) => {
-    setFormData4({
-      staff: doc.staff?._id, // backend field
-      expiryDate: doc.expiryDate?.slice(0, 10) || "",
-      notes: doc.notes || "",
+  const handleEdit = (comp) => {
+    setFormData5({
+      title: comp.title || "",
+      visibility: comp.visibility || "Admin Only",
+      attachments: comp.attachments || [], // existing Cloudinary file URLs (optional)
     });
-    setAttachments({
-      employmentContracts: doc.employmentContracts || [],
-      dbsCertificates: doc.dbsCertificates || [],
-      idDocuments: doc.idDocuments || [],
-      trainingCertificates: doc.trainingCertificates || [],
-      appraisalsReviews: doc.appraisalsReviews || [],
-      disciplinaryRecords: doc.disciplinaryRecords || [],
-    });
-    setShowForm4(true);
-    setEditingUserId(doc._id);
+
+    setAttachments([]); // user may upload new files while editing
+    setShowForm5(true);
+    setEditingUserId(comp._id);
   };
 
-  // Function to handle PDF download
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
-  // ✅ PDF Download (same as your version)
+  // Function to toggle dropdown for a specific client
+
+  // ✅ PDF Download Function (your original code)
   const handleDownloadPdf = async (item) => {
     const jsPDF = (await import("jspdf")).default;
     const autoTable = (await import("jspdf-autotable")).default;
 
     const doc = new jsPDF();
     doc.setFontSize(16);
-    doc.text("Staff Document Details", 14, 15);
+    doc.text("Template Record", 14, 15);
 
+    // 🧾 Table with template data
     autoTable(doc, {
       startY: 25,
       head: [["Field", "Value"]],
       body: [
-        ["Staff Name", item.staffName?.fullName || "N/A"],
-        ["Expiry Date", item.expiryDate ? item.expiryDate.slice(0, 10) : "N/A"],
-        ["Notes", item.notes || "N/A"],
+        ["Title", item.title || ""],
+        ["Visibility", item.visibility || ""],
+
+        [
+          "Created At",
+          item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "",
+        ],
+        [
+          "Updated At",
+          item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "",
+        ],
       ],
     });
 
     let currentY = doc.lastAutoTable.finalY + 15;
 
-    const allFiles = [
-      ...(item.employmentContracts || []),
-      ...(item.dbsCertificates || []),
-      ...(item.idDocuments || []),
-      ...(item.trainingCertificates || []),
-      ...(item.appraisalsReviews || []),
-      ...(item.disciplinaryRecords || []),
-    ];
-
+    // ✅ Handle attachments (images + PDFs + videos)
     async function addAttachments() {
-      if (allFiles.length > 0) {
+      if (item.attachments?.length > 0) {
         doc.setFontSize(14);
         doc.text("Attachments:", 14, currentY);
         currentY += 10;
 
-        for (let i = 0; i < allFiles.length; i++) {
-          const url = allFiles[i];
+        for (let i = 0; i < item.attachments.length; i++) {
+          const url = item.attachments[i];
           const ext = url.split(".").pop().toLowerCase();
 
-          // 🖼️ IMAGES
-          if (["jpg", "jpeg", "png", "webp"].includes(ext)) {
+          // 🖼️ Image preview
+          if (["jpg", "jpeg", "png", "gif", "bmp", "webp"].includes(ext)) {
             try {
               const res = await fetch(url);
               const blob = await res.blob();
@@ -324,14 +222,14 @@ const Page = () => {
                   resolve();
                 };
               });
-            } catch {
+            } catch (err) {
               doc.setTextColor(200, 0, 0);
               doc.text(`Image failed to load`, 14, currentY);
               currentY += 10;
             }
           }
 
-          // 📄 PDF FILES
+          // 📄 PDF icon + link
           else if (ext === "pdf") {
             const iconUrl =
               "https://cdn-icons-png.flaticon.com/512/337/337946.png";
@@ -343,6 +241,7 @@ const Page = () => {
             await new Promise((resolve) => {
               reader.onloadend = function () {
                 const iconBase64 = reader.result;
+
                 if (currentY + 22 > 280) {
                   doc.addPage();
                   currentY = 20;
@@ -350,17 +249,17 @@ const Page = () => {
 
                 doc.addImage(iconBase64, "PNG", 14, currentY, 16, 16);
                 doc.link(14, currentY, 16, 16, { url });
-                doc.textWithLink("PDF Attachment", 34, currentY + 12, { url });
-                currentY += 25;
+                currentY += 22;
                 resolve();
               };
             });
           }
 
-          // 🎥 VIDEOS
+          // 🎥 Video icon + link
           else if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) {
-            const playIcon = "https://cdn-icons-png.flaticon.com/512/0/375.png";
-            const res = await fetch(playIcon);
+            const videoIconUrl =
+              "https://cdn-icons-png.flaticon.com/512/711/711245.png"; // video play icon
+            const res = await fetch(videoIconUrl);
             const blob = await res.blob();
             const reader = new FileReader();
             reader.readAsDataURL(blob);
@@ -368,26 +267,24 @@ const Page = () => {
             await new Promise((resolve) => {
               reader.onloadend = function () {
                 const iconBase64 = reader.result;
-                if (currentY + 25 > 280) {
+
+                if (currentY + 22 > 280) {
                   doc.addPage();
                   currentY = 20;
                 }
 
                 doc.addImage(iconBase64, "PNG", 14, currentY, 18, 18);
                 doc.link(14, currentY, 18, 18, { url });
-                doc.textWithLink("Video Attachment", 38, currentY + 12, {
-                  url,
-                });
-                currentY += 25;
+                currentY += 24;
                 resolve();
               };
             });
           }
 
-          // ⚠️ OTHER FILE TYPES
+          // ❓ Unknown file types
           else {
-            doc.setTextColor(255, 165, 0);
-            doc.text(`Unsupported file type: ${ext}`, 14, currentY);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Unsupported file: ${ext}`, 14, currentY);
             currentY += 10;
           }
         }
@@ -395,51 +292,89 @@ const Page = () => {
     }
 
     await addAttachments();
-    const fileName = `${item.staffName?.fullName || "staff"}_document.pdf`;
+
+    const fileName = `${item.title || "template"}_record.pdf`;
     doc.save(fileName);
   };
 
-  // ✅ CSV Download
+  // ✅ CSV Download Function (new)
   const handleDownloadCsv = (item) => {
-    const headers = ["Field,Value"];
+    const headers = ["Field", "Value"];
+
     const rows = [
-      `Staff Name,${item.staffName?.fullName || "N/A"}`,
-      `Expiry Date,${item.expiryDate ? item.expiryDate.slice(0, 10) : "N/A"}`,
-      `Notes,${item.notes || "N/A"}`,
-      // `Employment Contracts,${(item.employmentContracts || []).join(" | ")}`,
-      // `DBS Certificates,${(item.dbsCertificates || []).join(" | ")}`,
-      // `ID Documents,${(item.idDocuments || []).join(" | ")}`,
-      // `Training Certificates,${(item.trainingCertificates || []).join(" | ")}`,
-      // `Appraisals Reviews,${(item.appraisalsReviews || []).join(" | ")}`,
-      // `Disciplinary Records,${(item.disciplinaryRecords || []).join(" | ")}`,
+      ["Title", item.title || ""],
+      ["Visibility", item.visibility || ""],
+      [
+        "Created At",
+        item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "",
+      ],
+      [
+        "Updated At",
+        item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : "",
+      ],
+      ["Uploaded By", item.uploadedBy?.email || item.uploadedBy || ""],
     ];
 
-    const csvContent = [...headers, ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    // ✅ Include attachments (if any)
+    if (item.attachments && item.attachments.length > 0) {
+      item.attachments.forEach((url, i) => {
+        rows.push([`Attachment ${i + 1}`, url]);
+      });
+    }
 
+    // ✅ Generate CSV string
+    const csvContent =
+      headers.join(",") +
+      "\n" +
+      rows.map((r) => r.map((v) => `"${v}"`).join(",")).join("\n");
+
+    // ✅ Create file and trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `${item.staffName?.fullName || "staff"}_document.csv`;
-    document.body.appendChild(link);
+    link.download = `${item.title || "template"}_record.csv`;
     link.click();
-    document.body.removeChild(link);
   };
 
-  const handleChange4 = (e) => {
+  const handleChange5 = (e) => {
     const { name, value } = e.target;
-
-    setFormData4((prev) => ({
+    setFormData5((prev) => ({
       ...prev,
       [name]: value,
     }));
-
-    // When staff is selected, fetch recommendations
   };
-  const handleSubmit4 = (e) => {
+
+  const handleToggleForm5 = () => {
+    setShowForm5(!showForm5);
+  };
+  const [editingUserId, setEditingUserId] = useState(null); // track if editing
+
+  const handleCancel5 = () => {
+    setShowForm5(false);
+    setFormData5({
+      title: "",
+      visibility: "Admin Only",
+      attachments: [],
+    });
+    setAttachments([]);
+    setEditingUserId(null);
+    setLoading(false);
+  };
+
+  const [loading, setLoading] = useState(false); // track loading state
+  // === SUBMIT FUNCTION (with FILE UPLOAD support) ===
+  const handleSubmit5 = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     const token = localStorage.getItem("token");
+    if (!token) {
+      setError("User not authenticated");
+      setLoading(false);
+      return;
+    }
+
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -447,135 +382,168 @@ const Page = () => {
       },
     };
 
-    const data = new FormData();
-    data.append("staffName", formData4.staffName);
-    data.append("expiryDate", formData4.expiryDate);
-    data.append("notes", formData4.notes);
+    try {
+      const data = new FormData();
+      data.append("title", formData5.title);
+      data.append("visibility", formData5.visibility);
 
-    // append multiple files for each category
-    Object.keys(attachments).forEach((category) => {
-      const files = attachments[category];
-      if (Array.isArray(files) && files.length > 0) {
-        files.forEach((file) => {
-          // agar already url hai (edit case) to skip karo
-          if (file instanceof File) {
-            data.append(category, file);
-          }
-        });
-      }
-    });
+      // ✅ Append attachments (images, pdf, etc.)
+      attachments.forEach((file) => {
+        data.append("attachments", file);
+      });
 
-    const request = editingUserId
-      ? axios.put(
-          `http://localhost:3000/staff-documents/${editingUserId}`,
+      let response;
+
+      if (editingUserId) {
+        // 🟢 Update existing template
+        response = await axios.put(
+          `http://localhost:3000/templates/${editingUserId}`,
           data,
           config
-        )
-      : axios.post(`http://localhost:3000/staff-documents`, data, config);
-
-    request
-      .then((res) => {
-        setMessage(
-          editingUserId
-            ? "Record updated successfully"
-            : "Record added successfully"
         );
-        setEditingUserId(null);
-        setFormData4({
-          staff: "",
-          expiryDate: "",
-          notes: "",
-        });
-        setAttachments(emptyAttachments);
-        setShowForm4(false);
-        setLoading(false);
-        toast.success("Saved successfully");
-
-        return axios.get(`http://localhost:3000/staff-documents`, config);
-      })
-      .then((res) => {
-        setStaffData(res.data);
-      })
-      .catch((err) => {
-        console.error("Error:", err.response?.data);
-        setLoading(false);
-        setError(err.response?.data?.msg || "An error occurred");
-        toast.error(err.response?.data?.msg || "An error occurred");
-      });
-  };
-  useEffect(() => {
-    const now = new Date();
-    const expiredStaff = [];
-    const expiringSoonStaff = [];
-
-    StaffData.forEach((staff) => {
-      const expiry = staff.expiryDate ? new Date(staff.expiryDate) : null;
-      if (!expiry) return;
-
-      const diffInDays = (expiry - now) / (1000 * 60 * 60 * 24);
-
-      if (expiry < now) {
-        expiredStaff.push(staff.staffName?.fullName || "Unknown");
-      } else if (diffInDays <= 30) {
-        expiringSoonStaff.push(staff.staffName?.fullName || "Unknown");
+      } else {
+        // 🟢 Create new template
+        response = await axios.post(
+          "http://localhost:3000/templates",
+          data,
+          config
+        );
       }
-    });
 
-    if (expiredStaff.length > 0) {
-      toast.warning(`⚠️ Expired: ${expiredStaff.join(", ")}`);
+      toast.success(
+        editingUserId
+          ? "Template updated successfully ✅"
+          : "Template added successfully ✅"
+      );
+
+      // Reset form
+      setEditingUserId(null);
+      setShowForm5(false);
+      setFormData5({
+        title: "",
+        visibility: "Admin Only",
+        attachments: [],
+      });
+      setAttachments([]);
+
+      // 🔄 Refresh the list of templates
+      const res = await axios.get("http://localhost:3000/templates", config);
+      setStaffData(res.data);
+    } catch (err) {
+      console.error("❌ Full Error:", err);
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.msg ||
+          err.message ||
+          "An error occurred"
+      );
+      toast.error("Failed to save template ❌");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let filtered = StaffData;
+
+    // 🔹 Filter by selected visibility (if not "All Records")
+    if (selected !== "All Records") {
+      filtered = filtered.filter(
+        (template) => template.visibility === selected
+      );
     }
 
-    if (expiringSoonStaff.length > 0) {
-      toast.info(`ℹ️ Expiring Soon: ${expiringSoonStaff.join(", ")}`);
+    // 🔹 Filter by search query (title or visibility)
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (template) =>
+          template.title?.toLowerCase().includes(query) ||
+          template.visibility?.toLowerCase().includes(query) ||
+          template.attachments?.some((att) => att.toLowerCase().includes(query))
+      );
     }
-  }, [StaffData]);
+
+    // 🔹 Update filtered data state
+    setFilteredStaff(filtered);
+  }, [selected, searchQuery, StaffData]);
+
+  useEffect(() => {
+    const fetchHR = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:3000/templates", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setStaffData(res.data); // no .users needed, your backend returns an array
+        setFilteredStaff(res.data);
+        setMessage("Users fetched successfully");
+        setError("");
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch HR data");
+      }
+    };
+    fetchHR();
+  }, []);
 
   const handleDelete = (id) => {
-    if (!window.confirm("Are you sure you want to delete this record?")) return;
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`http://localhost:3000/staff-documents/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      .delete(`http://localhost:3000/templates/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then(() => {
-        setMessage("Record deleted");
-        const updated = StaffData.filter((doc) => doc._id !== id);
+        setMessage("User deleted");
+        // Remove user from UI
+        const updated = StaffData.filter((user) => user._id !== id);
         setStaffData(updated);
         setFilteredStaff(updated);
-        toast.success("Deleted successfully");
+        toast.success("Deleted successfuly");
       })
       .catch((err) => {
         console.error(err);
-        setError(err.response?.data?.msg || "Failed to delete record");
-        toast.error(err.response?.data?.msg || "Failed to delete record");
+        setError(err.response?.data?.msg || "Failed to delete user");
+        toast.error(err.response?.data?.msg || "Failed to delete user");
       });
   };
 
-  const handleView = (client) => {
-    setViewName(client.staffName?.fullName || "N/A");
-    setViewExpiryDate(client.expiryDate?.slice(0, 10) || "N/A");
-    setViewNotes(client.notes || "N/A");
+  // ["Requirement", item.requirement],
+  //     ["Category", item.category],
+  //     ["LastReviewDate", item.lastReviewDate.slice(0, 10)],
+  //     ["NextReview", item.nextReviewDate.slice(0, 10)],
+  //     ["Status", item.status],
+  //     ["Notes", item.notes],
+  // 🧾 View States
+  const [viewTitle, setViewTitle] = useState(null);
+  const [viewVisibility, setViewVisibility] = useState(null);
+  const [viewUploadedBy, setViewUploadedBy] = useState(null);
+  const [viewAttachments, setViewAttachments] = useState([]); // ✅ for files
 
-    // 👉 Merge all attachment arrays into one
-    const allFiles = [
-      ...(client.employmentContracts || []),
-      ...(client.dbsCertificates || []),
-      ...(client.idDocuments || []),
-      ...(client.trainingCertificates || []),
-      ...(client.appraisalsReviews || []),
-      ...(client.disciplinaryRecords || []),
-    ];
+  const [showModals, setShowModals] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewVideo, setPreviewVideo] = useState(null);
 
-    setViewAttachments(allFiles);
+  // 🧾 Handle View Function
+  const handleView = (template) => {
+    setViewTitle(template.title);
+    setViewVisibility(template.visibility);
+    setViewUploadedBy(template.uploadedBy?.email || "Unknown");
+    setViewAttachments(template.attachments || []); // ✅ Set file attachments
     setShowModals(true);
   };
 
+  // 🧾 Data for modal view
   const data = {
-    "Staff Name": viewName,
-    "Expiry Date": viewExpiryDate,
-    Notes: viewNotes,
+    Title: viewTitle,
+    Visibility: viewVisibility,
+    "Uploaded By": viewUploadedBy,
   };
+
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) router.push("/Login");
@@ -595,7 +563,7 @@ const Page = () => {
             {/* ❌ Close Button */}
             <button
               onClick={() => setShowModals(false)}
-              className="absolute top-4 right-4 w-11 h-11 cursor-pointer bg-[#2b2e3a] hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:rotate-90 transition-all duration-300"
+              className="absolute top-4 right-4 w-11 h-11 bg-[#2b2e3a] hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:rotate-90 transition-all duration-300"
               aria-label="Close"
             >
               <svg
@@ -613,12 +581,12 @@ const Page = () => {
               </svg>
             </button>
 
-            {/* 🧾 Heading */}
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8 md:mb-10 flex items-center justify-center gap-2 sm:gap-3">
-              Social Record Details
+            {/* 💡 Heading */}
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8 md:mb-10">
+              Template Details
             </h2>
 
-            {/* 📄 Info Fields */}
+            {/* 💠 Info Fields */}
             <div className="space-y-5 mb-6">
               {Object.entries(data).map(([field, value]) => (
                 <div
@@ -651,15 +619,9 @@ const Page = () => {
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   {viewAttachments.map((file, index) => {
-                    const ext = file.split(".").pop().toLowerCase();
-                    const isPDF = ext === "pdf";
-                    const isVideo = [
-                      "mp4",
-                      "mov",
-                      "avi",
-                      "mkv",
-                      "webm",
-                    ].includes(ext);
+                    const lower = file.toLowerCase();
+                    const isPDF = lower.endsWith(".pdf");
+                    const isVideo = /\.(mp4|mov|avi|mkv|webm)$/.test(lower);
 
                     return (
                       <div
@@ -684,7 +646,7 @@ const Page = () => {
                             </p>
                           </a>
                         ) : isVideo ? (
-                          /* 🎥 VIDEO FILE */
+                          /* 🎥 VIDEO FILE with THUMBNAIL */
                           <div
                             className="relative group cursor-pointer"
                             onClick={() => setPreviewVideo(file)}
@@ -692,51 +654,41 @@ const Page = () => {
                             <video
                               src={file}
                               className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
-                              muted
-                            />
+                              poster="https://cdn-icons-png.flaticon.com/512/711/711245.png" // ✅ Default video thumbnail
+                            >
+                              Your browser does not support the video tag.
+                            </video>
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                strokeWidth={2}
+                                strokeWidth={1.5}
                                 stroke="white"
-                                className="w-10 h-10"
+                                className="w-12 h-12"
                               >
                                 <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  d="M5 3l14 9-14 9V3z"
+                                  d="M5.25 5.25v13.5l13.5-6.75L5.25 5.25z"
                                 />
                               </svg>
                             </div>
                           </div>
                         ) : (
                           /* 🖼️ IMAGE FILE */
-                          <div
-                            className="relative group cursor-zoom-in"
-                            onClick={() => setPreviewImage(file)}
-                          >
+                          <div className="relative group cursor-zoom-in">
                             <img
                               src={file}
                               alt={`Attachment ${index + 1}`}
                               className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
+                              onClick={() => setPreviewImage(file)}
                             />
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="white"
-                                className="w-6 h-6"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M15 10l4.553 2.276A1 1 0 0120 13.118V14a9 9 0 11-18 0v-.882a1 1 0 01.447-.842L7 10m8-2V4a2 2 0 00-4 0v4m4 0H7"
-                                />
-                              </svg>
+                            <div
+                              onClick={() => setPreviewImage(file)}
+                              className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"
+                            >
+                              <BsArrowsFullscreen />
                             </div>
                           </div>
                         )}
@@ -750,7 +702,7 @@ const Page = () => {
         </div>
       )}
 
-      {/* 🖼️ IMAGE PREVIEW */}
+      {/* 🖼️ Image Preview Modal */}
       {previewImage && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-4xl w-full">
@@ -781,10 +733,10 @@ const Page = () => {
         </div>
       )}
 
-      {/* 🎥 VIDEO PREVIEW */}
+      {/* 🎥 Video Preview Modal */}
       {previewVideo && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-3xl w-full">
+          <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-4xl w-full">
             <button
               onClick={() => setPreviewVideo(null)}
               className="absolute top-3 right-3 z-[10000] w-9 h-9 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow transition-all duration-200"
@@ -807,7 +759,7 @@ const Page = () => {
               src={previewVideo}
               controls
               autoPlay
-              className="w-full h-[350px] rounded-xl mx-auto"
+              className="w-full h-auto rounded-xl max-h-[80vh] mx-auto"
             />
           </div>
         </div>
@@ -815,8 +767,8 @@ const Page = () => {
 
       {/* Mobile Navbar Toggle */}
       <div className="lg:hidden flex items-center justify-end px-4 py-3 bg-gray-800 shadow relative">
-        <h1 className="text-lg text-white font-semibold absolute left-4">
-          Training
+        <h1 className="text-lg  text-white font-semibold absolute left-4">
+          Template
         </h1>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -830,8 +782,9 @@ const Page = () => {
         {/* Sidebar */}
         <aside
           className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
-      ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      lg:translate-x-0 lg:relative lg:block`}
+      ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      } lg:translate-x-0 lg:relative lg:block`}
         >
           <nav className="flex flex-col h-full">
             <div className="p-4 border-b border-gray-700 flex justify-between items-center lg:block">
@@ -845,7 +798,7 @@ const Page = () => {
                 className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
                   item.active
                     ? "bg-gray-700 text-primary-light"
-                    : " hover:bg-gray-700 hover:text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -854,8 +807,14 @@ const Page = () => {
                 <span className="flex items-center">
                   {item.label}
 
+                  {/* 🔴 Medication Low Stock Alert */}
                   {item.label === "Medication Management" && hasLowStock && (
-                    <span className=" h-3 w-3 mb-4 ml-1  text-xs bg-red-600  rounded-full"></span>
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
                   )}
                 </span>
               </Link>
@@ -871,7 +830,7 @@ const Page = () => {
                     .toUpperCase()}
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium  text-gray-200">
+                  <p className="text-sm font-medium text-gray-200">
                     {user.fullName}
                   </p>
                   <p className="text-xs text-gray-400">{user.email}</p>
@@ -883,18 +842,21 @@ const Page = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-6 max-h-screen overflow-hidden">
+          {/* <div className="h-full overflow-y-auto pr-2"></div> */}
           <h2 className="text-xl font-semibold text-gray-200 mb-6 hidden md:block">
-            Documents
+            Template
           </h2>
 
-          <div className="bg-gray-800 rounded-lg shadow-md p-6 mb-8 h-full overflow-y-auto pr-2 my-scroll">
+          <div className="bg-gray-800 rounded-lg  shadow-md p-6 mb-8 h-full overflow-y-auto pr-2 my-scroll">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
               <div>
                 <h3 className="text-lg font-medium text-gray-200">
-                  Documents Management
+                  Template Records
                 </h3>
-                <p className="text-sm text-gray-400"></p>
+                <p className="text-sm text-gray-400">
+                  Monitor regulatory Template
+                </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                 <div className="relative w-full sm:w-auto">
@@ -902,19 +864,21 @@ const Page = () => {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-md border border-gray-600 pl-10 pr-4 py-2 focus:border-primary-light focus:ring-primary-light bg-gray-700 text-white"
-                    placeholder="Search Documents..."
+                    className="w-full rounded-md border border-gray-600 pl-10 pr-4 py-2 focus:border-primary-light focus:ring-primary focus:ring-primary-light bg-gray-700 text-white"
+                    placeholder="Search Template..."
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaSearch className=" text-gray-500" />
+                    <FaSearch className="text-gray-500" />
                   </div>
                 </div>
-                <button
-                  onClick={() => setShowForm4(true)}
-                  className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-4 py-2 rounded-md text-[10px] font-medium transition-colors flex items-center"
-                >
-                  <FaPlus className="mr-2" /> Add New Document
-                </button>
+                {!hasClients && (
+                  <button
+                    onClick={handleToggleForm5}
+                    className="bg-[#4a48d4] cursor-pointer hover:bg-[#4A49B0] text-white px-2 py-2 rounded-md text-sm font-medium transition-colors flex items-center"
+                  >
+                    <FaPlus className="mr-2" /> Add Template Record
+                  </button>
+                )}
               </div>
             </div>
 
@@ -926,8 +890,8 @@ const Page = () => {
                   onClick={() => setSelected(label)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer backdrop-blur-sm ${
                     selected === label
-                      ? "bg-primary-light bg-gray-700 text-primary-light shadow-lg"
-                      : " bg-gray-800 hover:bg-gray-700 text-gray-300  hover:text-primary-light"
+                      ? "bg-gray-700 text-primary-light shadow-lg"
+                      : "bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-primary-light"
                   }`}
                 >
                   {label}
@@ -941,9 +905,10 @@ const Page = () => {
                 <thead className="bg-gray-700">
                   <tr>
                     {[
-                      "Staff name",
-                      "Documents ",
-                      "contracts Exp Date",
+                      "Title",
+                      "Document",
+                      "Visibility",
+                      "Status",
                       "Actions",
                     ].map((col, i) => (
                       <th
@@ -959,38 +924,45 @@ const Page = () => {
                   {filteredStaff.length > 0 ? (
                     filteredStaff.map((item, i) => (
                       <tr key={i}>
-                        <td className="px-2 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-white text-blue-500 flex items-center justify-center rounded-full border border-gray-600">
-                              {(
-                                staffMembers.find(
-                                  (staff) => staff._id === item.staffName?._id
-                                )?.fullName || "U"
-                              )
-                                .split(" ")
-                                .map((word) => word[0])
-                                .join("")
-                                .toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="text-[12px] font-medium text-white">
-                                {staffMembers.find(
-                                  (staff) => staff._id === item.staffName?._id
-                                )?.fullName || "Unknown"}
-                              </div>
-                              <div className="text-sm text-gray-400"></div>
-                            </div>
-                          </div>
-                        </td>
-                        {/* total document number  */}
+                        {/* 🏷️ Title */}
                         <td className="px-4 py-4 text-sm text-white">
-                          Documents
+                          {item.title || "N/A"}
                         </td>
+
+                        {/* 📄 Document (show attachments if available) */}
                         <td className="px-4 py-4 text-sm text-white">
-                          {item.expiryDate.slice(0, 10)}
+                          {item.attachments && item.attachments.length > 0 ? (
+                            <ul>
+                              {item.attachments.map((file, idx) => (
+                                <li key={idx}>
+                                  <a
+                                    href={file.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 underline"
+                                  >
+                                    {file.name || `Document ${idx + 1}`}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            "No Document"
+                          )}
                         </td>
+
+                        {/* 👁️ Visibility */}
+                        <td className="px-4 py-4 text-sm text-white">
+                          {item.visibility || "Private"}
+                        </td>
+
+                        {/* 📊 Status */}
+                        <td className="px-4 py-4 text-sm text-white">Active</td>
+
+                        {/* ⚙️ Actions */}
                         <td className="px-4 py-4">
-                          <div className="flex space-x-3 text-white items-center">
+                          <div className="flex space-x-2 text-white relative">
+                            {/* 👁️ View */}
                             <button
                               className="hover:text-blue-500 transition cursor-pointer"
                               onClick={() => handleView(item)}
@@ -998,19 +970,25 @@ const Page = () => {
                               <FaEye />
                             </button>
 
-                            <button
-                              className="hover:text-yellow-500 transition cursor-pointer"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <FaEdit />
-                            </button>
+                            {/* ✏️ Edit */}
+                            {!hasClients && (
+                              <button
+                                className="hover:text-yellow-500 transition cursor-pointer"
+                                onClick={() => handleEdit(item)}
+                              >
+                                <FaEdit />
+                              </button>
+                            )}
 
-                            <button
-                              className="hover:text-red-500 transition cursor-pointer"
-                              onClick={() => handleDelete(item._id)}
-                            >
-                              <FaTrash />
-                            </button>
+                            {/* /* 🗑️ Delete */}
+                            {!hasClients && (
+                              <button
+                                className="hover:text-red-500 transition cursor-pointer"
+                                onClick={() => handleDelete(item._id)}
+                              >
+                                <FaTrash />
+                              </button>
+                            )}
 
                             {/* 📥 Download Dropdown */}
                             <div className="relative">
@@ -1022,7 +1000,7 @@ const Page = () => {
                                       : item._id
                                   )
                                 }
-                                className="hover:text-green-500 transition cursor-pointer"
+                                className="hover:text-green-600 transition cursor-pointer"
                               >
                                 <FaDownload />
                               </button>
@@ -1030,23 +1008,26 @@ const Page = () => {
                               {openDropdownId === item._id && (
                                 <div
                                   className="absolute right-0 mt-2 bg-white/20 backdrop-blur-xl border border-white/30 
-              rounded-xl shadow-lg p-2 z-10 w-40 transition-all duration-300 cursor-pointer"
+                      rounded-xl shadow-lg p-2 z-10 w-40 transition-all duration-300 cursor-pointer"
                                 >
                                   <button
                                     onClick={() => {
                                       handleDownloadPdf(item);
                                       setOpenDropdownId(null);
                                     }}
-                                    className="block w-full text-left px-4 py-2 hover:bg-white/30 rounded-lg transition cursor-pointer"
+                                    className="block w-full text-left px-3 py-2 
+                        text-sm text-white hover:bg-white/10 transition cursor-pointer"
                                   >
                                     Download PDF
                                   </button>
+
                                   <button
                                     onClick={() => {
                                       handleDownloadCsv(item);
                                       setOpenDropdownId(null);
                                     }}
-                                    className="block w-full text-left px-4 py-2 hover:bg-white/30 rounded-lg transition cursor-pointer"
+                                    className="block w-full text-left px-3 py-2 
+                        text-sm text-white hover:bg-white/10 transition cursor-pointer"
                                   >
                                     Download CSV
                                   </button>
@@ -1060,10 +1041,10 @@ const Page = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={5}
                         className="text-center px-4 sm:px-6 py-24 text-gray-400 text-sm"
                       >
-                        No Documents Records found.
+                        No Template found.
                       </td>
                     </tr>
                   )}
@@ -1071,196 +1052,86 @@ const Page = () => {
               </table>
             </div>
           </div>
-
           {/* Modal Form */}
-          {showForm4 && (
+
+          {showForm5 && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-auto p-4">
               <form
-                onSubmit={handleSubmit4}
+                onSubmit={handleSubmit5}
                 className="bg-gray-800 p-6 rounded-lg w-full max-w-lg shadow-lg max-h-[90vh] overflow-y-auto"
               >
-                <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
-                  {editingUserId
-                    ? "Edit Documents Record"
-                    : "Add Documents Record"}
+                <h2 className="text-center text-white font-semibold mb-4 text-lg">
+                  {editingUserId ? "Edit Template" : "Add Template"}
                 </h2>
 
-                {/* Staff Member */}
+                {/* Title */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Staff Member
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData5.title}
+                    onChange={handleChange5}
+                    required
+                    className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none"
+                  />
+                </div>
+
+                {/* Visibility */}
+                <div className="mb-4">
+                  <label className="block text-gray-300 text-sm font-medium mb-2">
+                    Visibility
                   </label>
                   <select
-                    name="staffName"
-                    value={formData4.staffName}
-                    onChange={handleChange4}
+                    name="visibility"
+                    value={formData5.visibility}
+                    onChange={handleChange5}
                     required
-                    className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
+                    className="w-full bg-gray-700 border border-gray-600 text-white rounded p-2"
                   >
-                    <option value="">Select Staff Member</option>
-                    {staffMembers.map((staff) => (
-                      <option key={staff._id} value={staff._id}>
-                        {staff.fullName}
-                      </option>
-                    ))}
+                    <option value="Admin Only">Admin Only</option>
+                    <option value="Staff and Admin">Staff and Admin</option>
+                    <option value="Everyone">Everyone</option>
                   </select>
                 </div>
 
-                {/* Expiry Date */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-300">
-                    contracts Exp Date
-                  </label>
-                  <input
-                    type="date"
-                    name="expiryDate"
-                    value={formData4.expiryDate}
-                    onChange={handleChange4}
-                    required
-                    className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-                  />
-                </div>
-
                 {/* Attachments */}
-                {/* Attachments - Multiple Categories */}
                 <div className="mb-4">
                   <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Employment Contracts
+                    Attachments
                   </label>
                   <input
                     type="file"
-                    name="employmentContracts"
-                    onChange={handleFileChange}
+                    name="attachments"
                     multiple
+                    onChange={handleFileChange}
                     className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
                   />
                 </div>
 
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    DBS Certificates
-                  </label>
-                  <input
-                    type="file"
-                    name="dbsCertificates"
-                    onChange={handleFileChange}
-                    multiple
-                    className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    ID Documents
-                  </label>
-                  <input
-                    type="file"
-                    name="idDocuments"
-                    onChange={handleFileChange}
-                    multiple
-                    className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Training Certificates
-                  </label>
-                  <input
-                    type="file"
-                    name="trainingCertificates"
-                    onChange={handleFileChange}
-                    multiple
-                    className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Appraisals & Reviews
-                  </label>
-                  <input
-                    type="file"
-                    name="appraisalsReviews"
-                    onChange={handleFileChange}
-                    multiple
-                    className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Disciplinary Records
-                  </label>
-                  <input
-                    type="file"
-                    name="disciplinaryRecords"
-                    onChange={handleFileChange}
-                    multiple
-                    className="w-full px-3 py-2 border rounded bg-gray-700 text-white"
-                  />
-                </div>
-
-                {/* Notes */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Notes
-                  </label>
-                  <textarea
-                    name="notes"
-                    value={formData4.notes}
-                    onChange={handleChange4}
-                    rows="4"
-                    className="w-full rounded border py-2 px-3 bg-gray-700 text-gray-300 border-gray-600"
-                  />
-                </div>
                 {/* Buttons */}
                 <div className="flex justify-between pt-4 border-t border-gray-700">
                   <button
                     type="button"
-                    onClick={handleCancel9}
-                    className=" bg-gray-700 hover:bg-gray-600 cursor-pointer text-gray-200 font-bold py-2 px-4 rounded"
+                    onClick={handleCancel5}
+                    className=" cursor-pointer bg-gray-700 hover:bg-gray-600 text-gray-200 font-bold py-2 px-4 rounded"
                   >
-                    {/* setShowForm4(false) */}
                     Cancel
                   </button>
-
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white font-bold py-2 px-4 rounded ${
+                    className={` cursor-pointer flex items-center justify-center bg-[#4a48d4] hover:bg-[#4A49B0] text-white font-bold py-2 px-4 rounded ${
                       loading ? "opacity-70 cursor-not-allowed" : ""
                     }`}
                   >
-                    {loading ? (
-                      <>
-                        <svg
-                          className="animate-spin h-5 w-5 text-white mr-2"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                          ></path>
-                        </svg>
-                        Please wait...
-                      </>
-                    ) : editingUserId ? (
-                      "Update Record"
-                    ) : (
-                      "Add Record"
-                    )}
+                    {loading
+                      ? "Please wait..."
+                      : editingUserId
+                      ? "Update "
+                      : "Add "}
                   </button>
                 </div>
               </form>

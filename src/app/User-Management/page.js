@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoDocumentAttach } from "react-icons/io5";
+import { LuLayoutTemplate } from "react-icons/lu";
+
+import { TbClockRecord } from "react-icons/tb";
 
 import {
   FaThLarge,
@@ -25,6 +28,7 @@ import {
   FaBars,
   FaTimes,
   FaTrash,
+  FaEyeSlash,
 } from "react-icons/fa";
 import Link from "next/link";
 import { set } from "nprogress";
@@ -63,26 +67,41 @@ const StaffData = [
 ];
 
 const Page = () => {
-  const navItems = [
-        { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-    { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-    { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management"},
-    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
+  const { user, logout } = useAuth();
+   const navItems = [
+    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+    { icon: <FaUser />,label: "Resident Management", href: "/Client-Management",    },
+    { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning", },
+    { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports", },
+    { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
     { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management",  },
-    {
-      icon: <IoDocumentAttach />,
-      label: "Documents Management",
-      href: "/Documents-Management",
-      
-    },
-    { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management",},
-    { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+    { icon: <MdMedicationLiquid />,label: "Medication Management",href: "/Medication-Management", },
+    { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record"},
+    { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+    { icon: <IoDocumentAttach />,label: "Documents Management",href: "/Documents-Management",},
+    { icon: <GrDocumentPerformance />, label: "Performance Management", href: "/Performance-Management",},
+    { icon: <FaGraduationCap />, label: "Training", href: "/Training"},
     { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-    { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics",  },
-    { icon: <FaUserCog />, label: "User Management", href: "/User-Management", active: true },
+    { icon: <SiSimpleanalytics />, label: "Analytics", href: "/Analytics" },
+    { icon: <FaUserCog />, label: "User Management", href: "/User-Management", active: true, },
   ];
+
+  // ✅ Filter logic for External users
+  const allowedNavItems =
+  user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+      ? navItems
+      : user?.role === "External" && Array.isArray(user.allowedPages)
+      ? navItems.filter((item) =>
+          user.allowedPages.some(
+            (page) =>
+              page.toLowerCase().replace(/\s+/g, "") ===
+              item.key.toLowerCase()
+          )
+        )
+      : [];
+
+
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
@@ -90,61 +109,98 @@ const Page = () => {
   const [selected, setSelected] = useState("All Users");
   const filters = ["All Users", "admin", "staff", "client"];
   const [patient, setPatient] = useState([]);
+    const { hasLowStock, setHasLowStock } = useAuth();
+
   const [fieldopen, setFieldOpen] = useState(false); // State to control the visibility of the field
+  const [fieldopensatff , setFieldOpensatff] = useState(false); // State to control the visibility of the field
+const [clientSearch, setClientSearch] = useState("");
+const [staffMembers, setStaffMembers] = useState([]); // State to hold staff members
+const [staffSearch, setStaffSearch] = useState(""); // State for staff search input
+const [showExternalAccess, setShowExternalAccess] = useState(false);
+  const { hasReviews, setHasReviews } = useAuth();
+
 
   // Define your navigation links here with proper routes
 
   const [showForm6, setShowForm6] = useState(false);
-  const [formData6, setFormData6] = useState({
-    name: "",
-    email: "",
-    role: "",
-    password: "",
-    confirmPassword: "",
-    clients: [], // ✅ Add this
-  });
+const [formData6, setFormData6] = useState({
+  name: "",    
+  email: "",
+  role: "",
+  password: "",
+  confirmPassword: "",
+  clients: [],
+  hr: "",
+  allowedPages: [], // ✅ Add this
+});
+
+
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 const handleChange6 = (e) => {
   const { name, value } = e.target;
-  console.log("Field changed:", name, "Value:", value);
 
   setFormData6((prev) => ({
     ...prev,
     [name]: value,
   }));
 
-  // role field ke liye hi check karo
   if (name === "role") {
     if (value === "Client") {
-      setFieldOpen(true);   // Client select hone par open rakho
+      setFieldOpen(true);
+      setFieldOpensatff(false);
+      setShowExternalAccess(false);
+    } else if (value === "Staff") {
+      setFieldOpensatff(true);
+      setFieldOpen(false);
+      setShowExternalAccess(false);
+    } else if (value === "External") {
+      setFieldOpen(false);
+      setFieldOpensatff(false);
+      setShowExternalAccess(true); // 👈 New state for checkboxes
     } else {
-      setFieldOpen(false);  // warna hide karo
+      setFieldOpen(false);
+      setFieldOpensatff(false);
+      setShowExternalAccess(false);
     }
   }
 };
 
 
-  const handleEdit = (user) => {
-    setFormData6({
-      name: user.fullName,
-      email: user.email,
-      role: user.role,
-      password: "",
-      confirmPassword: "",
-      clients:
-        user.clients?.map((c) => (typeof c === "object" ? c._id : c)) || [], // ✅ convert to array of _id
-    });
-    setShowForm6(true);
-    setEditingUserId(user._id); // Set the ID of the user being edited
 
-    if (user.role === "Client") {
-      setFieldOpen(true); // Show field if role is Client
-    } else {
-      setFieldOpen(false);
-    }
-  };
+
+ const handleEdit = (user) => {
+  setFormData6({
+    name: user.fullName || "",
+    email: user.email || "",
+    role: user.role || "",
+    password: "",
+    confirmPassword: "",
+    clients:
+      user.clients?.map((c) => (typeof c === "object" ? c._id : c)) || [],
+    hr: user.hr || "",
+    allowedPages: user.allowedPages || [], // ✅ new field for page access
+  });
+
+  setShowForm6(true);
+  setEditingUserId(user._id);
+
+
+  // ✅ Show specific fields based on role
+  if (user.role === "Client") {
+    setFieldOpen(true);
+    setFieldOpensatff(false);
+  } else if (user.role === "Staff") {
+    setFieldOpensatff(true);
+    setFieldOpen(false);
+  } else {
+    setFieldOpen(false);
+    setFieldOpensatff(false);
+    setShowExternalAccess(true);
+  }
+};
+
 
   const [editingUserId, setEditingUserId] = useState(null); // track if editing
 
@@ -170,23 +226,26 @@ const handleChange6 = (e) => {
     };
 
     const payload = {
-      fullName: name,
-      email,
-      role,
-      ...(password && { password }),
-      ...(role === "Client" && { clients: formData6.clients || [] }), // ✅ send only for Client
-    };
+  fullName: name,
+  email,
+  role,
+  ...(password && { password }),
+  ...(role === "Client" && { clients: formData6.clients || [] }),
+  ...(role === "Staff" && { hr: formData6.hr }),
+  ...(role === "External" && { allowedPages: formData6.allowedPages }), // ✅ added
+};
+
 
     console.log("Sending Payload:", { ...payload, confirmPassword });
 
     const request = editingUserId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/user/${editingUserId}`,
+          `http://localhost:3000/user/${editingUserId}`,
           payload,
           config
         )
       : axios.post(
-          "https://control-panel-backend-k6fr.vercel.app/user/signup",
+          "http://localhost:3000/user/signup",
           { ...payload, confirmPassword },
           config
         ); // 🟢 Must include config here too
@@ -205,7 +264,7 @@ const handleChange6 = (e) => {
         });
         setShowForm6(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/user", config);
+        return axios.get("http://localhost:3000/user", config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -221,7 +280,7 @@ const handleChange6 = (e) => {
 
   useEffect(() => {
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/user", {
+      .get("http://localhost:3000/user", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -262,7 +321,7 @@ const handleChange6 = (e) => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/user/${id}`, {
+      .delete(`http://localhost:3000/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -281,11 +340,30 @@ const handleChange6 = (e) => {
         toast.error(err.response?.data?.msg || "Failed to delete user");
       });
   };
+useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  axios.get('http://localhost:3000/hr', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(response => {
+      setStaffMembers(response.data.allHr);
+      setMessage('Staff fetched successfully');
+    })
+    .catch(error => {
+      setError(error.response?.data?.msg || 'Failed to fetch staff');
+    });
+}, []);
+
+
+
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -298,6 +376,9 @@ const handleChange6 = (e) => {
         setError(error.response?.data?.msg || "Failed to fetch staff");
       });
   }, []);
+
+    const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleCancel = () => {
     setShowForm6(false);
@@ -313,7 +394,6 @@ const handleChange6 = (e) => {
     setFieldOpen(false); // Reset field visibility
   };
 
-  const { user, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -350,24 +430,36 @@ const handleChange6 = (e) => {
             <div className="p-4 border-b border-gray-700 flex justify-between items-center lg:block">
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
+  {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
 
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-                    item.active
-                      ? "bg-gray-700 text-white"
-                      : " hover:bg-gray-700 hover:text-white"
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3">{item.icon}</span>
+                <span className="flex items-center">
                   {item.label}
-                </Link>
-              ))}
-            </div>
+
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
+
+
 
             <div className="p-4 border-t border-gray-700">
               <div className="flex items-center">
@@ -532,6 +624,236 @@ const handleChange6 = (e) => {
                 <h2 className="text-center text-white font-semibold mb-4 text-lg sm:text-xl md:text-2xl lg:text-2xl xl:text-2xl">
                   {editingUserId ? " Edit User " : " Add User "}
                 </h2>
+
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="role"
+                    className="block text-gray-300 text-sm font-medium mb-2"
+                  >
+                    Role
+                  </label>
+                  <select
+                    id="role"
+                    name="role"
+                    required
+                    value={formData6.role}
+                    onChange={handleChange6}
+                    className="shadow-sm cursor-pointer border rounded w-full py-2 px-3  text-gray-300 bg-gray-700 border-gray-600"
+                  >
+                    <option value="" disabled>
+                      Select Role
+                    </option>
+                    <option value="Admin" className=" cursor-pointer">
+                      Administrator
+                    </option>
+                    <option value="Staff" className=" cursor-pointer">
+                      Staff
+                    </option>
+                    <option value="Client" className=" cursor-pointer">
+                      Client
+                    </option>
+                      <option value="External">External</option> {/* 👈 New */}
+
+                  </select>
+                </div>
+
+               {fieldopen && (
+  <div className="space-y-2 mb-4">
+    <h2 className="text-lg font-semibold text-gray-200">
+      All Patients
+    </h2>
+
+    {/* 🔍 Search box for clients */}
+    <div className="mb-2">
+      <input
+        type="text"
+        placeholder="Search patient..."
+        value={clientSearch}
+        onChange={(e) => setClientSearch(e.target.value)}
+        className="w-full rounded-md border border-gray-600 px-3 py-1 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+      />
+    </div>
+
+    {/* Scrollable client list */}
+    <div className="max-h-48 overflow-y-auto space-y-1 pr-2 border border-gray-600 rounded-md p-2">
+      {patient
+        .filter((c) =>
+          c.fullName.toLowerCase().includes(clientSearch.toLowerCase())
+        )
+        .map((client) => (
+          <div key={client._id} className="flex items-center space-x-2">
+            <input
+              className="cursor-pointer"
+              type="checkbox"
+              id={`client-${client._id}`}
+              value={client._id}
+              checked={formData6.clients?.includes(client._id)}
+              onChange={(e) => {
+                const value = e.target.value;
+                const checked = e.target.checked;
+                setFormData6((prev) => {
+                  const updatedClients = checked
+                    ? [...(prev.clients || []), value]
+                    : (prev.clients || []).filter((id) => id !== value);
+                  return { ...prev, clients: updatedClients };
+                });
+              }}
+            />
+            <label
+              htmlFor={`client-${client._id}`}
+              className="text-gray-300 text-sm"
+            >
+              {client.fullName}
+            </label>
+          </div>
+        ))}
+      {patient.filter((c) =>
+        c.fullName.toLowerCase().includes(clientSearch.toLowerCase())
+      ).length === 0 && (
+        <p className="text-gray-400 text-sm text-center">No patients found</p>
+      )}
+    </div>
+
+
+
+
+
+    
+  </div>
+)}
+{/* Role Field */}
+
+
+{/* Page Access (only for External) */}
+{showExternalAccess && (
+  <div className="mb-4">
+    <label className="block text-gray-300 text-sm font-medium mb-2">
+      Select Page Access
+    </label>
+    <div className="grid grid-cols-2 gap-2 text-white">
+      {[
+        "Dashboard",
+        "Resident Management",
+        "Care Planning",
+        "Medication Management",
+        "Incident Reports",
+        "Template",
+        "Social Activity",
+        "HR Management",
+        "Documents Management",
+        "Performance Management",
+        "Training",
+        "Compliance",
+        "Analytics",
+        "User Management",
+      ].map((page) => (
+        <label key={page} className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={
+              page === "Dashboard"
+                ? true
+                : formData6.allowedPages?.includes(page)
+            }
+            disabled={page === "Dashboard"} // ✅ Always checked & not editable
+            className={`cursor-pointer ${
+              page === "Dashboard" ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            onChange={(e) => {
+              if (page === "Dashboard") return; // prevent unchecking
+              const updated = e.target.checked
+                ? [...formData6.allowedPages, page]
+                : formData6.allowedPages.filter((p) => p !== page);
+              setFormData6((prev) => ({ ...prev, allowedPages: updated }));
+            }}
+          />
+          {page}
+        </label>
+      ))}
+    </div>
+  </div>
+)}
+
+
+{fieldopensatff && (
+  <div className="space-y-2 mb-4">
+    <h2 className="text-lg font-semibold text-gray-200">
+      All staff
+    </h2>
+
+    {/* 🔍 Search box for clients */}
+    <div className="mb-2">
+      <input
+        type="text"
+        placeholder="Search staff..."
+        value={staffSearch}
+        onChange={(e) => setStaffSearch(e.target.value)}
+        className="w-full rounded-md border border-gray-600 px-3 py-1 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+      />
+    </div>
+
+    {/* Scrollable client list */}
+    <div className="max-h-48 overflow-y-auto space-y-1 pr-2 border border-gray-600 rounded-md p-2">
+{staffMembers
+  .filter((c) =>
+    c.fullName.toLowerCase().includes(staffSearch.toLowerCase())
+  )
+  .map((staff) => (
+    <div key={staff._id} className="flex items-center space-x-2">
+      <input
+        className="cursor-pointer"
+        type="checkbox"
+        id={`staff-${staff._id}`}
+        value={staff._id}
+        checked={formData6.hr === staff._id}  // ✅ sirf ek select
+        onChange={(e) => {
+          const checked = e.target.checked;
+
+          setFormData6((prev) => {
+            if (checked) {
+              // ✅ sirf ek staff id rakho
+              return {
+                ...prev,
+                name: staff.fullName,
+                email: staff.email,
+                hr: staff._id, // ek hi staff store hoga
+              };
+            } else {
+              // ❌ unselect hone par clear kar do
+              return {
+                ...prev,
+                name: "",
+                email: "",
+                hr: null,
+              };
+            }
+          });
+        }}
+      />
+      <label
+        htmlFor={`staff-${staff._id}`}
+        className="text-gray-300 text-sm"
+      >
+        {staff.fullName}
+      </label>
+    </div>
+  ))}
+
+    </div>
+
+
+
+
+
+    
+  </div>
+)}
+
+
+
+
+
                 <div className="mb-4">
                   <label
                     htmlFor="name"
@@ -568,112 +890,59 @@ const handleChange6 = (e) => {
                   />
                 </div>
 
-                <div className="mb-4">
-                  <label
-                    htmlFor="role"
-                    className="block text-gray-300 text-sm font-medium mb-2"
-                  >
-                    Role
-                  </label>
-                  <select
-                    id="role"
-                    name="role"
-                    required
-                    value={formData6.role}
-                    onChange={handleChange6}
-                    className="shadow-sm cursor-pointer border rounded w-full py-2 px-3  text-gray-300 bg-gray-700 border-gray-600"
-                  >
-                    <option value="" disabled>
-                      Select Role
-                    </option>
-                    <option value="Admin" className=" cursor-pointer">
-                      Administrator
-                    </option>
-                    <option value="Staff" className=" cursor-pointer">
-                      Staff
-                    </option>
-                    <option value="Client" className=" cursor-pointer">
-                      Client
-                    </option>
-                  </select>
-                </div>
 
-                {fieldopen && (
-                  <div className="space-y-2 mb-4">
-                    <h2 className="text-lg font-semibold  text-gray-200">
-                      All Patients
-                    </h2>
 
-                    {patient.map((client) => (
-                      <div
-                        key={client._id}
-                        className="flex items-center space-x-2"
-                      >
-                        <input
-                          className="cursor-pointer"
-                          type="checkbox"
-                          id={`client-${client._id}`}
-                          value={client._id}
-                          checked={formData6.clients?.includes(client._id)}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            const checked = e.target.checked;
-                            setFormData6((prev) => {
-                              const updatedClients = checked
-                                ? [...(prev.clients || []), value]
-                                : (prev.clients || []).filter(
-                                    (id) => id !== value
-                                  );
-                              return { ...prev, clients: updatedClients };
-                            });
-                          }}
-                        />
-                        <label
-                          htmlFor={`client-${client._id}`}
-                          className="text-gray-300"
-                        >
-                          {client.fullName}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* Password Field */}
+      <div className="mb-4 relative">
+        <label
+          htmlFor="password"
+          className="block text-gray-300 text-sm font-medium mb-2"
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          required
+          value={formData6.password}
+          onChange={handleChange6}
+          className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-10 cursor-pointer text-gray-400 hover:text-white"
+        >
+          {showPassword ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
 
-                <div className="mb-4">
-                  <label
-                    htmlFor="password"
-                    className="block text-gray-300 text-sm font-medium mb-2"
-                  >
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    value={formData6.password}
-                    onChange={handleChange6}
-                    className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600"
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-gray-300 text-sm font-medium mb-2"
-                  >
-                    Confirm Password
-                  </label>
-                  <input
-                    id="confirm-password"
-                    name="confirmPassword"
-                    type="password"
-                    required
-                    value={formData6.confirmPassword}
-                    onChange={handleChange6}
-                    className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600"
-                  />
-                </div>
+      {/* Confirm Password Field */}
+      <div className="mb-4 relative">
+        <label
+          htmlFor="confirmPassword"
+          className="block text-gray-300 text-sm font-medium mb-2"
+        >
+          Confirm Password
+        </label>
+        <input
+          id="confirm-password"
+          name="confirmPassword"
+          type={showConfirm ? "text" : "password"}
+          required
+          value={formData6.confirmPassword}
+          onChange={handleChange6}
+          className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShowConfirm(!showConfirm)}
+          className="absolute right-3 top-10  text-gray-400 hover:text-white"
+        >
+          {showConfirm ? <FaEyeSlash /> : <FaEye />}
+        </button>
+      </div>
 
                 <div className="flex justify-end pt-4 border-t border-gray-700">
                   <button

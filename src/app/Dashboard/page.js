@@ -4,11 +4,12 @@ import Navbar from "../(component)/navbar/Navbar";
 import axios from "axios";
 import { SiSimpleanalytics } from "react-icons/si";
 import { IoDocumentAttach } from "react-icons/io5";
-
+import { LuLayoutTemplate } from "react-icons/lu";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import OccupancyChart from "@/app/(component)/occupancyChart/OccupancyChart";
+
 import {
   FaThLarge,
   FaUser,
@@ -31,37 +32,106 @@ import {
 import { HiUsers } from "react-icons/hi2";
 import Link from "next/link";
 import { GrDocumentPerformance } from "react-icons/gr";
+// const { hasLowStock, setHasLowStock } = useAuth();
+import { TbClockRecord } from "react-icons/tb";
+
 import { inc, set } from "nprogress";
 import { toast } from "react-toastify";
 import { MdMedicationLiquid } from "react-icons/md";
-
+import ChangePasswordPrompt from "../(component)/changepassword/Changepassword";
+import IncidentChart from "../(component)/charts/IncidentChart";
 const Page = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { hasClients } = useAuth();
+  const { hasLowStock, setHasLowStock, hasClients, user } = useAuth();
 
+  const { totalLowStock, setTotalLowStock } = useAuth();
+  const [showBox, setShowBox] = useState(false);
+  const { todayReviews, setTodayReviews } = useAuth();
+  const { overdueReviews, setOverdueReviews } = useAuth();
+  const { totalToday, setTotalToday } = useAuth();
+  const { totalOverdue, setTotalOverdue } = useAuth();
+  const { hasReviews, setHasReviews } = useAuth();
   const navItems = [
-  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard", active: true },
-  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning" },
-  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
-  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
-  ...(hasClients
-    ? []
-    : [
-        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
-        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
-        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
-        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-      ]),
-];
+    {
+      icon: <FaThLarge />,
+      label: "Dashboard",
+      href: "/Dashboard",
+      active: true,
+    },
+    {
+      icon: <FaUser />,
+      label: "Resident Management",
+      href: "/Client-Management",
+    },
+    {
+      icon: <FaClipboardList />,
+      label: "Care Planning",
+      href: "/Care-Planning",
+    },
+    {
+      icon: <FaExclamationTriangle />,
+      label: "Incident Reports",
+      href: "/Incident-Reports",
+    },
+    { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
+     {
+            icon: <FaSearch />,
+            label: "Social Activity",
+            href: "/Social-Activity",
+          },
+    {
+      icon: <MdMedicationLiquid />,
+      label: "Medication Management",
+      href: "/Medication-Management",
+    },
 
+    ...(hasClients
+      ? []
+      : [
+                  { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record" },
+
+         
+          { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+          {
+            icon: <IoDocumentAttach />,
+            label: "Documents Management",
+            href: "/Documents-Management",
+          },
+          {
+            icon: <GrDocumentPerformance />,
+            label: "Performance Management",
+            href: "/Performance-Management",
+          },
+          { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+          { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+          {
+            icon: <SiSimpleanalytics />,
+            label: "Analytics",
+            href: "/Analytics",
+          },
+          {
+            icon: <FaUserCog />,
+            label: "User Management",
+            href: "/User-Management",
+          },
+        ]),
+  ];
+  const allowedNavItems =
+    user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+      ? navItems
+      : user?.role === "External" && Array.isArray(user.allowedPages)
+      ? navItems.filter((item) =>
+          user.allowedPages.some(
+            (page) =>
+              page.toLowerCase().replace(/\s+/g, "") ===
+              item.label.toLowerCase().replace(/\s+/g, "")
+          )
+        )
+      : [];
 
   // care plane ------------------------------------------------------------------------------------------------
   const [carePlans, setCarePlans] = useState([]);
+
   const [formDataCare, setFormDataCare] = useState({
     client: "",
     planType: "",
@@ -133,7 +203,7 @@ const Page = () => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config)
+      .post(`http://localhost:3000/carePlanning`, formData, config)
       .then((res) => {
         toast.success("Care plan saved successfully");
         setShowFormCare(false);
@@ -166,7 +236,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -185,7 +255,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -198,24 +268,115 @@ const Page = () => {
         setError(error.response?.data?.msg || "Failed to fetch staff");
       });
   }, []);
-  const [sixmont, setsixmont] = useState(0);
-  const [open, setopen] = useState(0);
+
+  // staff deshbord statu
+
+  const [trainingStats, setTrainingStats] = useState({
+    upToDate: 0,
+    expiringSoon: 0,
+    expired: 0,
+  });
+  const [percentage, setPercentage] = useState(0);
+
+  useEffect(() => {
+    const fetchTrainingAnalytics = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:3000/training", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = res.data;
+        const now = new Date();
+        const soon = new Date();
+        soon.setDate(now.getDate() + 30);
+
+        let upToDate = 0;
+        let expiringSoon = 0;
+        let expired = 0;
+
+        data.forEach((t) => {
+          const expiry = new Date(t.expiryDate);
+          if (expiry < now) expired++;
+          else if (expiry <= soon) expiringSoon++;
+          else upToDate++;
+        });
+
+        const stats = { upToDate, expiringSoon, expired };
+        setTrainingStats(stats);
+
+        const total = upToDate + expiringSoon + expired;
+        const percent = total ? Math.round((upToDate / total) * 100) : 0;
+        setPercentage(percent);
+
+        const ctx = document.getElementById("trainingChart");
+        if (ctx) {
+          if (window.trainingChartInstance) {
+            window.trainingChartInstance.destroy();
+          }
+
+          window.trainingChartInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: ["Up to Date", "Expiring Soon", "Expired"],
+              datasets: [
+                {
+                  data: [upToDate, expiringSoon, expired],
+                  backgroundColor: [
+                    "rgba(34,197,94,0.9)", // green
+                    "rgba(250,204,21,0.9)", // yellow
+                    "rgba(239,68,68,0.9)", // red
+                  ],
+                  borderColor: "#1c2434",
+                  borderWidth: 4,
+                },
+              ],
+            },
+            options: {
+              cutout: "70%",
+              plugins: { legend: { display: false } },
+            },
+          });
+        }
+      } catch (error) {
+        console.error("❌ Error fetching training analytics:", error);
+      }
+    };
+
+    fetchTrainingAnalytics();
+  }, []);
+
+  // incedent deshbord stats
+
+  const [sixmont, setSixmont] = useState(0);
+  const [open, setOpen] = useState(0);
+  const [underInvestigation, setUnderInvestigation] = useState(0);
+  const [resolved, setResolved] = useState(0);
+  // const [incmessage, setIncemessage] = useState("");
+
   useEffect(() => {
     const fetchIncidents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", {
+        const res = await axios.get("http://localhost:3000/incident/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setsixmont(res.data.recentIncidentsCount);
-        setopen(res.data.openIncidentsCount);
-        setMessage("Incidents fetched successfully");
+
+        // ✅ Set all stats from backend response
+        setSixmont(res.data.recentIncidentsCount);
+        setOpen(res.data.openIncidentsCount);
+        setUnderInvestigation(res.data.underInvestigationCount);
+        setResolved(res.data.resolvedIncidentsCount);
+        // setMessage("Incidents fetched successfully");
       } catch (err) {
+        console.error(err);
         setError(err.response?.data?.msg || "Failed to fetch incidents");
       }
     };
+
     fetchIncidents();
   }, []);
+
   const [incidentData, setIncidentData] = useState([]);
   const [attachmentsincident, setAttachmentsincidebt] = useState([]);
   const handleFileChangeincident = (e) => {
@@ -264,7 +425,7 @@ const Page = () => {
     });
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/incident/`, data, config)
+      .post(`http://localhost:3000/incident/`, data, config)
       .then((res) => {
         setLoading(false);
         setFormData2({
@@ -343,7 +504,7 @@ const Page = () => {
     const fetchHR0 = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
+        const res = await axios.get("http://localhost:3000/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTotalStaffno(res.data.totalstaff);
@@ -383,7 +544,7 @@ const Page = () => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config)
+      .post(`http://localhost:3000/hr`, payload, config)
 
       .then((res) => {
         setLoading(false); // Reset loading state
@@ -418,7 +579,7 @@ const Page = () => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
+        const res = await axios.get("http://localhost:3000/client", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTotalClients(res.data.totalClients);
@@ -474,7 +635,7 @@ const Page = () => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/client`, payload, config)
+      .post(`http://localhost:3000/client`, payload, config)
       .then((res) => {
         setFormData({
           name: "",
@@ -487,7 +648,7 @@ const Page = () => {
         setShowModal(false);
         toast.success("Add successfuly");
 
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/client", config);
+        return axios.get("http://localhost:3000/client", config);
       })
       .then((res) => {
         console.log("Updated Client Data:", res.data.clients);
@@ -595,7 +756,7 @@ const Page = () => {
     });
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config)
+      .post(`http://localhost:3000/training`, formData, config)
       .then((res) => {
         setMessage(
           editingUserId
@@ -615,7 +776,7 @@ const Page = () => {
         setLoading(false); // Reset loading state
         toast.success("Added successfully");
 
-        return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
+        return axios.get(`http://localhost:3000/training`, config);
       })
       .catch((err) => {
         setLoading(false); // Reset loading state
@@ -629,7 +790,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
+      .get("http://localhost:3000/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -643,7 +804,7 @@ const Page = () => {
   }, []);
 
   //  ---------------------------------------------------------------------------------------------------------
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -653,8 +814,8 @@ const Page = () => {
   if (!user) return null;
   return (
     <div className="bg-[#111827] min-h-screen">
+      <ChangePasswordPrompt user={user} />
       <Navbar />
-
       {/* Mobile Header - visible only on screens < lg */}
       <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-gray-800 shadow">
         <h1 className="text-lg text-white font-semibold">Dashboard</h1>
@@ -680,28 +841,34 @@ const Page = () => {
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
 
-            {/* Nav Items */}
-           <div className="flex-1 px-2 py-4 overflow-y-auto">
-  {navItems
-    .filter(Boolean) // removes false/null/undefined
-    .map((item, index) => (
-      <Link
-        key={index}
-        href={item.href || "#"}
-        className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-          item.active
-            ? "bg-gray-700 text-gray-200"
-            : "hover:bg-gray-700 hover:text-gray-200"
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      >
-        <span className="mr-3">{item.icon}</span>
-        {item.label}
-      </Link>
-    ))}
-</div>
+                {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
 
+                <span className="flex items-center">
+                  {item.label}
 
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
             {/* User Info */}
             <div className="p-4 border-t border-gray-700">
               <div className="flex items-center">
@@ -730,8 +897,12 @@ const Page = () => {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Card 1 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-              <div className="flex items-center">
+            <Link href="/Client-Management">
+              <div
+                className="bg-gray-800 p-6 rounded-lg shadow-sm 
+                   flex items-center cursor-pointer 
+                   hover:shadow-lg hover:-translate-y-1  border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300  "
+              >
                 <div className="p-3 rounded-full bg-gray-700 text-primary text-gray-200">
                   <HiUsers className="text-xl text-white" />
                 </div>
@@ -744,11 +915,16 @@ const Page = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Card 2 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-              <div className="flex items-center">
+
+            <Link href="/HR-Management">
+              <div
+                className="bg-gray-800 p-6 rounded-lg shadow-sm  
+                        flex items-center cursor-pointer 
+                        hover:shadow-lg hover:-translate-y-1    border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 "
+              >
                 <div className="p-3 rounded-full bg-gray-700 text-gray-200">
                   <FaUsers className="text-xl text-white" />
                 </div>
@@ -761,11 +937,15 @@ const Page = () => {
                   </p>
                 </div>
               </div>
-            </div>
+            </Link>
 
-            {/* Card 3 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-              <div className="flex items-center">
+            {/* Card 3 - Open Incidents */}
+            <Link href="/Incident-Reports">
+              <div
+                className="bg-gray-800 p-6 rounded-lg shadow-sm  
+                        flex items-center cursor-pointer 
+                        hover:shadow-lg hover:-translate-y-1     border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300"
+              >
                 <div className="p-3 rounded-full bg-red-900 text-red-300">
                   <FaExclamationCircle className="text-xl text-white" />
                 </div>
@@ -776,21 +956,100 @@ const Page = () => {
                   <p className="text-2xl font-semibold text-gray-200">{open}</p>
                 </div>
               </div>
-            </div>
+            </Link>
 
-            {/* Card 4 */}
-            <div className="bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-700">
-              <div className="flex items-center">
+            {/* Card 4 - Tasks Due Today */}
+
+            <div className="relative">
+              {/* Main Card */}
+              <div
+                className="bg-gray-800 p-6 rounded-lg shadow-sm  
+                        flex items-center cursor-pointer 
+                        hover:shadow-lg hover:-translate-y-1     border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300"
+                onClick={() => setShowBox(true)}
+              >
                 <div className="p-3 rounded-full bg-yellow-900 text-yellow-300">
                   <FaClipboardCheck className="text-xl text-white" />
                 </div>
+
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-400">
                     Tasks Due Today
                   </p>
-                  <p className="text-2xl font-semibold text-gray-200">0</p>
+                  <p className="text-2xl font-semibold text-gray-200">
+                    {totalLowStock +
+                      trainingStats.expired +
+                      totalToday +
+                      totalOverdue}
+                  </p>
                 </div>
               </div>
+
+              {/* Popup + Background Blur */}
+              {showBox && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-2 sm:p-4">
+                  {/* Popup Box */}
+                  <div className="bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-[450px] sm:max-w-[500px] md:max-w-[550px] p-4 sm:p-6 text-center relative transition-all duration-300">
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setShowBox(false)}
+                      className="absolute top-3 right-3 cursor-pointer text-gray-400 hover:text-red-500 text-lg sm:text-xl"
+                    >
+                      ✖
+                    </button>
+
+                    {/* Title */}
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-400 mb-4 sm:mb-6">
+                      Tasks Due Today
+                    </h3>
+
+                    {/* Alert Section */}
+                    {/* Alert Section */}
+                    <div className="space-y-3 sm:space-y-4">
+                      {/* Medication Alert */}
+                      <div className="flex justify-between items-center bg-gray-800 px-4 sm:px-5 py-3 sm:py-4 rounded-lg">
+                        <Link href="/Medication-Management">
+                          <span className="text-gray-200 font-medium text-sm sm:text-base md:text-lg hover:text-blue-400 hover:underline cursor-pointer transition">
+                            Medication stock low alert
+                          </span>
+                        </Link>
+                        <span className="text-blue-400 font-bold text-sm sm:text-lg md:text-xl">
+                          {totalLowStock}
+                        </span>
+                      </div>
+
+                      {/* Training Alert */}
+                      <div className="flex justify-between items-center bg-gray-800 px-4 sm:px-5 py-3 sm:py-4 rounded-lg">
+                        <Link href="/Training">
+                          <span className="text-gray-200 font-medium text-sm sm:text-base md:text-lg hover:text-blue-400 hover:underline cursor-pointer transition">
+                            Training Expired Alert
+                          </span>
+                        </Link>
+                        <span className="text-red-400 font-bold text-sm sm:text-lg md:text-xl">
+                          {trainingStats.expired}
+                        </span>
+                      </div>
+
+                      {/* Care Plan Review Alert */}
+                      <div className="flex justify-between items-center bg-gray-800 px-4 sm:px-5 py-3 sm:py-4 rounded-lg">
+                        <Link href="/Care-Planning">
+                          <span className="text-gray-200 font-medium text-sm sm:text-base md:text-lg hover:text-blue-400 hover:underline cursor-pointer transition">
+                            Care Plan Review Alert
+                          </span>
+                        </Link>
+                        <div className="flex gap-3">
+                          <span className="text-red-400 font-bold text-sm sm:text-lg md:text-xl">
+                            Overdue: {totalOverdue}
+                          </span>
+                          <span className="text-yellow-400 font-bold text-sm sm:text-lg md:text-xl">
+                            Today: {totalToday}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -801,7 +1060,7 @@ const Page = () => {
             <h3 className="text-lg font-medium text-gray-200 mb-4">
               Quick Actions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {/* Add Resident */}
               <button
                 onClick={() => setShowModal(hasClients ? false : true)}
@@ -822,6 +1081,16 @@ const Page = () => {
                   <FaFileMedical className="text-xl text-white" />
                 </div>
                 <span className="text-sm text-gray-300">New Care Plan</span>
+              </button>
+              {/* Add New Medication */}
+              <button
+                onClick={() => setShowFormCare(hasClients ? false : true)}
+                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
+                  <MdMedicationLiquid className="text-xl text-white" />
+                </div>
+                <span className="text-sm text-gray-300">New Medication</span>
               </button>
 
               {/* Report Incident */}
@@ -2023,147 +2292,140 @@ const Page = () => {
               </div>
             </div>
 
-            {/* Incident Trends */}
-            <div className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 relative">
-              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-[#4a48d4]"></span>
-                Incident Trends
-              </h3>
-
-              {/* Chart Canvas */}
-              <div className="h-48 bg-gray-900/30 rounded-lg p-4">
-                <canvas id="incidentsChart"></canvas>
-              </div>
-
-              {/* Footer */}
-              <div className="flex justify-between items-center mt-4 text-sm">
-                <span className="text-gray-400">
-                  Total:{" "}
-                  <span
-                    id="total-incidents"
-                    className="text-[#4a48d4] font-medium"
-                  >
-                    {sixmont}
-                  </span>{" "}
-                  incidents in last 6 months
-                </span>
-                <Link
-                  href="/Incident-Reports"
-                  className="text-white hover:text-[#4a48d4] font-medium transition-colors duration-200"
-                >
-                  View details →
-                </Link>
-              </div>
-            </div>
-
-            {/* Chart Script */}
-            {(() => {
-              if (typeof window !== "undefined") {
-                import("chart.js/auto").then(({ default: Chart }) => {
-                  const ctx = document
-                    .getElementById("incidentsChart")
-                    ?.getContext("2d");
-                  if (!ctx) return;
-
-                  // Gradient background
-                  const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-                  gradient.addColorStop(0, "rgba(74, 72, 212, 0.5)");
-                  gradient.addColorStop(1, "rgba(74, 72, 212, 0)");
-
-                  // Destroy old chart if exists
-                  if (window.incidentsChartInstance) {
-                    window.incidentsChartInstance.destroy();
-                  }
-
-                  // Create chart
-                  window.incidentsChartInstance = new Chart(ctx, {
-                    type: "line",
-                    data: {
-                      labels: [" last 6 months"],
-                      datasets: [
-                        {
-                          label: "Incidents",
-                          data: [sixmont, 20, 12, 25, 15, 30], // <-- Change with real data
-                          fill: true,
-                          backgroundColor: gradient,
-                          borderColor: "#4a48d4",
-                          borderWidth: 3,
-                          tension: 0.4,
-                          pointBackgroundColor: "#fff",
-                          pointBorderColor: "#4a48d4",
-                          pointBorderWidth: 2,
-                        },
-                      ],
-                    },
-                    options: {
-                      responsive: true,
-                      plugins: {
-                        legend: { display: false },
-                      },
-                      scales: {
-                        x: {
-                          ticks: { color: "#bbb" },
-                          grid: { color: "rgba(255,255,255,0.05)" },
-                        },
-                        y: {
-                          ticks: { color: "#bbb" },
-                          grid: { color: "rgba(255,255,255,0.05)" },
-                        },
-                      },
-                    },
-                    plugins: [
-                      {
-                        id: "shadowEffect",
-                        beforeDraw: (chart) => {
-                          const ctx = chart.ctx;
-                          ctx.save();
-                          ctx.shadowColor = "rgba(0,0,0,0.6)";
-                          ctx.shadowBlur = 15;
-                          ctx.shadowOffsetX = 0;
-                          ctx.shadowOffsetY = 8;
-                        },
-                        afterDraw: (chart) => {
-                          chart.ctx.restore();
-                        },
-                      },
-                    ],
-                  });
-                });
-              }
-            })()}
-
-            {/* Staff Training Status */}
             <div className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-[#4a48d4]"></span>
-                Staff Training Status
+                Incident Overview
               </h3>
 
-              <div className="h-48 bg-gray-900/30 rounded-lg p-4">
-                <canvas id="trainingChart"></canvas>
+              {/* Top Summary */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-center">
+                  <p className="text-4xl font-bold text-[#4a48d4]">{sixmont}</p>
+                  <p className="text-sm text-gray-400">
+                    Incidents (Last 6 Months)
+                  </p>
+                </div>
+
+                <div className="w-32 h-32">
+                  <IncidentChart
+                    open={open}
+                    underInvestigation={underInvestigation}
+                    resolved={resolved}
+                  />
+                </div>
               </div>
 
-              <div className="mt-4 flex justify-center gap-4 text-sm">
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded bg-green-500"></span>
-                  <span className="text-white">Up to date</span>
+              {/* Incident Stats Grid */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Open */}
+                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#4a48d4]/50 transition">
+                  <p className="text-2xl font-semibold text-[#4a48d4]">
+                    {open}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Open</p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded bg-yellow-400"></span>
-                  <span className="text-white">Expiring soon</span>
+
+                {/* Under Investigation */}
+                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#facc15]/50 transition">
+                  <p className="text-2xl font-semibold text-[#facc15]">
+                    {underInvestigation}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Under{" "}
+                    <span className=" ml-[-5px] text-xs text-gray-400 mt-1">
+                      {" "}
+                      Investigation{" "}
+                    </span>{" "}
+                  </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded bg-red-500"></span>
-                  <span className="text-white">Expired</span>
+
+                {/* Resolved */}
+                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#22c55e]/50 transition">
+                  <p className="text-2xl font-semibold text-[#22c55e]">
+                    {resolved}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Resolved</p>
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-center">
+              {/* Footer */}
+              <div className="flex justify-between items-center mt-6 text-sm text-gray-400">
+                <span>
+                  Updated:{" "}
+                  <span className="text-[#4a48d4] font-medium">
+                    {new Date().toLocaleDateString()}
+                  </span>
+                </span>
                 <a
-                  href="#"
-                  className="text-sm text-white hover:text-[#4a48d4] font-medium"
+                  href="/Incident-Reports"
+                  className="text-[#4a48d4] hover:text-[#6a6dfc] font-medium transition"
                 >
-                  View all certifications
+                  View Details →
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300">
+              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-[#4a48d4]"></span>
+                Training Overview
+              </h3>
+
+              {/* Summary Row */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-center">
+                  <p className="text-4xl font-bold text-[#4a48d4]">
+                    {percentage}%
+                  </p>
+                  <p className="text-sm text-gray-400">Up to Date Completion</p>
+                </div>
+
+                <div className="w-32 h-32">
+                  <canvas id="trainingChart" width="120" height="120"></canvas>
+                </div>
+              </div>
+
+              {/* Stats Boxes */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Up to Date */}
+                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-green-500/50 transition">
+                  <p className="text-2xl font-semibold text-green-400">
+                    {trainingStats.upToDate}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Up to Date</p>
+                </div>
+
+                {/* Expiring Soon */}
+                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-yellow-400/50 transition">
+                  <p className="text-2xl font-semibold text-yellow-300">
+                    {trainingStats.expiringSoon}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Expiring Soon</p>
+                </div>
+
+                {/* Expired */}
+                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-red-400/50 transition">
+                  <p className="text-2xl font-semibold text-red-400">
+                    {trainingStats.expired}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Expired</p>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-between items-center mt-6 text-sm text-gray-400">
+                <span>
+                  Updated:{" "}
+                  <span className="text-[#4a48d4] font-medium">
+                    {new Date().toLocaleDateString()}
+                  </span>
+                </span>
+                <a
+                  href="/Training"
+                  className="text-[#4a48d4] hover:text-[#6a6dfc] font-medium transition"
+                >
+                  View Details →
                 </a>
               </div>
             </div>
@@ -2239,71 +2501,75 @@ const Page = () => {
                   </div>
                 </div>
               </Link>
-{ !hasClients && (
-              <Link href="/HR-Management">
-                {/* HR Management */}
-                <div
-                  className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
-                  data-module="hr"
-                >
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
-                      <FaUsers className="text-lg text-primary-light text-white" />
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="text-lg font-semibold text-gray-200">
-                        HR Management
-                      </h3>
-                      <p className="text-sm text-gray-400">
-                        Manage staff and schedules
-                      </p>
+              {!hasClients && (
+                <Link href="/HR-Management">
+                  {/* HR Management */}
+                  <div
+                    className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
+                    data-module="hr"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
+                        <FaUsers className="text-lg text-primary-light text-white" />
+                      </div>
+                      <div className="ml-4">
+                        <h3 className="text-lg font-semibold text-gray-200">
+                          HR Management
+                        </h3>
+                        <p className="text-sm text-gray-400">
+                          Manage staff and schedules
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>)}
+                </Link>
+              )}
               {/* Training */}
-             { !hasClients&&( <Link href="Training">
-                <div
-                  className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
-                  data-module="training"
-                >
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
-                      <FaGraduationCap className="text-lg text-primary-light text-white" />
-                    </div>
-                    <div className="ml-2">
-                      <h3 className="text-lg font-semibold text-gray-200">
-                        Training
-                      </h3>
-                      <p className="text-sm text-gray-400">
-                        Track staff training and certifications
-                      </p>
+              {!hasClients && (
+                <Link href="Training">
+                  <div
+                    className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
+                    data-module="training"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
+                        <FaGraduationCap className="text-lg text-primary-light text-white" />
+                      </div>
+                      <div className="ml-2">
+                        <h3 className="text-lg font-semibold text-gray-200">
+                          Training
+                        </h3>
+                        <p className="text-sm text-gray-400">
+                          Track staff training and certifications
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>)}
+                </Link>
+              )}
               {/* Compliance */}
-             {!hasClients && (
-              <Link href="Compliance">
-                <div
-                  className=" bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
-                  data-module="compliance"
-                >
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
-                      <FaShieldAlt className="text-lg text-primary-light text-white" />
-                    </div>
-                    <div className="ml-4">
-                      <h3 className="text-lg font-semibold text-gray-200">
-                        Compliance
-                      </h3>
-                      <p className="text-sm text-gray-400">
-                        Monitor regulatory compliance
-                      </p>
+              {!hasClients && (
+                <Link href="Compliance">
+                  <div
+                    className=" bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 cursor-pointer"
+                    data-module="compliance"
+                  >
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 flex items-center justify-center bg-gray-700 rounded-lg">
+                        <FaShieldAlt className="text-lg text-primary-light text-white" />
+                      </div>
+                      <div className="ml-4">
+                        <h3 className="text-lg font-semibold text-gray-200">
+                          Compliance
+                        </h3>
+                        <p className="text-sm text-gray-400">
+                          Monitor regulatory compliance
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>)}
+                </Link>
+              )}
             </div>
           </div>
         </main>

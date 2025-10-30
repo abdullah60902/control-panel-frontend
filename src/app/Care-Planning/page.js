@@ -7,7 +7,8 @@ import { GrDocumentPerformance } from "react-icons/gr";
 import Image from "next/image";
 import { BsArrowsFullscreen } from "react-icons/bs";
 import { IoDocumentAttach } from "react-icons/io5";
-
+import { LuLayoutTemplate } from "react-icons/lu";
+import { TbClockRecord } from "react-icons/tb";
 
 import { useRef } from "react";
 import {
@@ -49,27 +50,79 @@ const CarePlans = [
 ];
 
 const Page = () => {
-  const {hasClients} = useAuth()
+  const { user, logout } = useAuth();
+  const { hasLowStock, setHasLowStock } = useAuth();
+  const { hasClients } = useAuth();
   // Define your navigation links here with proper routes
-const navItems = [
-  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning",active: true },
-  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
-  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports" },
-  ...(hasClients
-    ? []
-    : [
-        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
-        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
-        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
-        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
-        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
-        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-      ]),
-];
+  const navItems = [
+    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+    {
+      icon: <FaUser />,
+      label: "Resident Management",
+      href: "/Client-Management",
+    },
+    {
+      icon: <FaClipboardList />,
+      label: "Care Planning",
+      href: "/Care-Planning",
+      active: true,
+    },
+    {
+      icon: <FaExclamationTriangle />,
+      label: "Incident Reports",
+      href: "/Incident-Reports",
+    },
+    { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
+    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+    
+    {
+      icon: <MdMedicationLiquid />,
+      label: "Medication Management",
+      href: "/Medication-Management",
+    },
+    ...(hasClients
+      ? []
+      : [
+                          { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record" },
+
+          { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
+          {
+            icon: <IoDocumentAttach />,
+            label: "Documents Management",
+            href: "/Documents-Management",
+          },
+          {
+            icon: <GrDocumentPerformance />,
+            label: "Performance Management",
+            href: "/Performance-Management",
+          },
+          { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+          { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+          {
+            icon: <SiSimpleanalytics />,
+            label: "Analytics",
+            href: "/Analytics",
+          },
+          {
+            icon: <FaUserCog />,
+            label: "User Management",
+            href: "/User-Management",
+          },
+        ]),
+  ];
+  const allowedNavItems =
+    user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+      ? navItems
+      : user?.role === "External" && Array.isArray(user.allowedPages)
+      ? navItems.filter((item) =>
+          user.allowedPages.some(
+            (page) =>
+              page.toLowerCase().replace(/\s+/g, "") ===
+              item.label.toLowerCase().replace(/\s+/g, "")
+          )
+        )
+      : [];
+
   const [carePlans, setCarePlans] = useState([]);
   const [formDataCare, setFormDataCare] = useState({
     client: "",
@@ -97,7 +150,14 @@ const navItems = [
   const [showFormCare, setShowFormCare] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [staffMembers, setStaffMembers] = useState([]); // For HR/staff members
-  const { user, logout ,  } = useAuth();
+  const [previewVideo, setPreviewVideo] = useState(null);
+  const { todayReviews, setTodayReviews } = useAuth();
+  const { overdueReviews, setOverdueReviews } = useAuth();
+  const { totalToday, setTotalToday } = useAuth();
+  const { totalOverdue, setTotalOverdue } = useAuth();
+  const { hasReviews, setHasReviews } = useAuth();  
+const [dropdownOpen, setDropdownOpen] = useState(false);
+const [searchQueryform, setSearchQueryform] = useState("");
 
   // ViewData.apply...............................................................
 
@@ -135,14 +195,19 @@ const navItems = [
     setEditingCareId(plan._id);
     setShowFormCare(true);
   };
+
+  // ✅ PDF Export (same as before)
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
   const handleDownloadPdf = async (item) => {
     const jsPDF = (await import("jspdf")).default;
     const autoTable = (await import("jspdf-autotable")).default;
+
     const minu =
       staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
       "Unknown";
 
-    // ✅ Map mood emoji to text
+    // ✅ Mood map
     const moodMap = {
       "😊": "Happy",
       "😐": "Neutral",
@@ -150,14 +215,13 @@ const navItems = [
       "😡": "Angry",
       "😴": "Tired",
     };
-
     const moodText = moodMap[item.mood] || "";
 
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text("Care Plan Details", 14, 15);
 
-    // Main table content
+    // ✅ Main Table
     autoTable(doc, {
       startY: 25,
       head: [["Field", "Value"]],
@@ -173,7 +237,7 @@ const navItems = [
         ["Mood", moodText],
         ["Daily Log", item.dailyLog],
         ["Status", item.status],
-        ["Care Setting", item.careSetting || ""], // ✅ NEW FIELD
+        ["Care Setting", item.careSetting || ""],
       ],
     });
 
@@ -197,14 +261,13 @@ const navItems = [
       try {
         const res = await fetch(item.signature);
         const blob = await res.blob();
-
         const reader = new FileReader();
         reader.readAsDataURL(blob);
+
         reader.onloadend = function () {
           const base64data = reader.result;
           doc.addImage(base64data, "PNG", 14, currentY + 5, 60, 20);
           currentY += 30;
-
           addAttachments();
         };
       } catch (error) {
@@ -215,7 +278,9 @@ const navItems = [
       }
     } else {
       addAttachments();
-    } // ✅ Attachments (Image/PDF Preview)
+    }
+
+    // ✅ Attachments Section
     async function addAttachments() {
       if (item.attachments?.length > 0) {
         doc.setFontSize(12);
@@ -226,8 +291,8 @@ const navItems = [
           const url = item.attachments[i];
           const ext = url.split(".").pop().toLowerCase();
 
-          // 🖼️ Image (no numbering)
-          if (["jpg", "jpeg", "png"].includes(ext)) {
+          // 🖼️ Image attachments
+          if (["jpg", "jpeg", "png", "webp"].includes(ext)) {
             try {
               const res = await fetch(url);
               const blob = await res.blob();
@@ -238,7 +303,6 @@ const navItems = [
                 reader.onloadend = function () {
                   const base64data = reader.result;
 
-                  // Add page if height overflows
                   if (currentY + 60 > 280) {
                     doc.addPage();
                     currentY = 20;
@@ -249,15 +313,15 @@ const navItems = [
                   resolve();
                 };
               });
-            } catch (e) {
+            } catch {
               doc.setTextColor(255, 0, 0);
-              doc.text(`Image failed to load`, 14, currentY);
+              doc.text("Image failed to load", 14, currentY);
               doc.setTextColor(0, 0, 0);
               currentY += 10;
             }
           }
 
-          // 📄 PDF (icon only, no label)
+          // 📄 PDF attachments
           else if (ext === "pdf") {
             try {
               const iconUrl =
@@ -282,9 +346,42 @@ const navItems = [
                   resolve();
                 };
               });
-            } catch (e) {
+            } catch {
               doc.setTextColor(255, 0, 0);
               doc.text("PDF icon failed to load", 14, currentY);
+              doc.setTextColor(0, 0, 0);
+              currentY += 10;
+            }
+          }
+
+          // 🎥 Video attachments
+          else if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) {
+            try {
+              const playIcon =
+                "https://cdn-icons-png.flaticon.com/512/727/727245.png";
+              const res = await fetch(playIcon);
+              const blob = await res.blob();
+              const reader = new FileReader();
+              reader.readAsDataURL(blob);
+
+              await new Promise((resolve) => {
+                reader.onloadend = function () {
+                  const iconBase64 = reader.result;
+
+                  if (currentY + 22 > 280) {
+                    doc.addPage();
+                    currentY = 20;
+                  }
+
+                  doc.addImage(iconBase64, "PNG", 14, currentY, 20, 20);
+                  doc.link(14, currentY, 20, 20, { url });
+                  currentY += 26;
+                  resolve();
+                };
+              });
+            } catch {
+              doc.setTextColor(255, 0, 0);
+              doc.text("Video icon failed to load", 14, currentY);
               doc.setTextColor(0, 0, 0);
               currentY += 10;
             }
@@ -292,17 +389,119 @@ const navItems = [
         }
       }
 
+      // ✅ Save PDF file
       doc.save(`${minu}_careplan.pdf`);
     }
   };
 
-  const [loading, setLoading] = useState(false);  
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(
+          "http://localhost:3000/carePlanning/alerts",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        setTodayReviews(res.data.todayReviews);
+        setOverdueReviews(res.data.overdueReviews);
+        setTotalToday(res.data.totalToday);
+        setTotalOverdue(res.data.totalOverdue);
+        setHasReviews(res.data.hasReviews); // 👈 new line
+
+        if (res.data.todayReviews.length > 0) {
+          const names = res.data.todayReviews
+            .map((p) => `${p.client?.fullName || "Unknown"} (${p.planType})`)
+            .join(", ");
+          toast.info(`📅 Today review due: ${names}`);
+        }
+
+        if (res.data.overdueReviews.length > 0) {
+          const names = res.data.overdueReviews
+            .map((p) => `${p.client?.fullName || "Unknown"} (${p.planType})`)
+            .join(", ");
+          toast.error(`⚠️ Overdue reviews: ${names}`);
+        }
+      } catch (err) {
+        console.error("Error fetching alerts:", err);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+
+  const handleMarkReviewed = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `http://localhost:3000/carePlanning/${id}/mark-reviewed`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(res.data.message);
+
+      // Refresh locally
+      setTodayReviews(todayReviews.filter((p) => p._id !== id));
+      setOverdueReviews(overdueReviews.filter((p) => p._id !== id));
+      refreshPlans();
+    } catch (error) {
+      console.error("Error marking reviewed:", error);
+      toast.error("Error marking reviewed");
+    }
+  };
+
+  // ✅ CSV Export
+  const handleDownloadCsv = (item) => {
+    const moodMap = {
+      "😊": "Happy",
+      "😐": "Neutral",
+      "😔": "Sad",
+      "😡": "Angry",
+      "😴": "Tired",
+    };
+    const moodText = moodMap[item.mood] || "";
+
+    const minu =
+      staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
+      "Unknown";
+
+    const headers = ["Field,Value"];
+    const rows = [
+      `Patient,${minu}`,
+      `Plan Type,${item.planType}`,
+      `Creation Date,${item.creationDate?.slice(0, 10)}`,
+      `Review Date,${item.reviewDate?.slice(0, 10)}`,
+      `Care Plan Details,${item.carePlanDetails}`,
+      `Bristol Stool Chart,${item.bristolStoolChart}`,
+      `MUST Score,${item.mustScore}`,
+      `Heart Rate,${item.heartRate}`,
+      `Mood,${moodText}`,
+      `Daily Log,${item.dailyLog}`,
+      `Status,${item.status}`,
+      `Care Setting,${item.careSetting || ""}`,
+    ];
+
+    if (item.status === "Declined" && item.declineReason) {
+      rows.push(`Decline Reason,${item.declineReason}`);
+    }
+
+    const csvContent = [headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${minu}_careplan.csv`;
+    link.click();
+  };
+
+  const [loading, setLoading] = useState(false);
 
   const handleSubmitCare = (e) => {
     e.preventDefault();
     setLoading(true);
     const token = localStorage.getItem("token");
-    
+
     const formData = new FormData();
     for (let key in formDataCare) {
       formData.append(key, formDataCare[key]);
@@ -331,11 +530,11 @@ const navItems = [
 
     const request = editingCareId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/carePlanning/${editingCareId}`,
+          `http://localhost:3000/carePlanning/${editingCareId}`,
           formData,
           config
         )
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config);
+      : axios.post(`http://localhost:3000/carePlanning`, formData, config);
 
     request
       .then((res) => {
@@ -356,7 +555,7 @@ const navItems = [
           mood: "",
           dailyLog: "",
         });
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/carePlanning", config);
+        return axios.get("http://localhost:3000/carePlanning", config);
       })
       .then((res) => {
         setCarePlans(res.data);
@@ -375,7 +574,7 @@ const navItems = [
       return;
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`, {
+      .delete(`http://localhost:3000/carePlanning/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -399,7 +598,7 @@ const navItems = [
       return;
 
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
+      .get("http://localhost:3000/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -430,7 +629,7 @@ const navItems = [
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -445,25 +644,36 @@ const navItems = [
         setError(error.response?.data?.msg || "Failed to fetch staff");
       });
   }, []);
+  
   useEffect(() => {
-    const filtered = carePlans.filter((plan) => {
-      const client =
+  const filtered = carePlans.filter((plan) => {
+    // Get client name safely (handle both object and id)
+    let clientName = "";
+
+    if (typeof plan.client === "object" && plan.client !== null) {
+      clientName = plan.client.fullName || "";
+    } else {
+      clientName =
         staffMembers.find((staff) => staff._id === plan.client)?.fullName || "";
+    }
 
-      const matchesType =
-        selected === "All Plans" || plan.planType === selected;
-      const matchesSetting =
-        selectedSetting === " Filter All Settings" ||
-        plan.careSetting === selectedSetting;
-      const matchesSearch = client
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+    // Filters
+    const matchesType =
+      selected === "All Plans" || plan.planType === selected;
 
-      return matchesType && matchesSetting && matchesSearch;
-    });
+    const matchesSetting =
+      selectedSetting === " Filter All Settings" ||
+      plan.careSetting === selectedSetting;
 
-    setFilteredStaff(filtered);
-  }, [selected, selectedSetting, searchQuery, carePlans, staffMembers]);
+    const matchesSearch = clientName
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    return matchesType && matchesSetting && matchesSearch;
+  });
+
+  setFilteredStaff(filtered);
+}, [selected, selectedSetting, searchQuery, carePlans, staffMembers]);
 
   {
     /* view data /////////////////////////////////////////////// */
@@ -541,7 +751,7 @@ const navItems = [
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
+        `http://localhost:3000/carePlanning/${id}`,
         {
           status: "Accepted",
           signature: dataURL,
@@ -564,7 +774,7 @@ const navItems = [
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
+        `http://localhost:3000/carePlanning/${id}`,
         {
           status: "Declined",
           declineReason: reason,
@@ -590,7 +800,7 @@ const navItems = [
       return;
 
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
+      .get("http://localhost:3000/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -651,7 +861,7 @@ const navItems = [
             {/* ❌ Close Button */}
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-4 cursor-pointer right-4 w-11 h-11 bg-[#2b2e3a] hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:rotate-90 transition-all duration-300"
+              className="absolute top-4 right-4 w-11 h-11 cursor-pointer bg-[#2b2e3a] hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:rotate-90 transition-all duration-300"
               aria-label="Close"
             >
               <svg
@@ -693,7 +903,6 @@ const navItems = [
             {(viewStatus === "Accepted" && viewSignature) ||
             (viewStatus === "Declined" && viewDeclineReason) ? (
               <div className="grid sm:grid-cols-2 gap-6 mt-6">
-                {/* 🖋 Signature */}
                 {viewStatus === "Accepted" && viewSignature && (
                   <div className="bg-[#1e212a] border border-gray-700 p-4 rounded-2xl shadow-sm text-center">
                     <p className="text-green-400 font-semibold mb-3 flex items-center justify-center gap-2">
@@ -717,7 +926,7 @@ const navItems = [
                       </svg>
                       Signature
                     </p>
-                    <Image
+                    <img
                       src={viewSignature}
                       alt="Signature"
                       className="inline-block w-full max-w-xs border border-gray-600 rounded-xl shadow-md"
@@ -725,7 +934,6 @@ const navItems = [
                   </div>
                 )}
 
-                {/* ❌ Decline Reason */}
                 {viewStatus === "Declined" && viewDeclineReason && (
                   <div className="bg-[#1e212a] border border-gray-700 p-4 rounded-2xl shadow-sm">
                     <p className="text-red-400 font-semibold mb-2 flex items-center gap-2">
@@ -765,9 +973,18 @@ const navItems = [
                   </svg>
                   Attachments
                 </h3>
+
                 <div className="grid sm:grid-cols-2 gap-4">
                   {viewAttachments.map((file, index) => {
-                    const isPDF = file.toLowerCase().endsWith(".pdf");
+                    const lowerFile = file.toLowerCase();
+                    const isPDF = lowerFile.endsWith(".pdf");
+                    const isVideo = /\.(mp4|mov|avi|mkv|webm)$/i.test(
+                      lowerFile
+                    );
+                    const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
+                      lowerFile
+                    );
+
                     return (
                       <div
                         key={index}
@@ -789,22 +1006,35 @@ const navItems = [
                               PDF Attachment {index + 1}
                             </p>
                           </a>
-                        ) : (
-                          <div className="relative group cursor-zoom-in">
+                        ) : isVideo ? (
+                          <div
+                            className="relative group cursor-zoom-in"
+                            onClick={() => setPreviewVideo(file)}
+                          >
+                            <video
+                              src={file}
+                              className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
+                              muted
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
+                              <BsArrowsFullscreen />
+                            </div>
+                          </div>
+                        ) : isImage ? (
+                          <div
+                            className="relative group cursor-zoom-in"
+                            onClick={() => setPreviewImage(file)}
+                          >
                             <img
                               src={file}
                               alt={`Attachment ${index + 1}`}
                               className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
-                              onClick={() => setPreviewImage(file)}
                             />
-                            <div
-                              onClick={() => setPreviewImage(file)}
-                              className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"
-                            >
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg">
                               <BsArrowsFullscreen />
                             </div>
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     );
                   })}
@@ -814,12 +1044,14 @@ const navItems = [
           </div>
         </div>
       )}
+
+      {/* 🖼️ Image Preview Modal */}
       {previewImage && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-4xl w-full">
             <button
               onClick={() => setPreviewImage(null)}
-              className="absolute top-3 right-3 w-10 h-10 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow"
+              className="absolute cursor-pointer top-3 right-3 w-10 h-10 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow"
             >
               <svg
                 className="w-5 h-5"
@@ -835,10 +1067,42 @@ const navItems = [
                 />
               </svg>
             </button>
-            <Image
+            <img
               src={previewImage}
               alt="Full View"
               className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 🎥 Video Preview Modal */}
+      {previewVideo && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="relative bg-[#111319] border border-gray-600 p-4 rounded-2xl max-w-3xl w-full">
+            <button
+              onClick={() => setPreviewVideo(null)}
+              className="absolute top-3 right-3 z-[10000] cursor-pointer w-9 h-9 bg-gray-800 text-white hover:bg-red-600 rounded-full flex items-center justify-center shadow transition-all duration-200"
+            >
+              <svg
+                className="w-5 h-5 cursor-pointer"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <video
+              src={previewVideo}
+              controls
+              autoPlay
+              className="w-full h-auto rounded-xl max-h-[70vh] mx-auto"
             />
           </div>
         </div>
@@ -870,23 +1134,34 @@ const navItems = [
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
 
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href || "#"}
-                  className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-                    item.active
-                      ? "bg-primary-light bg-gray-700 text-primary-light"
-                      : "hover:bg-gray-700 hover:text-primary-light"
-                  }`}
-                  onClick={() => setSidebarOpen(false)} // close sidebar on mobile after click
-                >
-                  <span className="mr-3">{item.icon}</span>
+            {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+
+                <span className="flex items-center">
                   {item.label}
-                </Link>
-              ))}
-            </div>
+
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
 
             <div className="p-4 border-t border-gray-700">
               <div className="flex items-center">
@@ -942,12 +1217,14 @@ const navItems = [
                 </div>
 
                 {/* Create New Plan */}
-                { !hasClients && <button
-                  onClick={() => setShowFormCare(true)}
-                  className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
-                >
-                  <FaPlus className="mr-2" /> Create New Plan
-                </button>}
+                {!hasClients && (
+                  <button
+                    onClick={() => setShowFormCare(true)}
+                    className="bg-[#4a48d4] hover:bg-[#4A49B0] cursor-pointer text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                  >
+                    <FaPlus className="mr-2" /> Create New Plan
+                  </button>
+                )}
               </div>
             </div>
 
@@ -998,7 +1275,14 @@ const navItems = [
               <table className="min-w-[800px] md:min-w-full divide-y divide-gray-700 text-xs sm:text-sm">
                 <thead className="bg-gray-700">
                   <tr>
-                    {["Patient","Plan Type","Created","Review Date","Status","Actions",
+                    {[
+                      "Patient",
+                      "Plan Type",
+                      "Created",
+                      "Review Date",
+                      "Status",
+                      "Review Status",
+                      "Actions",
                     ].map((col, i) => (
                       <th
                         key={i}
@@ -1125,27 +1409,90 @@ const navItems = [
                           </div>
                         )}
                       </td>
+                      {/* === Review Status Column (NEW) === */}
+                      <td className="px-3 sm:px-4 py-3 text-sm">
+                        {item.reviewStatus === "Reviewed" ? (
+                          <span className="inline-flex text-xs font-semibold leading-5 px-2 rounded-full bg-green-100 text-green-800">
+                            Reviewed
+                          </span>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            <span className="inline-flex text-xs font-semibold leading-5 px-2 rounded-full bg-yellow-100 text-yellow-800">
+                              Pending Review
+                            </span>
+                            <button
+                              onClick={() => handleMarkReviewed(item._id)}
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mt-1"
+                            >
+                              Mark as Reviewed
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-6 flex items-center gap-3 text-sm text-white relative">
+                        {/* 👁 View */}
+                        <FaEye
+                          className="hover:text-blue-500 transition cursor-pointer"
+                          onClick={() => handleView(item)}
+                        />
 
-                      <td className="px-3 sm:px-4 py-3 whitespace-nowrap text-sm font-medium text-white">
-                        <div className="flex space-x-1 sm:space-x-2">
-                          <FaEye
-                            className="hover:text-blue-500 transition cursor-pointer"
-                            onClick={() => handleView(item)}
-                          />
-                          {!hasClients && <FaEdit
-                            className="hover:text-yellow-500 transition cursor-pointer"
+                        {/* ✏️ Edit */}
+                        {!hasClients && (
+                          <FaEdit
+                            className="cursor-pointer hover:text-yellow-500 transition"
                             onClick={() => handleEditCare(item)}
-                          />}
-                         {!hasClients && <FaTrash
-                            className="hover:text-red-500 transition cursor-pointer"
+                          />
+                        )}
+
+                        {/* 🗑 Delete */}
+                        {!hasClients && (
+                          <FaTrash
+                            className="cursor-pointer hover:text-red-500 transition"
                             onClick={() => handleDeleteCare(item._id)}
-                          />}
-                          <button
-                            className="hover:text-green-600 transition cursor-pointer"
-                            onClick={() => handleDownloadPdf(item)}
-                          >
-                            <FaDownload />
-                          </button>
+                          />
+                        )}
+
+                        {/* ⬇ Download Dropdown */}
+                        <div className="relative">
+                          <FaDownload
+                            className="hover:text-green-500 transition cursor-pointer"
+                            onClick={() =>
+                              setOpenDropdownId((prev) =>
+                                prev === item._id ? null : item._id
+                              )
+                            }
+                          />
+
+                          {openDropdownId === item._id && (
+                            <div
+                              className="absolute right-0 mt-2 
+        bg-white/20 backdrop-blur-xl border border-white/30 
+        shadow-lg rounded-md z-10 w-36 
+        transition-all duration-200"
+                            >
+                              <button
+                                onClick={() => {
+                                  handleDownloadPdf(item);
+                                  setOpenDropdownId(null);
+                                }}
+                                className="block w-full text-left px-3 py-2 
+          text-sm text-white hover:bg-white/10 transition"
+                              >
+                                Export as PDF
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  handleDownloadCsv(item);
+                                  setOpenDropdownId(null);
+                                }}
+                                className="block w-full text-left px-3 py-2 
+          text-sm text-white hover:bg-white/10 transition"
+                              >
+                                Export as CSV
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1175,42 +1522,74 @@ const navItems = [
                   onSubmit={handleSubmitCare}
                   encType="multipart/form-data"
                 >
-                  {/* Client ID */}
-                  <div className="mb-4">
-                    <label
-                      htmlFor="clientId"
-                      className="block text-gray-300 text-sm font-medium mb-2"
-                    >
-                      Patient
-                    </label>
-                    <select
-                      id="client"
-                      name="client"
-                      value={formDataCare.client}
-                      onChange={handleChangeCare}
-                      required
-                      className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
-                    >
-                      <option value="">Select Patient</option>
-                      {staffMembers
-                        .filter(
-                          (client) =>
-                            user?.role !== "Client" ||
-                            user.clients.includes(client._id)
-                        )
-                        .map((client) => (
-                          <option key={client._id} value={client._id}>
-                            {client.fullName}
-                          </option>
-                        ))}
-                    </select>
-                    <input
-                      type="hidden"
-                      name="clientName"
-                      id="clientName"
-                      value={formDataCare.client.fullName}
-                    />
-                  </div>
+                 {/* ✅ Searchable Patient Dropdown */}
+<div className="mb-4 relative">
+  <label
+    htmlFor="clientId"
+    className="block text-gray-300 text-sm font-medium mb-2"
+  >
+    Patient
+  </label>
+
+  {/* Dropdown Toggle */}
+  <div
+    onClick={() => setDropdownOpen(!dropdownOpen)}
+    className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 cursor-pointer select-none"
+  >
+    {formDataCare.client
+      ? staffMembers.find((c) => c._id === formDataCare.client)?.fullName
+      : "Select Patient"}
+  </div>
+
+  {/* Dropdown Panel */}
+  {dropdownOpen && (
+    <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-600 rounded-md shadow-lg p-2">
+      {/* Search Box */}
+      <input
+        type="text"
+        placeholder="Search patient..."
+        value={searchQueryform}
+        onChange={(e) => setSearchQueryform(e.target.value)}
+        className="w-full rounded-md border border-gray-600 px-3 py-1 mb-2 text-sm bg-gray-700 text-white focus:ring-2 focus:ring-[#4a48d4] focus:outline-none"
+      />
+
+      {/* Filtered List */}
+      <div className="max-h-48 overflow-y-auto space-y-1">
+        {staffMembers
+          .filter((client) =>
+            client.fullName.toLowerCase().includes(searchQueryform.toLowerCase())
+          )
+          .filter(
+            (client) =>
+              user?.role !== "Client" || user.clients.includes(client._id)
+          )
+          .map((client) => (
+            <div
+              key={client._id}
+              onClick={() => {
+                setFormDataCare({
+                  ...formDataCare,
+                  client: client._id,
+                  clientName: client.fullName,
+                });
+                setDropdownOpen(false);
+                setSearchQueryform("");
+              }}
+              className={`px-2 py-1 rounded-md hover:bg-gray-600 text-gray-200 text-sm cursor-pointer ${
+                formDataCare.client === client._id ? "bg-gray-700" : ""
+              }`}
+            >
+              {client.fullName}
+            </div>
+          ))}
+      </div>
+    </div>
+  )}
+
+  {/* Hidden Inputs */}
+  <input type="hidden" name="client" value={formDataCare.client || ""} />
+  <input type="hidden" name="clientName" value={formDataCare.clientName || ""} />
+</div>
 
                   {/* Plan Type */}
                   <div className="mb-4">
@@ -1239,7 +1618,6 @@ const navItems = [
                       <option value="communication">Communication</option>
                     </select>
                   </div>
-
                   {/* Creation Date */}
                   <div className="mb-4">
                     <label
@@ -1258,7 +1636,6 @@ const navItems = [
                       className="shadow-sm border rounded w-full py-2 px-3 text-gray-300 bg-gray-700 border-gray-600 focus:outline-none focus:ring-primary focus:border-primary"
                     />
                   </div>
-
                   {/* Review Date */}
                   <div className="mb-4">
                     <label
@@ -1326,7 +1703,6 @@ const navItems = [
                     ></textarea>
                   </div>
                   {/* Care Setting */}
-
                   {/* Health & Wellbeing Recordings Section */}
                   <div className="mb-6 border-t border-gray-700 pt-4 ">
                     <h3 className="text-lg font-semibold text-gray-200 mb-4">
@@ -1426,7 +1802,6 @@ const navItems = [
 
                     {/* Attach File */}
                   </div>
-
                   {/* Buttons */}
                   <div className="flex justify-end pt-4 border-t border-gray-700">
                     <button
@@ -1436,7 +1811,7 @@ const navItems = [
                     >
                       Cancel
                     </button>
-                
+
                     <button
                       type="submit"
                       disabled={loading}

@@ -4,7 +4,9 @@ import Navbar from "../(component)/navbar/Navbar";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
 import { IoDocumentAttach } from "react-icons/io5";
+import { LuLayoutTemplate } from "react-icons/lu";
 
+import { TbClockRecord } from "react-icons/tb";
 
 import {
   FaThLarge,
@@ -46,30 +48,51 @@ const StaffData = [
 
 const Page = () => {
    const {hasClients} = useAuth()
-  
+    const { user, logout } = useAuth();
+
   // Define your navigation links here with proper routes
  const navItems = [
   { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
   { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
   { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
-  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
   { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports"},
+  { icon: <LuLayoutTemplate />, label: "Template", href: "/Template", }, 
+
+  { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
   ...(hasClients
     ? []
-    : [
-        { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+    : [       
+       { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record"},
+
         { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" ,active: true },
         { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
-        { icon: <GrDocumentPerformance />, label: "Performance-Manag..", href: "/Performance-Management" },
+        { icon: <GrDocumentPerformance />, label: "Performance-Management", href: "/Performance-Management" },
         { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
         { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance"  },
-        { icon: <SiSimpleanalytics />, label: "Reporting Analytics", href: "/Analytics" },
+        { icon: <SiSimpleanalytics />, label: "Analytics", href: "/Analytics" },
         { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
       ]),
 ];
+
+const allowedNavItems =
+  user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+    ? navItems
+    : user?.role === "External" && Array.isArray(user.allowedPages)
+    ? navItems.filter((item) =>
+        user.allowedPages.some(
+          (page) =>
+            page.toLowerCase().replace(/\s+/g, "") ===
+            item.label.toLowerCase().replace(/\s+/g, "")
+        )
+      )
+    : [];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
+    const { hasLowStock, setHasLowStock } = useAuth();
+  const { hasReviews, setHasReviews } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState("All Staff");
   const filters = [
@@ -112,13 +135,12 @@ const Page = () => {
     setEditingUserId(hr._id);
   };
 
-  const handleViewPdf = (item) => {
-    // Alert or modal to show data in UI
-    alert(
-      `Full Name: ${item.fullName}\nEmail: ${item.email}\nPosition: ${item.position}\nDepartment: ${item.department}\nStart Date: ${item.startDate}`
-    );
-  };
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
+  // Function to toggle dropdown for a specific client
+  const toggleDropdown = (id) => {
+    setOpenDropdownId((prevId) => (prevId === id ? null : id));
+  };
   const handleDownloadPdf = async (item) => {
     const jsPDF = (await import("jspdf")).default;
     const autoTable = (await import("jspdf-autotable")).default;
@@ -131,17 +153,41 @@ const Page = () => {
       startY: 25,
       head: [["Field", "Value"]],
       body: [
-        ["Full Name", item.fullName],
-        ["Email", item.email],
-        ["Position", item.position],
-        ["Department", item.department],
-        ["Start Date", item.startDate],
-        ["Care Setting", item.careSetting || "Not specified"], // Add careSetting if available
+        ["Full Name", item.fullName || "—"],
+        ["Email", item.email || "—"],
+        ["Position", item.position || "—"],
+        ["Department", item.department || "—"],
+        ["Start Date", item.startDate ? item.startDate.slice(0, 10) : "—"],
+        ["Care Setting", item.careSetting || "Not specified"],
       ],
     });
 
-    doc.save(`${item.fullName}_details.pdf`);
+    doc.save(`${item.fullName || "hr_record"}_details.pdf`);
   };
+
+  // ✅ CSV Download
+  const handleDownloadCsv = (item) => {
+    const headers = ["Field,Value"];
+    const rows = [
+      `Full Name,${item.fullName || "—"}`,
+      `Email,${item.email || "—"}`,
+      `Position,${item.position || "—"}`,
+      `Department,${item.department || "—"}`,
+      `Start Date,${item.startDate ? item.startDate.slice(0, 10) : "—"}`,
+      `Care Setting,${item.careSetting || "Not specified"}`,
+    ];
+
+    const csvContent = [...headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${item.fullName || "hr_record"}_details.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const handleCancel10 = () => {
     setShowModal3(false);
@@ -186,8 +232,8 @@ const Page = () => {
     };
 
     const request = editingUserId
-      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/hr/${editingUserId}`, payload, config)
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config);
+      ? axios.put(`http://localhost:3000/hr/${editingUserId}`, payload, config)
+      : axios.post(`http://localhost:3000/hr`, payload, config);
 
     request
       .then((res) => {
@@ -208,7 +254,7 @@ const Page = () => {
         });
         setShowModal3(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/hr", config);
+        return axios.get("http://localhost:3000/hr", config);
       })
       .then((res) => {
         setStaffData(res.data.allHr);
@@ -225,7 +271,7 @@ const Page = () => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
+        const res = await axios.get("http://localhost:3000/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStaffData(res.data.allHr); // no .users needed, your backend returns an array
@@ -273,7 +319,7 @@ const Page = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/hr/${id}`, {
+      .delete(`http://localhost:3000/hr/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -320,7 +366,6 @@ const Page = () => {
     "Care Setting": viewCareSetting,
   };
 
-  const { user, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -405,23 +450,35 @@ const Page = () => {
               <p className="text-sm text-gray-400">Navigation</p>
             </div>
 
-            <div className="flex-1 px-2 py-4 overflow-y-auto">
-              {navItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href}
-                  className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-                    item.active
-                      ? "bg-gray-700 text-primary-light"
-                      : "hover:bg-gray-700 hover:text-primary-light"
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3">{item.icon}</span>
+                       {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+
+                <span className="flex items-center">
                   {item.label}
-                </Link>
-              ))}
-            </div>
+
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
+
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
+
 
             <div className="p-4 border-t border-gray-700">
               <div className="flex items-center">
@@ -576,34 +633,72 @@ const Page = () => {
                           {item.startDate.slice(0, 10)}
                         </td>
                         <td className="px-4 py-4">
-                          <div className="flex space-x-2 text-white">
-                            <button
-                              className="hover:text-blue-500 transition cursor-pointer"
-                              onClick={() => handleView(item)}
-                            >
-                              <FaEye />
-                            </button>
+      <div className="flex space-x-3 text-white items-center">
+        {/* 👁 View Button */}
+        <button
+          className="hover:text-blue-500 transition cursor-pointer"
+          onClick={() => handleView(item)}
+        >
+          <FaEye />
+        </button>
 
-                            <button
-                              className="hover:text-yellow-500 transition cursor-pointer"
-                              onClick={() => handleEdit(item)}
-                            >
-                              <FaEdit />
-                            </button>
-                            <button
-                              className="hover:text-red-500 transition cursor-pointer"
-                              onClick={() => handleDelete(item._id)}
-                            >
-                              <FaTrash />
-                            </button>
-                            <button
-                              className="hover:text-green-600 transition cursor-pointer"
-                              onClick={() => handleDownloadPdf(item)}
-                            >
-                              <FaDownload />
-                            </button>
-                          </div>
-                        </td>
+        {/* ✏️ Edit Button */}
+        <button
+          className="hover:text-yellow-500 transition cursor-pointer"
+          onClick={() => handleEdit(item)}
+        >
+          <FaEdit />
+        </button>
+
+        {/* 🗑 Delete Button */}
+        <button
+          className="hover:text-red-500 transition cursor-pointer"
+          onClick={() => handleDelete(item._id)}
+        >
+          <FaTrash />
+        </button>
+
+        {/* 📥 Download Dropdown (PDF + CSV) */}
+        <div className="relative">
+          <button
+            onClick={() =>
+              setOpenDropdownId(openDropdownId === item._id ? null : item._id)
+            }
+            className="hover:text-green-500 transition cursor-pointer"
+          >
+            <FaDownload />
+          </button>
+
+          {openDropdownId === item._id && (
+            <div
+               className="absolute right-0 mt-2 
+             bg-white/20 backdrop-blur-xl border border-white/30 
+             shadow-lg rounded-md z-10 w-36 
+             transition-all duration-200"
+            >
+              <button
+                onClick={() => {
+                  handleDownloadPdf(item);
+                  setOpenDropdownId(null);
+                }}
+             className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition"              >
+                Download PDF
+              </button>
+              <button
+                onClick={() => {
+                  handleDownloadCsv(item);
+                  setOpenDropdownId(null);
+                }}
+             className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition"              >
+                Download CSV
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </td>
                       </tr>
                     ))
                   ) : (
