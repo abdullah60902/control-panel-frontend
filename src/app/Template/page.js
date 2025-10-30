@@ -774,71 +774,81 @@ const Page = () => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="text-white text-xl"
         >
-          {sidebarOpen ? <FaTimes /> : <FaBars />}
+          <FaBars />
         </button>
       </div>
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside
-          className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
-      ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } lg:translate-x-0 lg:relative lg:block`}
-        >
-          <nav className="flex flex-col h-full">
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center lg:block">
-              <p className="text-sm text-gray-400">Navigation</p>
-            </div>
+     <aside
+  className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
+  ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+  lg:translate-x-0 lg:relative lg:block`}
+>
+  <nav className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+    
+    {/* 🔹 Sidebar Header with Toggle Button */}
+    <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+      <p className="text-sm text-gray-400">Navigation</p>
 
-            {allowedNavItems.map((item, index) => (
-              <Link
-                key={index}
-                href={item.href}
-                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-                  item.active
-                    ? "bg-gray-700 text-primary-light"
-                    : "hover:bg-gray-700 hover:text-primary-light"
-                }`}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className="mr-3">{item.icon}</span>
+      {/* Toggle Button inside Sidebar */}
+      <button
+        onClick={() => setSidebarOpen(false)}
+        className="text-white text-xl lg:hidden"
+      >
+        <FaTimes />
+      </button>
+    </div>
 
-                <span className="flex items-center">
-                  {item.label}
+    {/* 🔹 Sidebar Links */}
+    {allowedNavItems.map((item, index) => (
+      <Link
+        key={index}
+        href={item.href}
+        className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+          item.active
+            ? "bg-gray-700 text-primary-light"
+            : "hover:bg-gray-700 hover:text-primary-light"
+        }`}
+        onClick={() => setSidebarOpen(false)}
+      >
+        <span className="mr-3">{item.icon}</span>
+        <span className="flex items-center">
+          {item.label}
 
-                  {/* 🔴 Medication Low Stock Alert */}
-                  {item.label === "Medication Management" && hasLowStock && (
-                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
-                  )}
+          {/* 🔴 Medication Low Stock Alert */}
+          {item.label === "Medication Management" && hasLowStock && (
+            <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+          )}
 
-                  {/* 🟡 Care Planning Review Alert */}
-                  {item.label === "Care Planning" && hasReviews && (
-                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
-                  )}
-                </span>
-              </Link>
-            ))}
+          {/* 🟡 Care Planning Review Alert */}
+          {item.label === "Care Planning" && hasReviews && (
+            <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+          )}
+        </span>
+      </Link>
+    ))}
 
-            <div className="p-4 border-t border-gray-700">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#EEEEFF] flex items-center justify-center text-[#4A49B0] font-medium">
-                  {user.fullName
-                    .split(" ")
-                    .map((word) => word[0])
-                    .join("")
-                    .toUpperCase()}
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-200">
-                    {user.fullName}
-                  </p>
-                  <p className="text-xs text-gray-400">{user.email}</p>
-                </div>
-              </div>
-            </div>
-          </nav>
-        </aside>
+    {/* 🔹 User Info */}
+    <div className="p-4 border-t border-gray-700 mt-auto">
+      <div className="flex items-center">
+        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#EEEEFF] flex items-center justify-center text-[#4A49B0] font-medium">
+          {user?.fullName
+            .split(" ")
+            .map((word) => word[0])
+            .join("")
+            .toUpperCase()}
+        </div>
+        <div className="ml-3">
+          <p className="text-sm font-medium text-gray-200">
+            {user.fullName}
+          </p>
+          <p className="text-xs text-gray-400">{user.email}</p>
+        </div>
+      </div>
+    </div>
+  </nav>
+</aside>
 
         {/* Main Content */}
         <main className="flex-1 p-6 max-h-screen overflow-hidden">

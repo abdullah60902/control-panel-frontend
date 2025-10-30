@@ -40,6 +40,7 @@ import { toast } from "react-toastify";
 import { MdMedicationLiquid } from "react-icons/md";
 import ChangePasswordPrompt from "../(component)/changepassword/Changepassword";
 import IncidentChart from "../(component)/charts/IncidentChart";
+import { Chart } from "chart.js";
 const Page = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { hasLowStock, setHasLowStock, hasClients, user } = useAuth();
@@ -74,11 +75,11 @@ const Page = () => {
       href: "/Incident-Reports",
     },
     { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
-     {
-            icon: <FaSearch />,
-            label: "Social Activity",
-            href: "/Social-Activity",
-          },
+    {
+      icon: <FaSearch />,
+      label: "Social Activity",
+      href: "/Social-Activity",
+    },
     {
       icon: <MdMedicationLiquid />,
       label: "Medication Management",
@@ -88,9 +89,12 @@ const Page = () => {
     ...(hasClients
       ? []
       : [
-                  { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record" },
+          {
+            icon: <TbClockRecord />,
+            label: "Medication-Record",
+            href: "/Medication-Record",
+          },
 
-         
           { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" },
           {
             icon: <IoDocumentAttach />,
@@ -203,7 +207,11 @@ const Page = () => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config)
+      .post(
+        `https://control-panel-backend-k6fr.vercel.app/carePlanning`,
+        formData,
+        config
+      )
       .then((res) => {
         toast.success("Care plan saved successfully");
         setShowFormCare(false);
@@ -282,9 +290,12 @@ const Page = () => {
     const fetchTrainingAnalytics = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/training", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "https://control-panel-backend-k6fr.vercel.app/training",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         const data = res.data;
         const now = new Date();
@@ -346,7 +357,7 @@ const Page = () => {
     fetchTrainingAnalytics();
   }, []);
 
-  // incedent deshbord stats
+  // incedent deshbord stats 
 
   const [sixmont, setSixmont] = useState(0);
   const [open, setOpen] = useState(0);
@@ -358,9 +369,12 @@ const Page = () => {
     const fetchIncidents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "https://control-panel-backend-k6fr.vercel.app/incident/all",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         // ✅ Set all stats from backend response
         setSixmont(res.data.recentIncidentsCount);
@@ -425,7 +439,11 @@ const Page = () => {
     });
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/incident/`, data, config)
+      .post(
+        `https://control-panel-backend-k6fr.vercel.app/incident/`,
+        data,
+        config
+      )
       .then((res) => {
         setLoading(false);
         setFormData2({
@@ -504,9 +522,12 @@ const Page = () => {
     const fetchHR0 = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "https://control-panel-backend-k6fr.vercel.app/hr",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setTotalStaffno(res.data.totalstaff);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch HR data");
@@ -579,9 +600,12 @@ const Page = () => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(
+          "https://control-panel-backend-k6fr.vercel.app/client",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setTotalClients(res.data.totalClients);
         setAvailableRooms(res.data.totalAvailableRooms);
         setOccupiedRooms0(res.data.currentOccupancy);
@@ -635,7 +659,11 @@ const Page = () => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/client`, payload, config)
+      .post(
+        `https://control-panel-backend-k6fr.vercel.app/client`,
+        payload,
+        config
+      )
       .then((res) => {
         setFormData({
           name: "",
@@ -648,7 +676,10 @@ const Page = () => {
         setShowModal(false);
         toast.success("Add successfuly");
 
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/client", config);
+        return axios.get(
+          "https://control-panel-backend-k6fr.vercel.app/client",
+          config
+        );
       })
       .then((res) => {
         console.log("Updated Client Data:", res.data.clients);
@@ -731,59 +762,54 @@ const Page = () => {
   };
 
   const handleSubmit4 = (e) => {
-    e.preventDefault();
-    setLoading(true); // Set loading state to true
-    const { staffName, trainingType, completionDate, expiryDate, notes } =
-      formData4;
+  e.preventDefault();
+  setLoading(true); // Set loading state to true
 
-    const token = localStorage.getItem("token");
-    const config = {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    };
+  const { staffName, trainingType, completionDate, expiryDate, notes } =
+    formData4;
 
-    const formData = new FormData();
-    formData.append("staffMember", staffName);
-    formData.append("trainingType", trainingType);
-    formData.append("completionDate", completionDate);
-    formData.append("expiryDate", expiryDate);
-    formData.append("notes", notes);
-
-    attachmentsTraining.forEach((file) => {
-      formData.append("attachments", file); // same name used in backend
-    });
-
-    axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config)
-      .then((res) => {
-        setMessage(
-          editingUserId
-            ? "Training updated successfully"
-            : "Training added successfully"
-        );
-        setEditingUserId(null);
-        setFormData4({
-          staffName: "",
-          trainingType: "",
-          completionDate: "",
-          expiryDate: "",
-          notes: "",
-        });
-        setAttachmentsTraining([]);
-        setShowForm4(false);
-        setLoading(false); // Reset loading state
-        toast.success("Added successfully");
-
-        return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
-      })
-      .catch((err) => {
-        setLoading(false); // Reset loading state
-        setError(err.response?.data?.msg || "An error occurred");
-        toast.error(err.response?.data?.msg || "An error occurred");
-      });
+  const token = localStorage.getItem("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
   };
+
+  const formData = new FormData();
+  formData.append("staffMember", staffName);
+  formData.append("trainingType", trainingType);
+  formData.append("completionDate", completionDate);
+  formData.append("expiryDate", expiryDate);
+  formData.append("notes", notes);
+
+  attachmentsTraining.forEach((file) => {
+    formData.append("attachments", file); // same name used in backend
+  });
+  axios
+    .post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config)
+    .then((res) => {
+      setFormData4({
+        staffName: "",
+        trainingType: "",
+        completionDate: "",
+        expiryDate: "",
+        notes: "",
+      });
+      setAttachmentsTraining([]);
+      setShowForm4(false);
+      setLoading(false); // Reset loading state
+      toast.success("Added successfully");
+      console.log("Training scheduled successfully:", res.data); // ✅ Fixed here
+    })
+    .catch((err) => {
+      setLoading(false); // Reset loading state
+      setError(err.response?.data?.msg || "An error occurred");
+      console.log(err); // ✅ Make sure it's console.log
+      toast.error(err.response?.data?.msg || "An error occurred");
+    });
+};
+
 
   const [staffMembers2, setStaffMembers2] = useState([]); // For HR/staff members
 
@@ -823,25 +849,33 @@ const Page = () => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="text-white text-2xl"
         >
-          {sidebarOpen ? <FaTimes /> : <FaBars />}
+          <FaBars />
         </button>
       </div>
 
       <div className="flex flex-1">
         {/* Sidebar - responsive behavior */}
         <aside
-          className={`fixed top-0 left-0 z-50 h-full w-64  bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
-      ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } lg:translate-x-0 lg:relative lg:block`}
+          className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
+  ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+  lg:translate-x-0 lg:relative lg:block`}
         >
-          <nav className="flex flex-col h-full">
-            {/* Navigation Title */}
-            <div className="p-4 border-b border-gray-700 flex justify-between items-center lg:block">
+          <nav className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+            {/* 🔹 Sidebar Header with Toggle Button */}
+            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
               <p className="text-sm text-gray-400">Navigation</p>
+
+              {/* Toggle Button inside Sidebar */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="text-white text-xl lg:hidden"
+              >
+                <FaTimes />
+              </button>
             </div>
 
-                {allowedNavItems.map((item, index) => (
+            {/* 🔹 Sidebar Links */}
+            {allowedNavItems.map((item, index) => (
               <Link
                 key={index}
                 href={item.href}
@@ -853,7 +887,6 @@ const Page = () => {
                 onClick={() => setSidebarOpen(false)}
               >
                 <span className="mr-3">{item.icon}</span>
-
                 <span className="flex items-center">
                   {item.label}
 
@@ -869,8 +902,9 @@ const Page = () => {
                 </span>
               </Link>
             ))}
-            {/* User Info */}
-            <div className="p-4 border-t border-gray-700">
+
+            {/* 🔹 User Info */}
+            <div className="p-4 border-t border-gray-700 mt-auto">
               <div className="flex items-center">
                 <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#EEEEFF] flex items-center justify-center text-[#4A49B0] font-medium">
                   {user?.fullName
@@ -1060,7 +1094,7 @@ const Page = () => {
             <h3 className="text-lg font-medium text-gray-200 mb-4">
               Quick Actions
             </h3>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {/* Add Resident */}
               <button
                 onClick={() => setShowModal(hasClients ? false : true)}
@@ -1069,7 +1103,9 @@ const Page = () => {
                 <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
                   <FaUserPlus className="text-xl text-white" />
                 </div>
-                <span className="text-sm text-gray-300">Add Resident</span>
+                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">
+                  Add Resident
+                </span>
               </button>
 
               {/* New Care Plan */}
@@ -1080,18 +1116,9 @@ const Page = () => {
                 <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
                   <FaFileMedical className="text-xl text-white" />
                 </div>
-                <span className="text-sm text-gray-300">New Care Plan</span>
+                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">New Care Plan</span>
               </button>
-              {/* Add New Medication */}
-              <button
-                onClick={() => setShowFormCare(hasClients ? false : true)}
-                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
-              >
-                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-                  <MdMedicationLiquid className="text-xl text-white" />
-                </div>
-                <span className="text-sm text-gray-300">New Medication</span>
-              </button>
+            
 
               {/* Report Incident */}
               <button
@@ -1101,7 +1128,7 @@ const Page = () => {
                 <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
                   <FaExclamationTriangle className="text-xl text-white" />
                 </div>
-                <span className="text-sm text-gray-300">Report Incident</span>
+                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">Report Incident</span>
               </button>
 
               {/* Add Staff */}
@@ -1112,7 +1139,7 @@ const Page = () => {
                 <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
                   <FaUserTie className="text-xl text-white" />
                 </div>
-                <span className="text-sm text-gray-300">Add Staff</span>
+                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">Add Staff</span>
               </button>
 
               {/* Staff Schedule */}
@@ -1124,7 +1151,7 @@ const Page = () => {
                 <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
                   <FaCalendarAlt size={20} className="text-xl text-white" />
                 </div>
-                <span className="text-sm text-gray-300">Staff Schedule</span>
+                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">Staff Schedule</span>
               </button>
             </div>
           </div>
@@ -2292,7 +2319,7 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300">
+            <div className="bg-[#1c2434] p-4 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-[#4a48d4]"></span>
                 Incident Overview
@@ -2317,38 +2344,40 @@ const Page = () => {
               </div>
 
               {/* Incident Stats Grid */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4">
                 {/* Open */}
-                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#4a48d4]/50 transition">
-                  <p className="text-2xl font-semibold text-[#4a48d4]">
+                <div className="text-center p-2 sm:p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#4a48d4]/50 transition">
+                  <p className="text-lg sm:text-2xl font-semibold text-[#4a48d4]">
                     {open}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">Open</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
+                    Open
+                  </p>
                 </div>
 
                 {/* Under Investigation */}
-                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#facc15]/50 transition">
-                  <p className="text-2xl font-semibold text-[#facc15]">
+                <div className="text-center p-2 sm:p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#facc15]/50 transition">
+                  <p className="text-lg sm:text-2xl font-semibold text-[#facc15]">
                     {underInvestigation}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-[10px] sm:text-xs text-gray-400 mt-1 leading-tight">
                     Under{" "}
-                    <span className=" ml-[-5px] text-xs text-gray-400 mt-1">
-                      {" "}
-                      Investigation{" "}
-                    </span>{" "}
+                    <span className="block sm:inline text-[10px] sm:text-xs text-gray-400">
+                      Investigation
+                    </span>
                   </p>
                 </div>
 
                 {/* Resolved */}
-                <div className="text-center p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#22c55e]/50 transition">
-                  <p className="text-2xl font-semibold text-[#22c55e]">
+                <div className="text-center p-2 sm:p-3 bg-[#273142] rounded-lg shadow-inner border border-gray-700 hover:border-[#22c55e]/50 transition">
+                  <p className="text-lg sm:text-2xl font-semibold text-[#22c55e]">
                     {resolved}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">Resolved</p>
+                  <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
+                    Resolved
+                  </p>
                 </div>
               </div>
-
               {/* Footer */}
               <div className="flex justify-between items-center mt-6 text-sm text-gray-400">
                 <span>
@@ -2366,7 +2395,7 @@ const Page = () => {
               </div>
             </div>
 
-            <div className="bg-[#1c2434] p-6 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300">
+            <div className="bg-[#1c2434] p-4 rounded-xl shadow-lg border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-[#4a48d4]"></span>
                 Training Overview
