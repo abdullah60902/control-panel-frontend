@@ -75,7 +75,7 @@ const login = (token, userInfo) => {
 const fetchLowStock = async () => {
   try {
     const res = await axios.get(
-      "http://localhost:3000/medications/low-stock",
+      "https://control-panel-backend-k6fr.vercel.app/medications/low-stock",
       {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       }
@@ -92,7 +92,7 @@ const fetchLowStock = async () => {
 // ✅ Auto refresh every 10s
   const fetchReviews = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/carePlanning/alerts', {
+      const res = await axios.get('https://control-panel-backend-k6fr.vercel.app/carePlanning/alerts', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 

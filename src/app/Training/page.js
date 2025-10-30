@@ -144,12 +144,12 @@ useEffect(() => {
   const refreshAndFetch = async () => {
     try {
       // ✅ First: Ask backend to refresh all statuses
-      await axios.put("http://localhost:3000/training/refresh-status", {}, {
+      await axios.put("https://control-panel-backend-k6fr.vercel.app/training/refresh-status", {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       // ✅ Then: Fetch all updated trainings
-      const response = await axios.get("http://localhost:3000/training", {
+      const response = await axios.get("https://control-panel-backend-k6fr.vercel.app/training", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -200,7 +200,7 @@ useEffect(() => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("http://localhost:3000/hr", {
+      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -474,11 +474,11 @@ useEffect(() => {
 
     const request = editingUserId
       ? axios.put(
-          `http://localhost:3000/training/${editingUserId}`,
+          `https://control-panel-backend-k6fr.vercel.app/training/${editingUserId}`,
           formData,
           config
         )
-      : axios.post(`http://localhost:3000/training`, formData, config);
+      : axios.post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config);
 
     request
       .then((res) => {
@@ -502,7 +502,7 @@ useEffect(() => {
         setLoading(false); // Reset loading state
         toast.success("Added successfully");
 
-        return axios.get(`http://localhost:3000/training`, config);
+        return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -520,7 +520,7 @@ useEffect(() => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`http://localhost:3000/training/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/training/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

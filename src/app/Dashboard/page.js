@@ -203,7 +203,7 @@ const Page = () => {
     };
 
     axios
-      .post(`http://localhost:3000/carePlanning`, formData, config)
+      .post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config)
       .then((res) => {
         toast.success("Care plan saved successfully");
         setShowFormCare(false);
@@ -236,7 +236,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("http://localhost:3000/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -255,7 +255,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("http://localhost:3000/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -282,7 +282,7 @@ const Page = () => {
     const fetchTrainingAnalytics = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/training", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/training", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -358,7 +358,7 @@ const Page = () => {
     const fetchIncidents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/incident/all", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/incident/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -425,7 +425,7 @@ const Page = () => {
     });
 
     axios
-      .post(`http://localhost:3000/incident/`, data, config)
+      .post(`https://control-panel-backend-k6fr.vercel.app/incident/`, data, config)
       .then((res) => {
         setLoading(false);
         setFormData2({
@@ -504,7 +504,7 @@ const Page = () => {
     const fetchHR0 = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/hr", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTotalStaffno(res.data.totalstaff);
@@ -544,7 +544,7 @@ const Page = () => {
     };
 
     axios
-      .post(`http://localhost:3000/hr`, payload, config)
+      .post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config)
 
       .then((res) => {
         setLoading(false); // Reset loading state
@@ -579,7 +579,7 @@ const Page = () => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/client", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTotalClients(res.data.totalClients);
@@ -635,7 +635,7 @@ const Page = () => {
     };
 
     axios
-      .post(`http://localhost:3000/client`, payload, config)
+      .post(`https://control-panel-backend-k6fr.vercel.app/client`, payload, config)
       .then((res) => {
         setFormData({
           name: "",
@@ -648,7 +648,7 @@ const Page = () => {
         setShowModal(false);
         toast.success("Add successfuly");
 
-        return axios.get("http://localhost:3000/client", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/client", config);
       })
       .then((res) => {
         console.log("Updated Client Data:", res.data.clients);
@@ -756,7 +756,7 @@ const Page = () => {
     });
 
     axios
-      .post(`http://localhost:3000/training`, formData, config)
+      .post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config)
       .then((res) => {
         setMessage(
           editingUserId
@@ -776,7 +776,7 @@ const Page = () => {
         setLoading(false); // Reset loading state
         toast.success("Added successfully");
 
-        return axios.get(`http://localhost:3000/training`, config);
+        return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
       })
       .catch((err) => {
         setLoading(false); // Reset loading state
@@ -790,7 +790,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("http://localhost:3000/hr", {
+      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

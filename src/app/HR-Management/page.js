@@ -232,8 +232,8 @@ const allowedNavItems =
     };
 
     const request = editingUserId
-      ? axios.put(`http://localhost:3000/hr/${editingUserId}`, payload, config)
-      : axios.post(`http://localhost:3000/hr`, payload, config);
+      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/hr/${editingUserId}`, payload, config)
+      : axios.post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config);
 
     request
       .then((res) => {
@@ -254,7 +254,7 @@ const allowedNavItems =
         });
         setShowModal3(false);
         toast.success("Add successfuly");
-        return axios.get("http://localhost:3000/hr", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/hr", config);
       })
       .then((res) => {
         setStaffData(res.data.allHr);
@@ -271,7 +271,7 @@ const allowedNavItems =
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/hr", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStaffData(res.data.allHr); // no .users needed, your backend returns an array
@@ -319,7 +319,7 @@ const allowedNavItems =
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`http://localhost:3000/hr/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/hr/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
