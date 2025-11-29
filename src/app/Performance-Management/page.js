@@ -137,8 +137,8 @@ const handleSubmit = async (e) => {
   console.log("Payload:", payload); // ✅ DEBUG payload
 
   const request = editingId
-    ? axios.put(`https://control-panel-backend-k6fr.vercel.app/performance/${editingId}`, payload, config)
-    : axios.post(`https://control-panel-backend-k6fr.vercel.app/performance`, payload, config);
+    ? axios.put(`http://localhost:3000/performance/${editingId}`, payload, config)
+    : axios.post(`http://localhost:3000/performance`, payload, config);
 
   request
     .then(res => {
@@ -157,7 +157,7 @@ const handleSubmit = async (e) => {
         feedbackNotes: '',
         appraisalReminderDate: ''
       });
-      return axios.get("https://control-panel-backend-k6fr.vercel.app/performance", config)
+      return axios.get("http://localhost:3000/performance", config)
         .then(res => {
           setPerformanceData(res.data.data);
           setFilteredPerformance(res.data.data);
@@ -175,7 +175,7 @@ const fetchPerformance = async () => {
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
   try {
-    const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/performance", config);
+    const res = await axios.get("http://localhost:3000/performance", config);
     setPerformanceData(res.data.data);
     setFilteredPerformance(res.data.data);
   } catch (err) {
@@ -186,7 +186,7 @@ const handleDelete = async (id) => {
   if (!window.confirm("Confirm delete?")) return;
   const token = localStorage.getItem("token");
   try {
-    await axios.delete(`https://control-panel-backend-k6fr.vercel.app/performance/${id}`, {
+    await axios.delete(`http://localhost:3000/performance/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     toast.success("Record deleted successfully");
@@ -220,6 +220,7 @@ useEffect(() => {
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     filtered = filtered.filter(item =>
+      item.staff?.fullName?.toLowerCase().includes(q) ||
       item.supervisions.toLowerCase().includes(q) ||
       item.appraisals.toLowerCase().includes(q) ||
       item.objectivesKpi.toLowerCase().includes(q) ||
@@ -232,7 +233,7 @@ useEffect(() => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
+    axios.get('http://localhost:3000/hr', {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -254,7 +255,7 @@ useEffect(() => {
 
   const checkReminders = async () => {
     try {
-      const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/performance/reminders/due", {
+      const res = await axios.get("http://localhost:3000/performance/reminders/due", {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -560,7 +561,7 @@ const data = {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full rounded-md border border-gray-600 pl-10 pr-4 py-2 bg-gray-700 text-white"
-                    placeholder="Search Staff..."
+                    placeholder="Search Perfor.."
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FaSearch className="text-gray-500" />

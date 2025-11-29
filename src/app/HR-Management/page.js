@@ -47,50 +47,91 @@ const StaffData = [
 ];
 
 const Page = () => {
-   const {hasClients} = useAuth()
-    const { user, logout } = useAuth();
+  const { hasClients } = useAuth();
+  const { user, logout } = useAuth();
 
   // Define your navigation links here with proper routes
- const navItems = [
-  { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
-  { icon: <FaUser />, label: "Resident Management", href: "/Client-Management" },
-  { icon: <FaClipboardList />, label: "Care Planning", href: "/Care-Planning"},
-  { icon: <FaExclamationTriangle />, label: "Incident Reports", href: "/Incident-Reports"},
-  { icon: <LuLayoutTemplate />, label: "Template", href: "/Template", }, 
+  const navItems = [
+    { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
+    {
+      icon: <FaUser />,
+      label: "Resident Management",
+      href: "/Client-Management",
+    },
+    {
+      icon: <FaClipboardList />,
+      label: "Care Planning",
+      href: "/Care-Planning",
+    },
+    {
+      icon: <FaExclamationTriangle />,
+      label: "Incident Reports",
+      href: "/Incident-Reports",
+    },
+    { icon: <LuLayoutTemplate />, label: "Template", href: "/Template" },
 
-  { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
-  { icon: <MdMedicationLiquid />, label: "Medication Management", href: "/Medication-Management" },
-  ...(hasClients
-    ? []
-    : [       
-       { icon: <TbClockRecord />, label: "Medication-Record", href: "/Medication-Record"},
+    { icon: <FaSearch />, label: "Social Activity", href: "/Social-Activity" },
+    {
+      icon: <MdMedicationLiquid />,
+      label: "Medication Management",
+      href: "/Medication-Management",
+    },
+    ...(hasClients
+      ? []
+      : [
+          {
+            icon: <TbClockRecord />,
+            label: "Medication-Record",
+            href: "/Medication-Record",
+          },
 
-        { icon: <FaUsers />, label: "HR Management", href: "/HR-Management" ,active: true },
-        { icon: <IoDocumentAttach />, label: "Documents Management", href: "/Documents-Management" },
-        { icon: <GrDocumentPerformance />, label: "Performance-Management", href: "/Performance-Management" },
-        { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
-        { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance"  },
-        { icon: <SiSimpleanalytics />, label: "Analytics", href: "/Analytics" },
-        { icon: <FaUserCog />, label: "User Management", href: "/User-Management" },
-      ]),
-];
+          {
+            icon: <FaUsers />,
+            label: "HR Management",
+            href: "/HR-Management",
+            active: true,
+          },
+          {
+            icon: <IoDocumentAttach />,
+            label: "Documents Management",
+            href: "/Documents-Management",
+          },
+          {
+            icon: <GrDocumentPerformance />,
+            label: "Performance-Management",
+            href: "/Performance-Management",
+          },
+          { icon: <FaGraduationCap />, label: "Training", href: "/Training" },
+          { icon: <FaShieldAlt />, label: "Compliance", href: "/Compliance" },
+          {
+            icon: <SiSimpleanalytics />,
+            label: "Analytics",
+            href: "/Analytics",
+          },
+          {
+            icon: <FaUserCog />,
+            label: "User Management",
+            href: "/User-Management",
+          },
+        ]),
+  ];
 
-const allowedNavItems =
-  user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
-    ? navItems
-    : user?.role === "External" && Array.isArray(user.allowedPages)
-    ? navItems.filter((item) =>
-        user.allowedPages.some(
-          (page) =>
-            page.toLowerCase().replace(/\s+/g, "") ===
-            item.label.toLowerCase().replace(/\s+/g, "")
+  const allowedNavItems =
+    user?.role === "Admin" || user?.role === "Staff" || user?.role === "Client"
+      ? navItems
+      : user?.role === "External" && Array.isArray(user.allowedPages)
+      ? navItems.filter((item) =>
+          user.allowedPages.some(
+            (page) =>
+              page.toLowerCase().replace(/\s+/g, "") ===
+              item.label.toLowerCase().replace(/\s+/g, "")
+          )
         )
-      )
-    : [];
+      : [];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
-    const { hasLowStock, setHasLowStock } = useAuth();
+  const { hasLowStock, setHasLowStock } = useAuth();
   const { hasReviews, setHasReviews } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -188,7 +229,6 @@ const allowedNavItems =
     document.body.removeChild(link);
   };
 
-
   const handleCancel10 = () => {
     setShowModal3(false);
     setFormData3({
@@ -232,8 +272,8 @@ const allowedNavItems =
     };
 
     const request = editingUserId
-      ? axios.put(`https://control-panel-backend-k6fr.vercel.app/hr/${editingUserId}`, payload, config)
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config);
+      ? axios.put(`http://localhost:3000/hr/${editingUserId}`, payload, config)
+      : axios.post(`http://localhost:3000/hr`, payload, config);
 
     request
       .then((res) => {
@@ -254,7 +294,7 @@ const allowedNavItems =
         });
         setShowModal3(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/hr", config);
+        return axios.get("http://localhost:3000/hr", config);
       })
       .then((res) => {
         setStaffData(res.data.allHr);
@@ -271,7 +311,7 @@ const allowedNavItems =
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/hr", {
+        const res = await axios.get("http://localhost:3000/hr", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStaffData(res.data.allHr); // no .users needed, your backend returns an array
@@ -319,7 +359,7 @@ const allowedNavItems =
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/hr/${id}`, {
+      .delete(`http://localhost:3000/hr/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -434,82 +474,80 @@ const allowedNavItems =
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="text-white text-xl"
         >
-           <FaBars />
+          <FaBars />
         </button>
       </div>
 
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside
-  className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
+          className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-800 shadow-md transform transition-transform duration-300 ease-in-out
   ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
   lg:translate-x-0 lg:relative lg:block`}
->
-  <nav className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
-    
-    {/* 🔹 Sidebar Header with Toggle Button */}
-    <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-      <p className="text-sm text-gray-400">Navigation</p>
+        >
+          <nav className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+            {/* 🔹 Sidebar Header with Toggle Button */}
+            <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+              <p className="text-sm text-gray-400">Navigation</p>
 
-      {/* Toggle Button inside Sidebar */}
-      <button
-        onClick={() => setSidebarOpen(false)}
-        className="text-white text-xl lg:hidden"
-      >
-        <FaTimes />
-      </button>
-    </div>
+              {/* Toggle Button inside Sidebar */}
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="text-white text-xl lg:hidden"
+              >
+                <FaTimes />
+              </button>
+            </div>
 
-    {/* 🔹 Sidebar Links */}
-    {allowedNavItems.map((item, index) => (
-      <Link
-        key={index}
-        href={item.href}
-        className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
-          item.active
-            ? "bg-gray-700 text-primary-light"
-            : "hover:bg-gray-700 hover:text-primary-light"
-        }`}
-        onClick={() => setSidebarOpen(false)}
-      >
-        <span className="mr-3">{item.icon}</span>
-        <span className="flex items-center">
-          {item.label}
+            {/* 🔹 Sidebar Links */}
+            {allowedNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className={`side-menu-item flex items-center px-4 py-3 text-gray-300 rounded-md transition-colors ${
+                  item.active
+                    ? "bg-gray-700 text-primary-light"
+                    : "hover:bg-gray-700 hover:text-primary-light"
+                }`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+                <span className="flex items-center">
+                  {item.label}
 
-          {/* 🔴 Medication Low Stock Alert */}
-          {item.label === "Medication Management" && hasLowStock && (
-            <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
-          )}
+                  {/* 🔴 Medication Low Stock Alert */}
+                  {item.label === "Medication Management" && hasLowStock && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-red-600 rounded-full"></span>
+                  )}
 
-          {/* 🟡 Care Planning Review Alert */}
-          {item.label === "Care Planning" && hasReviews && (
-            <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
-          )}
-        </span>
-      </Link>
-    ))}
+                  {/* 🟡 Care Planning Review Alert */}
+                  {item.label === "Care Planning" && hasReviews && (
+                    <span className="h-3 w-3 mb-4 ml-1 text-xs bg-yellow-500 rounded-full"></span>
+                  )}
+                </span>
+              </Link>
+            ))}
 
-    {/* 🔹 User Info */}
-    <div className="p-4 border-t border-gray-700 mt-auto">
-      <div className="flex items-center">
-        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#EEEEFF] flex items-center justify-center text-[#4A49B0] font-medium">
-          {user?.fullName
-            .split(" ")
-            .map((word) => word[0])
-            .join("")
-            .toUpperCase()}
-        </div>
-        <div className="ml-3">
-          <p className="text-sm font-medium text-gray-200">
-            {user.fullName}
-          </p>
-          <p className="text-xs text-gray-400">{user.email}</p>
-        </div>
-      </div>
-    </div>
-  </nav>
-</aside>
-
+            {/* 🔹 User Info */}
+            <div className="p-4 border-t border-gray-700 mt-auto">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-[#EEEEFF] flex items-center justify-center text-[#4A49B0] font-medium">
+                  {user?.fullName
+                    .split(" ")
+                    .map((word) => word[0])
+                    .join("")
+                    .toUpperCase()}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-200">
+                    {user.fullName}
+                  </p>
+                  <p className="text-xs text-gray-400">{user.email}</p>
+                </div>
+              </div>
+            </div>
+          </nav>
+        </aside>
 
         {/* Main Content */}
         <main className="flex-1 p-6 max-h-screen overflow-hidden">
@@ -601,6 +639,7 @@ const allowedNavItems =
                       "Department",
                       "Start Date",
                       "Actions",
+                      "View Profile",
                     ].map((col, i) => (
                       <th
                         key={i}
@@ -611,6 +650,7 @@ const allowedNavItems =
                     ))}
                   </tr>
                 </thead>
+
                 <tbody className="bg-gray-800 divide-y divide-gray-700">
                   {filteredStaff.length > 0 ? (
                     filteredStaff.map((item, i) => (
@@ -625,15 +665,25 @@ const allowedNavItems =
                                 .toUpperCase()}
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-white">
+                          <Link href={`/Staff-Profile?id=${item._id}`}>
+
+                              <div
+                                className="text-sm font-medium text-white cursor-pointer hover:underline hover:text-blue-600 transition"
+                              >
                                 {item.fullName}
                               </div>
+</Link>
+
+
+                             
+
                               <div className="text-sm text-gray-400">
                                 {item.email}
                               </div>
                             </div>
                           </div>
                         </td>
+                        
                         <td className="px-4 py-4 text-sm text-white">
                           {item.position}
                         </td>
@@ -644,72 +694,98 @@ const allowedNavItems =
                           {item.startDate.slice(0, 10)}
                         </td>
                         <td className="px-4 py-4">
-      <div className="flex space-x-3 text-white items-center">
-        {/* 👁 View Button */}
-        <button
-          className="hover:text-blue-500 transition cursor-pointer"
-          onClick={() => handleView(item)}
-        >
-          <FaEye />
-        </button>
+                          <div className="flex space-x-3 text-white items-center">
+                            {/* 👁 View Button */}
+                            <button
+                              className="hover:text-blue-500 transition cursor-pointer"
+                              onClick={() => handleView(item)}
+                            >
+                              <FaEye />
+                            </button>
 
-        {/* ✏️ Edit Button */}
-        <button
-          className="hover:text-yellow-500 transition cursor-pointer"
-          onClick={() => handleEdit(item)}
-        >
-          <FaEdit />
-        </button>
+                            {/* ✏️ Edit Button */}
+                            <button
+                              className="hover:text-yellow-500 transition cursor-pointer"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <FaEdit />
+                            </button>
 
-        {/* 🗑 Delete Button */}
-        <button
-          className="hover:text-red-500 transition cursor-pointer"
-          onClick={() => handleDelete(item._id)}
-        >
-          <FaTrash />
-        </button>
+                            {/* 🗑 Delete Button */}
+                            <button
+                              className="hover:text-red-500 transition cursor-pointer"
+                              onClick={() => handleDelete(item._id)}
+                            >
+                              <FaTrash />
+                            </button>
+                           
 
-        {/* 📥 Download Dropdown (PDF + CSV) */}
-        <div className="relative">
-          <button
-            onClick={() =>
-              setOpenDropdownId(openDropdownId === item._id ? null : item._id)
-            }
-            className="hover:text-green-500 transition cursor-pointer"
-          >
-            <FaDownload />
-          </button>
+                            {/* 📥 Download Dropdown (PDF + CSV) */}
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setOpenDropdownId(
+                                    openDropdownId === item._id
+                                      ? null
+                                      : item._id
+                                  )
+                                }
+                                className="hover:text-green-500 transition cursor-pointer"
+                              >
+                                <FaDownload />
+                              </button>
 
-          {openDropdownId === item._id && (
-            <div
-               className="absolute right-0 mt-2 
+                              {openDropdownId === item._id && (
+                                <div
+                                  className="absolute right-0 mt-2 
              bg-white/20 backdrop-blur-xl border border-white/30 
              shadow-lg rounded-md z-10 w-36 
              transition-all duration-200"
-            >
-              <button
-                onClick={() => {
-                  handleDownloadPdf(item);
-                  setOpenDropdownId(null);
-                }}
-             className="block w-full text-left px-3 py-2 
-               text-sm text-white hover:bg-white/10 transition"              >
-                Download PDF
-              </button>
-              <button
-                onClick={() => {
-                  handleDownloadCsv(item);
-                  setOpenDropdownId(null);
-                }}
-             className="block w-full text-left px-3 py-2 
-               text-sm text-white hover:bg-white/10 transition"              >
-                Download CSV
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </td>
+                                >
+                                  <button
+                                    onClick={() => {
+                                      handleDownloadPdf(item);
+                                      setOpenDropdownId(null);
+                                    }}
+                                    className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition"
+                                  >
+                                    Download PDF
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      handleDownloadCsv(item);
+                                      setOpenDropdownId(null);
+                                    }}
+                                    className="block w-full text-left px-3 py-2 
+               text-sm text-white hover:bg-white/10 transition"
+                                  >
+                                    Download CSV
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                         <Link
+  href={`/Staff-Profile?id=${item._id}`}
+  className="inline-flex items-center  px-1 py-1 bg-gradient-to-r from-blue-800 to-blue-500 text-white font-semibold rounded-md shadow hover:shadow-xl transition-all active:scale-95"
+>
+  <span>View Profile</span>
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M9 5l7 7-7 7"></path>
+  </svg>
+</Link>
+
+                          </td>
                       </tr>
                     ))
                   ) : (

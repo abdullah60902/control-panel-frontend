@@ -70,6 +70,7 @@ const Page = () => {
           )
         )
       : [];
+      
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [StaffData, setStaffData] = useState([]);
   const [filteredStaff, setFilteredStaff] = useState([]);
@@ -144,12 +145,12 @@ useEffect(() => {
   const refreshAndFetch = async () => {
     try {
       // ✅ First: Ask backend to refresh all statuses
-      await axios.put("https://control-panel-backend-k6fr.vercel.app/training/refresh-status", {}, {
+      await axios.put("http://localhost:3000/training/refresh-status", {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       // ✅ Then: Fetch all updated trainings
-      const response = await axios.get("https://control-panel-backend-k6fr.vercel.app/training", {
+      const response = await axios.get("http://localhost:3000/training", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -174,6 +175,7 @@ useEffect(() => {
   // 2️⃣ Filter staff on search or selection change
   useEffect(() => {
     const now = new Date();
+console.log("jkjkjdk",StaffData);
 
     const filtered = StaffData.filter((staff) => {
       const expiry = staff.expiryDate ? new Date(staff.expiryDate) : null;
@@ -200,7 +202,7 @@ useEffect(() => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
+      .get("http://localhost:3000/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -474,11 +476,11 @@ useEffect(() => {
 
     const request = editingUserId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/training/${editingUserId}`,
+          `http://localhost:3000/training/${editingUserId}`,
           formData,
           config
         )
-      : axios.post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config);
+      : axios.post(`http://localhost:3000/training`, formData, config);
 
     request
       .then((res) => {
@@ -502,7 +504,7 @@ useEffect(() => {
         setLoading(false); // Reset loading state
         toast.success("Added successfully");
 
-        return axios.get(`https://control-panel-backend-k6fr.vercel.app/training`, config);
+        return axios.get(`http://localhost:3000/training`, config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -520,7 +522,7 @@ useEffect(() => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/training/${id}`, {
+      .delete(`http://localhost:3000/training/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -603,7 +605,7 @@ useEffect(() => {
 
             {/* 🧾 Heading */}
             <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 sm:mb-8 md:mb-10 flex items-center justify-center gap-2 sm:gap-3">
-              Social Record Details
+              Training Record Details
             </h2>
 
             {/* 📄 Info Fields */}

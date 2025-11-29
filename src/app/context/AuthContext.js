@@ -73,11 +73,12 @@ const login = (token, userInfo) => {
   setUser(null);
 };// ✅ Define function before useEffect
 const fetchLowStock = async () => {
+        const token = localStorage.getItem("token");
   try {
     const res = await axios.get(
-      "https://control-panel-backend-k6fr.vercel.app/medications/low-stock",
+      "http://localhost:3000/medications/low-stock",
       {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            headers: { Authorization: `Bearer ${token}` },
       }
     );
 
@@ -91,9 +92,11 @@ const fetchLowStock = async () => {
 
 // ✅ Auto refresh every 10s
   const fetchReviews = async () => {
+            const token = localStorage.getItem("token");
+
     try {
-      const res = await axios.get('https://control-panel-backend-k6fr.vercel.app/carePlanning/alerts', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const res = await axios.get('http://localhost:3000/carePlanning/alerts', {
+            headers: { Authorization: `Bearer ${token}` },
       });
 
       setTodayReviews(res.data.todayReviews);
