@@ -215,8 +215,8 @@ const handleSubmit4 = (e) => {
   });
 
   const request = editingUserId
-    ? axios.put(`http://localhost:3000/social/${editingUserId}`, data, config)
-    : axios.post(`http://localhost:3000/social`, data, config);
+    ? axios.put(`https://control-panel-frontend-sc75.vercel.app/social/${editingUserId}`, data, config)
+    : axios.post(`https://control-panel-frontend-sc75.vercel.app/social`, data, config);
 
   request
     .then(res => {
@@ -233,7 +233,7 @@ const handleSubmit4 = (e) => {
       setAttachments([]);
 
       // ✅ FETCH updated data
-      return axios.get('http://localhost:3000/social', config);
+      return axios.get('https://control-panel-frontend-sc75.vercel.app/social', config);
     })
     .then(res => {
       setSocial(res.data); // social activity list update
@@ -251,7 +251,7 @@ const handleSubmit4 = (e) => {
 
 
   useEffect(() => {
-    axios.get('http://localhost:3000/social', {
+    axios.get('https://control-panel-frontend-sc75.vercel.app/social', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       }
@@ -274,7 +274,7 @@ const handleSubmit4 = (e) => {
 
  useEffect(() => {
     const token = localStorage.getItem('token');
-    axios.get('http://localhost:3000/hr', {
+    axios.get('https://control-panel-frontend-sc75.vercel.app/hr', {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -307,7 +307,7 @@ const handleCancel12 = () => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     const token = localStorage.getItem('token');
-    axios.delete(`http://localhost:3000/social/${id}`, {
+    axios.delete(`https://control-panel-frontend-sc75.vercel.app/social/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       }
@@ -330,7 +330,7 @@ const handleCancel12 = () => {
 
 useEffect(() => {
   const token = localStorage.getItem('token');
-  axios.get('http://localhost:3000/client', {
+  axios.get('https://control-panel-frontend-sc75.vercel.app/client', {
     headers: {
       Authorization: `Bearer ${token}`,
     }

@@ -25,7 +25,7 @@ export default function ChangePasswordPrompt({ user }) {
   try {
     const token = localStorage.getItem("token");
     await axios.post(
-      "http://localhost:3000/user/change-password",
+      "https://control-panel-frontend-sc75.vercel.app/user/change-password",
       { oldPassword, newPassword },
       { headers: { Authorization: `Bearer ${token}` } }
     );

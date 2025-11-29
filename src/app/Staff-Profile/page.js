@@ -57,21 +57,21 @@ useEffect(() => {
 
   const token = localStorage.getItem("token");
 
-  fetch(`http://localhost:3000/hr/${id}`, {
+  fetch(`https://control-panel-frontend-sc75.vercel.app/hr/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(res => res.json())
     .then(data => setStaff(data))
     .catch(err => console.log(err));
 
-  fetch(`http://localhost:3000/training/staff/${id}`, {
+  fetch(`https://control-panel-frontend-sc75.vercel.app/training/staff/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(res => res.json())
     .then(data => setTrainings(data))
     .catch(err => console.log(err));
 
-  fetch(`http://localhost:3000/performance/staff/${id}`, {
+  fetch(`https://control-panel-frontend-sc75.vercel.app/performance/staff/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(res => res.json())
@@ -334,7 +334,7 @@ transition-all duration-300 gap-6"
           const formData = new FormData();
           formData.append("profileImage", file);
 
-          const res = await fetch(`http://localhost:3000/hr/${id}/photo`, {
+          const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/hr/${id}/photo`, {
             method: "PUT",
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             body: formData,
@@ -395,7 +395,7 @@ transition-all duration-300 gap-6"
   onClick={async () => {
     if (!confirm("Are you sure you want to terminate this employee?")) return;
 
-    const res = await fetch(`http://localhost:3000/hr/${id}`, {
+    const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/hr/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,

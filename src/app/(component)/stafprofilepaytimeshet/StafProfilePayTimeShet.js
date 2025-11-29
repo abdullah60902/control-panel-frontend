@@ -19,7 +19,7 @@ const StafProfilePayTimeShet = ({ id }) => {
   // Fetch Pay Info
   useEffect(() => {
     if (!id) return;
-    fetch(`http://localhost:3000/staffpay/${id}`, {
+    fetch(`https://control-panel-frontend-sc75.vercel.app/staffpay/${id}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then(res => res.json())
@@ -34,7 +34,7 @@ const StafProfilePayTimeShet = ({ id }) => {
   // Save single field
 const handleSaveField = async (field, value) => {
   try {
-    const res = await fetch(`http://localhost:3000/staffpay/${id}`, {
+    const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/staffpay/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -63,7 +63,7 @@ const handleSaveField = async (field, value) => {
     formData.append("fileDate", newPayslip.fileDate);
     formData.append("file", newPayslip.file);
 
-    const res = await fetch(`http://localhost:3000/staffpay/${id}/payslip`, {
+    const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/staffpay/${id}/payslip`, {
       method: "POST",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: formData,
@@ -83,7 +83,7 @@ const handleSaveField = async (field, value) => {
     formData.append("status", newTimesheet.status);
     formData.append("file", newTimesheet.file);
 
-    const res = await fetch(`http://localhost:3000/staffpay/${id}/timesheet`, {
+    const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/staffpay/${id}/timesheet`, {
       method: "POST",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       body: formData,
@@ -122,7 +122,7 @@ const handleSaveField = async (field, value) => {
 // Delete Payslip
 // ---------------------------
 const handleDeletePayslip = async (index) => {
-  const res = await fetch(`http://localhost:3000/staffpay/${id}/payslip/${index}`, {
+  const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/staffpay/${id}/payslip/${index}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });
@@ -134,7 +134,7 @@ const handleDeletePayslip = async (index) => {
 // Delete Timesheet
 // ---------------------------
 const handleDeleteTimesheet = async (index) => {
-  const res = await fetch(`http://localhost:3000/staffpay/${id}/timesheet/${index}`, {
+  const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/staffpay/${id}/timesheet/${index}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   });

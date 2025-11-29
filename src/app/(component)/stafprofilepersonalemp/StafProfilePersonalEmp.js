@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 const StafProfilePersonalEmp = ({ staff }) => {
   const updateStaff = async (field, value) => {
     try {
-      await fetch(`http://localhost:3000/hr/${staff._id}`, {
+      await fetch(`https://control-panel-frontend-sc75.vercel.app/hr/${staff._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -67,7 +67,7 @@ export default function RotaCalendar({ staffId }) {
     const fetchShifts = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3000/shifts/staff/${staffId}`, {
+        const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/shifts/staff/${staffId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -89,7 +89,7 @@ const saveShift = async () => {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/shifts", {
+    const res = await fetch("https://control-panel-frontend-sc75.vercel.app/shifts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, staff: staffId }), // include staffId
@@ -111,7 +111,7 @@ const saveShift = async () => {
     if (!confirm("Are you sure you want to delete this shift/day off?")) return;
 
     try {
-      const res = await fetch(`http://localhost:3000/shifts/${id}`, {
+      const res = await fetch(`https://control-panel-frontend-sc75.vercel.app/shifts/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete shift");
