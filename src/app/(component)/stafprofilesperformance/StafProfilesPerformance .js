@@ -437,64 +437,61 @@ const EditableField = ({ label, dbField, value: initialValue, performanceId, onU
   {performanceData[0] && (
   <>
     <EditableField
-      label="Holiday Allowance"
-      dbField="holidayAllowance"
-      value={performanceData[0].holidayAllowance}
-      performanceId={performanceData[0]._id}
-      onUpdate={(v) =>
-  setPerformanceData(prev => 
-    prev.map(item => 
-      item._id === performanceData[0]._id ? { ...item, holidayAllowance: v } : item
+  label="Holiday Allowance"
+  dbField="holidayAllowance"
+  value={performanceData[0].holidayAllowance}
+  performanceId={performanceData[0]._id}
+  onUpdate={(v) =>
+    setPerformanceData(prev => 
+      prev.map(item => 
+        item._id === performanceData[0]._id ? { ...item, holidayAllowance: v } : item
+      )
     )
-  )
-}
+  }
+/>
 
-    />
-
-    <EditableField
-      label="Days Remaining"
-      dbField="daysRemaining"
-      value={performanceData[0].daysRemaining}
-      performanceId={performanceData[0]._id}
-     onUpdate={(v) =>
-  setPerformanceData(prev => 
-    prev.map(item => 
-      item._id === performanceData[0]._id ? { ...item, holidayAllowance: v } : item
+<EditableField
+  label="Days Remaining"
+  dbField="daysRemaining"
+  value={performanceData[0].daysRemaining}
+  performanceId={performanceData[0]._id}
+  onUpdate={(v) =>
+    setPerformanceData(prev => 
+      prev.map(item => 
+        item._id === performanceData[0]._id ? { ...item, daysRemaining: v } : item
+      )
     )
-  )
-}
+  }
+/>
 
-    />
-
-    <EditableField
-      label="Next Appraisal Due"
-      dbField="nextAppraisalDue"
-      value={performanceData[0].nextAppraisalDue?.slice(0, 10)}
-      performanceId={performanceData[0]._id}
-    onUpdate={(v) =>
-  setPerformanceData(prev => 
-    prev.map(item => 
-      item._id === performanceData[0]._id ? { ...item, nextAppraisalDue: v } : item
+<EditableField
+  label="Next Appraisal Due"
+  dbField="nextAppraisalDue"
+  value={performanceData[0].nextAppraisalDue?.slice(0, 10)}
+  performanceId={performanceData[0]._id}
+  onUpdate={(v) =>
+    setPerformanceData(prev => 
+      prev.map(item => 
+        item._id === performanceData[0]._id ? { ...item, nextAppraisalDue: v } : item
+      )
     )
-  )
-}
+  }
+/>
 
-    />
-
-    <EditableField
-      label="Probation End Date"
-      dbField="probationEndDate"
-      value={performanceData[0].probationEndDate?.slice(0, 10)}
-      performanceId={performanceData[0]._id}
-      onUpdate={(v) =>
-  setPerformanceData(prev => 
-    prev.map(item => 
-      item._id === performanceData[0]._id ? { ...item, probationEndDate: v } : item
+<EditableField
+  label="Probation End Date"
+  dbField="probationEndDate"
+  value={performanceData[0].probationEndDate?.slice(0, 10)}
+  performanceId={performanceData[0]._id}
+  onUpdate={(v) =>
+    setPerformanceData(prev => 
+      prev.map(item => 
+        item._id === performanceData[0]._id ? { ...item, probationEndDate: v } : item
+      )
     )
-  )
-}
+  }
+/>
 
-    />
   </>
 )}
 

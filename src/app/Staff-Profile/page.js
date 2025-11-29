@@ -449,7 +449,7 @@ text-xs sm:text-sm md:text-base lg:text-lg"
             {/* Personal & Employment//////////////////////////// */}
 
             {activeTab === "personal" && <StafProfilePersonalEmp
-  staff={staff}
+  staff={id}
   isEditing={isEditing}
   onStaffChange={(updatedStaff) => setStaff(updatedStaff)}
 />
