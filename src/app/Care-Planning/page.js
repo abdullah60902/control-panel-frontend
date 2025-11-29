@@ -399,7 +399,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://control-panel-frontend-sc75.vercel.app/carePlanning/alerts",
+          "https://control-panel-backend-k6fr.vercel.app/carePlanning/alerts",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -436,7 +436,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
     try {
       const token = localStorage.getItem("token");
       const res = await axios.put(
-        `https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}/mark-reviewed`,
+        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}/mark-reviewed`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -530,11 +530,11 @@ const [searchQueryform, setSearchQueryform] = useState("");
 
     const request = editingCareId
       ? axios.put(
-          `https://control-panel-frontend-sc75.vercel.app/carePlanning/${editingCareId}`,
+          `https://control-panel-backend-k6fr.vercel.app/carePlanning/${editingCareId}`,
           formData,
           config
         )
-      : axios.post(`https://control-panel-frontend-sc75.vercel.app/carePlanning`, formData, config);
+      : axios.post(`https://control-panel-backend-k6fr.vercel.app/carePlanning`, formData, config);
 
     request
       .then((res) => {
@@ -555,7 +555,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
           mood: "",
           dailyLog: "",
         });
-        return axios.get("https://control-panel-frontend-sc75.vercel.app/carePlanning", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/carePlanning", config);
       })
       .then((res) => {
         setCarePlans(res.data);
@@ -574,7 +574,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       return;
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {
@@ -598,7 +598,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       return;
 
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/carePlanning", {
+      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -629,7 +629,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -751,7 +751,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}`,
+        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
         {
           status: "Accepted",
           signature: dataURL,
@@ -774,7 +774,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `https://control-panel-frontend-sc75.vercel.app/carePlanning/${id}`,
+        `https://control-panel-backend-k6fr.vercel.app/carePlanning/${id}`,
         {
           status: "Declined",
           declineReason: reason,
@@ -800,7 +800,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       return;
 
     axios
-      .get("https://control-panel-frontend-sc75.vercel.app/carePlanning", {
+      .get("https://control-panel-backend-k6fr.vercel.app/carePlanning", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {

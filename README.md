@@ -14,7 +14,7 @@ pnpm dev
 bun dev
 ```
 
-Open [https://control-panel-frontend-sc75.vercel.app/](https://control-panel-frontend-sc75.vercel.app/) with your browser to see the result.
+Open [https://control-panel-backend-k6fr.vercel.app/](https://control-panel-backend-k6fr.vercel.app/) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
 
