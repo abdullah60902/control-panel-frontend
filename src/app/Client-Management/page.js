@@ -761,6 +761,24 @@ const Page = () => {
                           )}
                         </div>
                       </td>
+                        <td className="px-4 py-4">
+                                               <Link
+                        href={`/Resident-Profile?id=${client._id}`}
+                        className="inline-flex items-center  px-1 py-1 bg-gradient-to-r from-blue-800 to-blue-500 text-white font-semibold rounded-md shadow hover:shadow-xl transition-all active:scale-95"
+                      >
+                        <span>View Profile</span>
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </Link>
+                      
+                                                </td>
                     </tr>
                   ))}
                 </tbody>

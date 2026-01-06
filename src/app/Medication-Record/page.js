@@ -157,10 +157,10 @@ const Page = () => {
     const fetchPatients = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/medication-administration/patients", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/client", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setPatients(res.data);
+        setPatients(res.data.clients);
       } catch (err) {
         console.error("Error fetching patients:", err);
       }
@@ -174,7 +174,7 @@ const Page = () => {
       const token = localStorage.getItem("token");
     try {
       setLoading(true);
-      const res = await axios.get(`https://control-panel-backend-k6fr.vercel.app/medication-administration/medications/${id}`, {
+      const res = await axios.get(`https://control-panel-backend-k6fr.vercel.app/medications/client/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMedicationsn(res.data);
@@ -250,7 +250,7 @@ const handleChangeCare = (e) => {
     const autoTable = (await import("jspdf-autotable")).default;
 
     const patientName =
-      staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
+      staffMembers.find((staff) => staff._id === (item.client?._id || item.client))?.fullName ||
       item.client?.name ||
       "Unknown Patient";
 
@@ -367,7 +367,7 @@ const handleChangeCare = (e) => {
   // ✅ CSV Download
  const handleDownloadCsv = (item) => {
   const patientName =
-    staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
+    staffMembers.find((staff) => staff._id === (item.client?._id || item.client))?.fullName ||
     item.client?.name ||
     "Unknown Patient";
 
@@ -600,7 +600,7 @@ const handleSubmitCare = async (e) => {
   useEffect(() => {
     const filtered = medications.filter((plan) => {
       const client =
-        staffMembers.find((staff) => staff._id === plan.client)?.fullName || "";
+        staffMembers.find((staff) => staff._id === (plan.client?._id || plan.client))?.fullName || "";
       const matchesType =
         selected === "All Plans" || plan.planType === selected;
       const matchesSearch = client
@@ -625,7 +625,7 @@ const [showModal, setShowModal] = useState(false);
 
 const handleView = (item) => {
   const patient =
-    staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
+    staffMembers.find((staff) => staff._id === (item.client?._id || item.client))?.fullName ||
     item.client?.name ||
     "Unknown";
 
@@ -918,7 +918,7 @@ const data = {
                           <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white text-blue-500 flex items-center justify-center rounded-full text-xs sm:text-sm font-semibold">
                             {(
                               staffMembers.find(
-                                (staff) => staff._id === item.client?._id
+                                (staff) => staff._id === (item.client?._id || item.client)
                               )?.fullName || "U"
                             )
                               .split(" ")
@@ -929,7 +929,7 @@ const data = {
                           <div>
                             <div className="text-sm font-medium text-white">
                               {staffMembers.find(
-                                (staff) => staff._id === item.client?._id
+                                (staff) => staff._id === (item.client?._id || item.client)
                               )?.fullName || "Unknown"}
                             </div>
                           </div>

@@ -1,0 +1,6 @@
+Backup note for residentprofilecareplan.js
+Timestamp: 2025-12-28  
+
+This file was about to be edited to change the View modal so it only displays fields that were actually posted for a care plan entry (no extra empty/default fields).
+
+If you need the previous exact file contents, please restore from your Git history. This workspace does not include previous versions in the assistant context.

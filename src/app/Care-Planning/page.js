@@ -48,7 +48,6 @@ const CarePlans = [
     status: "Current",
   },
 ];
-
 const Page = () => {
   const { user, logout } = useAuth();
   const { hasLowStock, setHasLowStock } = useAuth();
@@ -144,6 +143,19 @@ const Page = () => {
   );
 
   const [filteredStaff, setFilteredStaff] = useState([]);
+
+  // Normalize plan shape so UI always has these health fields available
+  const normalizePlan = (p) => {
+    if (!p) return p;
+    return {
+      ...p,
+      bristolStoolChart: p.bristolStoolChart ?? p.carePlanData?.bristolStoolChart ?? "",
+      mustScore: p.mustScore ?? p.carePlanData?.mustScore ?? "",
+      heartRate: p.heartRate ?? p.carePlanData?.heartRate ?? "",
+      mood: p.mood ?? p.carePlanData?.mood ?? "",
+      dailyLog: p.dailyLog ?? p.carePlanData?.dailyLog ?? "",
+    };
+  };
   const [editingCareId, setEditingCareId] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -203,9 +215,9 @@ const [searchQueryform, setSearchQueryform] = useState("");
     const jsPDF = (await import("jspdf")).default;
     const autoTable = (await import("jspdf-autotable")).default;
 
-    const minu =
-      staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
-      "Unknown";
+    // Use client fullName only when it was actually posted on the entry
+    // (do not fall back to staff lookup or a generic 'Unknown')
+    const minu = item.client?.fullName || "";
 
     // ✅ Mood map
     const moodMap = {
@@ -215,33 +227,68 @@ const [searchQueryform, setSearchQueryform] = useState("");
       "😡": "Angry",
       "😴": "Tired",
     };
-    const moodText = moodMap[item.mood] || "";
+    // Prefer mood from top-level or carePlanData
+    const moodText = moodMap[item.mood ?? item.carePlanData?.mood] || "";
+
+    // Health & Wellbeing values prefer posted top-level, otherwise nested
+    const bristolVal = item.bristolStoolChart ?? item.carePlanData?.bristolStoolChart ?? "";
+    const mustVal = item.mustScore ?? item.carePlanData?.mustScore ?? "";
+    const hrVal = item.heartRate ?? item.carePlanData?.heartRate ?? "";
+    const dailyLogVal = item.dailyLog ?? item.carePlanData?.dailyLog ?? "";
 
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text("Care Plan Details", 14, 15);
 
-    // ✅ Main Table
-    autoTable(doc, {
-      startY: 25,
-      head: [["Field", "Value"]],
-      body: [
-        ["Patient", minu],
-        ["Plan Type", item.planType],
-        ["Creation Date", item.creationDate?.slice(0, 10)],
-        ["Review Date", item.reviewDate?.slice(0, 10)],
-        ["Care Plan Details", item.carePlanDetails],
-        ["Bristol Stool Chart", item.bristolStoolChart],
-        ["MUST Score", item.mustScore],
-        ["Heart Rate", item.heartRate],
-        ["Mood", moodText],
-        ["Daily Log", item.dailyLog],
-        ["Status", item.status],
-        ["Care Setting", item.careSetting || ""],
-      ],
-    });
+    // Build main rows from the same fields the View modal shows so PDF mirrors View
+    const mainRows = [];
+    if (item.client?.fullName) mainRows.push(["Patient", item.client.fullName]);
+    if (item.planType) mainRows.push(["Plan Type", item.planType]);
+    if (item.creationDate) mainRows.push(["Creation Date", item.creationDate?.slice(0, 10)]);
+    if (item.reviewDate) mainRows.push(["Review Date", item.reviewDate?.slice(0, 10)]);
+    if (item.carePlanDetails) mainRows.push(["Care Plan Details", item.carePlanDetails]);
+    if (item.bristolStoolChart) mainRows.push(["Bristol Stool Chart", item.bristolStoolChart]);
+    if (item.mustScore) mainRows.push(["MUST Score", item.mustScore]);
+    if (item.heartRate) mainRows.push(["Heart Rate", item.heartRate]);
+    if (moodText) mainRows.push(["Mood", moodText]);
+    if (item.dailyLog) mainRows.push(["Daily Log", item.dailyLog]);
+    if (item.status) mainRows.push(["Status", item.status]);
+    if (item.careSetting) mainRows.push(["Care Setting", item.careSetting]);
+    if (bristolVal) mainRows.push(["Bristol Stool Chart", bristolVal]);
+    if (mustVal) mainRows.push(["MUST Score", mustVal]);
+    if (hrVal) mainRows.push(["Heart Rate", hrVal]);
+    if (moodText) mainRows.push(["Mood", moodText]);
+    if (dailyLogVal) mainRows.push(["Daily Log", dailyLogVal]);
 
-    let currentY = doc.lastAutoTable.finalY + 10;
+    if (mainRows.length) {
+      autoTable(doc, {
+        startY: 25,
+        head: [["Field", "Value"]],
+        body: mainRows,
+      });
+    }
+
+    let currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 35;
+
+    // Include nested carePlanData fields if present (mirror view visibility rules)
+    if (item.carePlanData && typeof item.carePlanData === 'object') {
+      const careRows = Object.entries(item.carePlanData)
+        .filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '')
+        .map(([k, v]) => {
+          const label = k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+          if (/date/i.test(k)) return [label, (new Date(v)).toLocaleDateString()];
+          return [label, typeof v === 'object' ? JSON.stringify(v) : String(v)];
+        });
+
+      if (careRows.length) {
+        autoTable(doc, {
+          startY: currentY,
+          head: [["Care Plan Field", "Value"]],
+          body: careRows,
+        });
+        currentY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : currentY + 8;
+      }
+    }
 
     // ✅ Decline Reason
     if (item.status === "Declined" && item.declineReason) {
@@ -389,8 +436,9 @@ const [searchQueryform, setSearchQueryform] = useState("");
         }
       }
 
-      // ✅ Save PDF file
-      doc.save(`${minu}_careplan.pdf`);
+      // ✅ Save PDF file, fallback to id when name not present
+      const filenameBase = item.client?.fullName ? item.client.fullName.replace(/\s+/g, '_') : item._id;
+      doc.save(`${filenameBase}_careplan.pdf`);
     }
   };
 
@@ -463,25 +511,28 @@ const [searchQueryform, setSearchQueryform] = useState("");
     };
     const moodText = moodMap[item.mood] || "";
 
-    const minu =
-      staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
-      "Unknown";
+    const minuName = item.client?.fullName || "";
+
+    // Prefer values from top-level or carePlanData when building CSV rows
+    const bristolCsv = item.bristolStoolChart ?? item.carePlanData?.bristolStoolChart ?? "";
+    const mustCsv = item.mustScore ?? item.carePlanData?.mustScore ?? "";
+    const hrCsv = item.heartRate ?? item.carePlanData?.heartRate ?? "";
+    const dailyCsv = item.dailyLog ?? item.carePlanData?.dailyLog ?? "";
 
     const headers = ["Field,Value"];
-    const rows = [
-      `Patient,${minu}`,
-      `Plan Type,${item.planType}`,
-      `Creation Date,${item.creationDate?.slice(0, 10)}`,
-      `Review Date,${item.reviewDate?.slice(0, 10)}`,
-      `Care Plan Details,${item.carePlanDetails}`,
-      `Bristol Stool Chart,${item.bristolStoolChart}`,
-      `MUST Score,${item.mustScore}`,
-      `Heart Rate,${item.heartRate}`,
-      `Mood,${moodText}`,
-      `Daily Log,${item.dailyLog}`,
-      `Status,${item.status}`,
-      `Care Setting,${item.careSetting || ""}`,
-    ];
+    const rows = [];
+    if (item.client?.fullName) rows.push(`Patient,${minuName}`);
+    rows.push(`Plan Type,${item.planType}`);
+    rows.push(`Creation Date,${item.creationDate?.slice(0, 10)}`);
+    rows.push(`Review Date,${item.reviewDate?.slice(0, 10)}`);
+    rows.push(`Care Plan Details,${item.carePlanDetails}`);
+    rows.push(`Bristol Stool Chart,${bristolCsv}`);
+    rows.push(`MUST Score,${mustCsv}`);
+    rows.push(`Heart Rate,${hrCsv}`);
+    rows.push(`Mood,${moodText}`);
+    rows.push(`Daily Log,${dailyCsv}`);
+    rows.push(`Status,${item.status}`);
+    rows.push(`Care Setting,${item.careSetting || ""}`);
 
     if (item.status === "Declined" && item.declineReason) {
       rows.push(`Decline Reason,${item.declineReason}`);
@@ -491,7 +542,8 @@ const [searchQueryform, setSearchQueryform] = useState("");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `${minu}_careplan.csv`;
+    const csvBase = item.client?.fullName ? minuName.replace(/\s+/g, '_') : item._id;
+    link.download = `${csvBase}_careplan.csv`;
     link.click();
   };
 
@@ -503,8 +555,38 @@ const [searchQueryform, setSearchQueryform] = useState("");
     const token = localStorage.getItem("token");
 
     const formData = new FormData();
+    // Send core top-level fields directly, but send Health & Wellbeing
+    // (and other non-core fields) nested as carePlanData[...] so the
+    // backend receives them in the same structure used elsewhere.
+    const topLevelKeys = [
+      "client",
+      "planType",
+      "creationDate",
+      "reviewDate",
+      "carePlanDetails",
+      "careSetting",
+      // ✅ Health & Wellbeing Recordings (top-level schema fields)
+      "bristolStoolChart",
+      "mustScore",
+      "heartRate",
+      "mood",
+      "dailyLog",
+    ];
+
     for (let key in formDataCare) {
-      formData.append(key, formDataCare[key]);
+      if (topLevelKeys.includes(key)) {
+        formData.append(key, formDataCare[key]);
+      } else {
+        formData.append(`carePlanData[${key}]`, formDataCare[key]);
+      }
+    }
+
+    // Debug: log FormData keys in dev so you can inspect what the client sends
+    if (process.env.NODE_ENV !== "production") {
+      for (let pair of formData.entries()) {
+        // eslint-disable-next-line no-console
+        console.log("CarePlan FormData:", pair[0], pair[1]);
+      }
     }
 
     // Check if editing: add Cloudinary URLs (old ones) and new files
@@ -549,6 +631,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
           creationDate: "",
           reviewDate: "",
           carePlanDetails: "",
+          careSetting: "",
           bristolStoolChart: "",
           mustScore: "",
           heartRate: "",
@@ -558,7 +641,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
         return axios.get("https://control-panel-backend-k6fr.vercel.app/carePlanning", config);
       })
       .then((res) => {
-        setCarePlans(res.data);
+        setCarePlans(res.data.map(normalizePlan));
       })
       .catch((err) => {
         console.error("Error:", err.response?.data);
@@ -616,7 +699,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
           );
         }
 
-        setCarePlans(plans);
+        setCarePlans(plans.map(normalizePlan));
         console.log("Filtered Care Plans:", plans);
         setMessage("Care Plans fetched");
       })
@@ -695,13 +778,20 @@ const [searchQueryform, setSearchQueryform] = useState("");
   const [viewMood, setViewMood] = useState("");
   const [viewDailyLog, setViewDailyLog] = useState("");
   const [viewCareSetting, setViewCareSetting] = useState(""); // ✅ NEW FIELD
+  const [viewCarePlanData, setViewCarePlanData] = useState({});
 
   const handleView = (item) => {
-    const minu =
-      staffMembers.find((staff) => staff._id === item.client?._id)?.fullName ||
-      "U";
+    // Prefer client fullName only when it was actually posted on the entry
+    const clientName = item.client?.fullName || "";
 
-    setViewName(minu);
+    // Health & Wellbeing: read from top-level **or** nested carePlanData (server may store either)
+    const bristol = item.bristolStoolChart ?? item.carePlanData?.bristolStoolChart ?? "";
+    const must = item.mustScore ?? item.carePlanData?.mustScore ?? "";
+    const hr = item.heartRate ?? item.carePlanData?.heartRate ?? "";
+    const mood = item.mood ?? item.carePlanData?.mood ?? "";
+    const dlog = item.dailyLog ?? item.carePlanData?.dailyLog ?? "";
+
+    setViewName(clientName);
     setViewPlanType(item.planType);
     setViewCreationDate(item.creationDate?.slice(0, 10));
     setViewReviewDate(item.reviewDate?.slice(0, 10));
@@ -710,12 +800,13 @@ const [searchQueryform, setSearchQueryform] = useState("");
     setViewDeclineReason(item.declineReason || null);
     setViewStatus(item.status || null);
     setViewAttachments(item.attachments || []); // ✅ set attachments
-    setViewBristolStoolChart(item.bristolStoolChart || "");
-    setViewMustScore(item.mustScore || "");
-    setViewHeartRate(item.heartRate || "");
-    setViewMood(item.mood || "");
-    setViewDailyLog(item.dailyLog || "");
+    setViewBristolStoolChart(bristol);
+    setViewMustScore(must);
+    setViewHeartRate(hr);
+    setViewMood(mood);
+    setViewDailyLog(dlog);
     setViewCareSetting(item.careSetting || ""); // ✅ NEW FIELD
+    setViewCarePlanData(item.carePlanData || {});
     setShowModal(true);
   };
 
@@ -817,7 +908,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
           );
         }
 
-        setCarePlans(plans);
+        setCarePlans(plans.map(normalizePlan));
       })
       .catch((err) => {
         console.error("Error fetching plans:", err);
@@ -834,6 +925,7 @@ const [searchQueryform, setSearchQueryform] = useState("");
       creationDate: "",
       reviewDate: "",
       carePlanDetails: "",
+      careSetting: "",
       bristolStoolChart: "",
       mustScore: "",
       heartRate: "",
@@ -884,21 +976,38 @@ const [searchQueryform, setSearchQueryform] = useState("");
               Care Plan Details
             </h2>
 
-            {/* 💠 Info Fields */}
+            {/* 💠 Info Fields (only show entered/non-empty values) */}
             <div className="space-y-5 mb-6">
-              {Object.entries(data).map(([field, value]) => (
-                <div
-                  key={field}
-                  className="flex justify-between items-start bg-[#1e212a] p-4 rounded-xl border border-gray-700"
-                >
-                  <span className="font-semibold text-gray-300">{field}</span>
-                  <span className="text-right text-gray-400 max-w-[60%]">
-                    {value}
-                  </span>
+              {Object.entries(data)
+                .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
+                .map(([field, value]) => (
+                  <div
+                    key={field}
+                    className="flex justify-between items-start bg-[#1e212a] p-4 rounded-xl border border-gray-700"
+                  >
+                    <span className="font-semibold text-gray-300">{typeof field === 'string' ? (field.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())) : field}</span>
+                    <span className="text-right text-gray-400 max-w-[60%]">
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              {/* Nested carePlanData */}
+              {viewCarePlanData && Object.keys(viewCarePlanData).length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <h4 className="text-lg font-semibold">Care Plan Data</h4>
+                  {Object.entries(viewCarePlanData)
+                    .filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== "")
+                    .map(([k, v]) => (
+                      <div key={k} className="flex justify-between items-start bg-[#1e212a] p-3 rounded-xl border border-gray-700">
+                        <span className="font-semibold text-gray-300">{k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</span>
+                        <span className="text-right text-gray-400 max-w-[60%]">
+                          {/date/i.test(k) ? (v ? new Date(v).toLocaleDateString() : '') : (typeof v === 'object' ? JSON.stringify(v) : String(v))}
+                        </span>
+                      </div>
+                    ))}
                 </div>
-              ))}
+              )}
             </div>
-
             {/* ✅ Signature / Decline */}
             {(viewStatus === "Accepted" && viewSignature) ||
             (viewStatus === "Declined" && viewDeclineReason) ? (
@@ -1192,8 +1301,6 @@ const [searchQueryform, setSearchQueryform] = useState("");
     </div>
   </nav>
 </aside>
-
-
         {/* Main Content */}
         <main className="flex-1 p-6 max-h-screen overflow-hidden">
           <h2 className="text-xl font-semibold text-gray-200 mb-6 hidden md:block">

@@ -68,6 +68,8 @@ const StaffData = [
 
 const Page = () => {
   const { user, logout } = useAuth();
+    console.log("safi butt");
+
    const navItems = [
     { icon: <FaThLarge />, label: "Dashboard", href: "/Dashboard" },
     { icon: <FaUser />,label: "Resident Management", href: "/Client-Management",    },
@@ -278,6 +280,7 @@ const handleChange6 = (e) => {
       });
   };
 
+  
   useEffect(() => {
     axios
       .get("https://control-panel-backend-k6fr.vercel.app/user", {
