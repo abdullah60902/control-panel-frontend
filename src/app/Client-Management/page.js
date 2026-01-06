@@ -485,6 +485,8 @@ const Page = () => {
                     <Image
                       src={value}
                       alt={field}
+                      width={180}
+                      height={150}
                       className="max-w-[180px] max-h-[150px] rounded-lg border border-gray-600 shadow-md object-contain"
                     />
                   ) : (
@@ -652,6 +654,7 @@ const Page = () => {
                       "Admitted",
                       "Status",
                       "Actions",
+                      "View Profile",
                     ].map((col, i) => (
                       <th
                         key={i}
