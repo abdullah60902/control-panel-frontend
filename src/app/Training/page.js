@@ -11,7 +11,7 @@ import Image from "next/image";
 import { TbClockRecord } from "react-icons/tb";
 
 
-import Link from "next/link"; // <-- import Next.js Link
+import Link from "next/link"; 
 import {
   FaThLarge,
   FaUser,
@@ -24,18 +24,18 @@ import {
   FaSearch,
   FaPlus,
   FaEye,
-  // FaEdit,
-  // FaTrash,
-  FaBars,
+  FaTrash,
+  FaDownload,
   FaTimes,
+  FaBars,
+  FaEdit
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-import { toast } from "react-toastify";
-import { FaEdit, FaTrash, FaDownload } from "react-icons/fa";
+import Image from "next/image";
 import jsPDF from "jspdf";
-import "jspdf-autotable"; // Optional for table format
+import "jspdf-autotable"; 
 import { MdMedicationLiquid } from "react-icons/md";
 
 const Page = () => {
@@ -671,9 +671,11 @@ console.log("jkjkjdk",StaffData);
                             rel="noopener noreferrer"
                             className="flex flex-col items-center gap-2"
                           >
-                            <img
+                            <Image
                               src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
                               alt="PDF Icon"
+                              width={48}
+                              height={48}
                               className="w-12 h-12"
                             />
                             <p className="text-sm text-gray-300 font-medium text-center">
@@ -685,9 +687,11 @@ console.log("jkjkjdk",StaffData);
                         {/* 🖼️ Image */}
                         {isImage && (
                           <div className="relative group cursor-zoom-in">
-                            <img
+                            <Image
                               src={file}
                               alt={`Attachment ${index + 1}`}
+                              width={400}
+                              height={200}
                               className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
                               onClick={() => {
                                 setPreviewFile({ type: "image", src: file });
@@ -775,9 +779,11 @@ console.log("jkjkjdk",StaffData);
             </button>
 
             {previewFile.type === "image" ? (
-              <img
+              <Image
                 src={previewFile.src}
                 alt="Full View"
+                width={800}
+                height={600}
                 className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"
               />
             ) : (

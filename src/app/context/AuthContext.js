@@ -167,7 +167,7 @@ const fetchLowStock = async () => {
   setTotalOverdue,
   hasReviews,          // 👈 new
   setHasReviews,       // 👈 new
-}), [user, token, totalclientlength, jaa, userclient, hasLowStock ]);
+}), [user, token, totalclientlength, jaa, userclient, hasLowStock, hasClients, hasReviews, overdueReviews, todayReviews, totalLowStock, totalOverdue, totalToday]);
 
   // ✅ Wait until token/user are checked
   if (loading) return null;

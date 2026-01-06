@@ -1,12 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Navbar from "../(component)/navbar/Navbar";
+import Image from "next/image";
 import { SiSimpleanalytics } from "react-icons/si";
 import { GrDocumentPerformance } from "react-icons/gr";
 import { IoDocumentAttach, IoDocuments } from "react-icons/io5";
 import { LuLayoutTemplate } from "react-icons/lu";
 import { TbClockRecord } from "react-icons/tb";
 import { AiOutlineDownload } from "react-icons/ai";
+import axios from "axios";
 import { FiAlertCircle } from "react-icons/fi";
 import { FaArrowLeft } from "react-icons/fa";
 
@@ -665,9 +667,9 @@ transition-all duration-300 gap-6"
       <div className="w-full h-full rounded-full bg-[#2A2A40] overflow-hidden border-2 border-[#4A49B0] flex items-center justify-center">
 
         {selectedImage ? (
-          <img src={selectedImage} className="w-full h-full object-cover" />
+          <Image src={selectedImage} alt="Selected Profile" width={96} height={96} className="w-full h-full object-cover" />
         ) : staff?.profileImage ? (
-          <img src={staff.profileImage} className="w-full h-full object-cover" />
+          <Image src={staff.profileImage} alt="Staff Profile" width={96} height={96} className="w-full h-full object-cover" />
         ) : (
           <span className="text-[10px] sm:text-xs text-gray-400">No Photo</span>
         )}
