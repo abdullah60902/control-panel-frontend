@@ -780,7 +780,7 @@ const Page = () => {
                         View PDF
                       </a>
                     ) : (
-                      <img
+                      <Image
                         src={file}
                         alt={`Attachment ${idx + 1}`}
                         className="w-full h-48 object-cover rounded-lg cursor-pointer"
@@ -819,7 +819,7 @@ const Page = () => {
                 />
               </svg>
             </button>
-            <img
+            <Image
               src={previewImage}
               alt="Full View"
               className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"

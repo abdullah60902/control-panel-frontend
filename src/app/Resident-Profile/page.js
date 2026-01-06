@@ -9,6 +9,7 @@ import { TbClockRecord } from "react-icons/tb";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FiAlertCircle } from "react-icons/fi";
 import { FaArrowLeft, FaFilePdf } from "react-icons/fa";
+import Image from "next/image";
 
 import {
   FaThLarge,
@@ -216,7 +217,6 @@ const tabs = [
   { id: "consent", label: "Consent", icon: <FaCheckCircle /> },
   { id: "handovers", label: "Handovers", icon: <FaExchangeAlt /> },
   { id: "documents", label: "Documents", icon: <FaFolderOpen /> },
-  { id: "charts", label: "Charts", icon: <FaChartBar /> },
 ];
   // Image upload
   const [selectedImage, setSelectedImage] = useState(null);
@@ -887,9 +887,9 @@ transition-all duration-300 gap-6"
       <div className="w-full h-full rounded-full bg-[#2A2A40] overflow-hidden border-2 border-[#4A49B0] flex items-center justify-center">
 
         {selectedImage ? (
-          <img src={selectedImage} className="w-full h-full object-cover" />
+          <Image src={selectedImage} alt="Selected Profile" width={96} height={96} className="w-full h-full object-cover" />
         ) : client?.profileImage ? (
-          <img src={client.profileImage} className="w-full h-full object-cover" />
+          <Image src={client.profileImage} alt="Client Profile" width={96} height={96} className="w-full h-full object-cover" />
         ) : (
           <span className="text-[10px] sm:text-xs text-gray-400">No Photo</span>
         )}
@@ -1103,13 +1103,6 @@ text-xs sm:text-sm md:text-base lg:text-lg"
 
 {activeTab === "documents" && 
 <StafProfileDocuments staffId={id}
- />
- }
-
-{/* Charts */}
-
-{activeTab === "charts" && 
-<Charts staffId={id}
  />
  }
 

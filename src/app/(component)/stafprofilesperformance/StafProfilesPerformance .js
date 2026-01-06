@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaEye, FaTrashAlt, FaDownload } from "react-icons/fa";
 import { MdOutlineSchool } from "react-icons/md";
 import { BsArrowsFullscreen } from "react-icons/bs";
@@ -142,10 +142,10 @@ const [performanceData, setPerformanceData] = useState(performanceId || []);
   
 useEffect(() => {
   fetchPerformance();
-}, []);
+}, [fetchPerformance]);
 
 
-  const fetchPerformance = async () => {
+  const fetchPerformance = useCallback(async () => {
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
   try {
@@ -155,7 +155,7 @@ useEffect(() => {
   } catch (err) {
     setError("Could not fetch data");
   }
-};
+}, [id]);
   const handleDelete = async (id) => {
     if (!window.confirm("Confirm delete?")) return;
     const token = localStorage.getItem("token");
@@ -171,9 +171,7 @@ useEffect(() => {
     }
   };
   
-  useEffect(() => {
-    fetchPerformance();
-  }, []);
+
 useEffect(() => {
   let filtered = [...performanceData]; // always use current state
 
@@ -219,7 +217,7 @@ useEffect(() => {
       .catch((error) => {
         setError(error.response?.data?.msg || "Failed to fetch staff");
       });
-  }, []);
+  }, [id]);
   
   
   

@@ -23,6 +23,8 @@ const initialFormData = {
 };
 
 const ResidentProfileCarePlan = React.forwardRef(({ clientId }, ref) => {
+ResidentProfileCarePlan.displayName = "ResidentProfileCarePlan";
+
   const [showForm, setShowForm] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [plans, setPlans] = useState([]);
@@ -312,7 +314,6 @@ const planTypes = [
                   ? "https://cdn-icons-png.flaticon.com/512/337/337946.png"
                   : "https://cdn-icons-png.flaticon.com/512/727/727245.png";
                 // fallback: show icon + link
-                // eslint-disable-next-line no-unused-vars
                 (async () => { await addIcon(url, iconUrl, 20, 20); })();
               }
               resolve();
@@ -671,7 +672,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -687,7 +688,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -809,7 +810,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -825,7 +826,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -984,7 +985,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1000,7 +1001,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1135,7 +1136,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1151,7 +1152,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1251,7 +1252,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1267,7 +1268,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1384,7 +1385,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1400,7 +1401,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1487,7 +1488,7 @@ useEffect(() => {
 
     {/* Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1503,7 +1504,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1592,7 +1593,7 @@ useEffect(() => {
 
     {/* Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
+      <label>My Current Ability &amp; Support Needs (&apos;What I can do&apos;)</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1608,7 +1609,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
+      <label>Care Plan Aims &amp; Outcomes (&apos;Aims&apos;)</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1863,7 +1864,7 @@ useEffect(() => {
 
                 // Image attachments
                 if (["jpg","jpeg","png","webp"].includes(ext)) {
-                  return <img key={i} src={src} alt="attachment" className="w-24 h-24 object-cover rounded" />;
+                  return <Image key={i} src={src} alt="attachment" width={96} height={96} className="w-24 h-24 object-cover rounded" />;
                 }
 
                 // Video attachments

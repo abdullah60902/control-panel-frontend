@@ -719,9 +719,11 @@ const router = useRouter();
                       rel="noopener noreferrer"
                       className="flex flex-col items-center gap-2"
                     >
-                      <img
+                      <Image
                         src="https://upload.wikimedia.org/wikipedia/commons/8/87/PDF_file_icon.svg"
                         alt="PDF Icon"
+                        width={48}
+                        height={48}
                         className="w-12 h-12"
                       />
                       <p className="text-sm text-gray-300 font-medium text-center">
@@ -746,9 +748,11 @@ const router = useRouter();
                   ) : (
                     // 🖼️ IMAGE PREVIEW
                     <div className="relative group cursor-pointer">
-                      <img
+                      <Image
                         src={file}
                         alt={`Attachment ${index + 1}`}
+                        width={400}
+                        height={200}
                         className="w-full h-[200px] object-cover rounded-lg border border-gray-600"
                         onClick={() => setPreviewImage(file)}
                       />
@@ -782,9 +786,11 @@ const router = useRouter();
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <img
+      <Image
         src={previewImage}
         alt="Full View"
+        width={800}
+        height={600}
         className="w-full h-auto object-contain rounded-xl max-h-[80vh] mx-auto"
       />
     </div>

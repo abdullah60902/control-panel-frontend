@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FaPlus,
   FaTrash,
@@ -49,9 +49,9 @@ const ResidentProfileMedicationEMAR = ({ clientId }) => {
   useEffect(() => {
     if (!clientId) return;
     fetchData();
-  }, [clientId]);
+  }, [clientId, fetchData]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     const token = localStorage.getItem("token");
     if(!token) return;
 
@@ -90,7 +90,7 @@ const ResidentProfileMedicationEMAR = ({ clientId }) => {
     } catch (err) {
       console.error("Error fetching medication data:", err);
     }
-  };
+  }, [clientId]);
 
   const handleCreateMedication = async (e) => {
     e.preventDefault();
@@ -478,7 +478,7 @@ const ResidentProfileMedicationEMAR = ({ clientId }) => {
                             <textarea value={adminForm.notes} onChange={e=>setAdminForm({...adminForm, notes: e.target.value})} className="w-full bg-gray-700 text-white rounded p-2" rows="2"></textarea>
                         </div>
                         <div className="text-xs text-yellow-500">
-                            * Recording as "Given" will automatically deduct 1 from stock.
+                            * Recording as &quot;Given&quot; will automatically deduct 1 from stock.
                         </div>
                         <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded mt-2">Confirm Dose</button>
                     </form>

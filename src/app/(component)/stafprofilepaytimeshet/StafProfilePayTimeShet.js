@@ -94,53 +94,23 @@ const handleSaveField = async (field, value) => {
     setShowTimesheetForm(false);
   };
 
-  const EditableField = ({ label, field }) => {
-    const [value, setValue] = useState(payInfo?.[field] || "");
-    const [isEditing, setIsEditing] = useState(false);
-
-    useEffect(() => { setValue(payInfo?.[field] || ""); }, [payInfo]);
-
-    return (
-      <div className="mb-4">
-        <div className="flex justify-between mb-1">
-          <label className="text-sm text-gray-300">{label}</label>
-          <button className={`flex items-center gap-1 text-xs px-2 py-1 rounded text-white ${isEditing ? "bg-green-600" : "bg-blue-600"}`}
-            onClick={() => { if (isEditing) handleSaveField(field, value); setIsEditing(!isEditing); }}
-          >
-            {isEditing ? <FiSave size={14} /> : <FiEdit2 size={14} />} {isEditing ? "Save" : "Edit"}
-          </button>
-        </div>
-        {isEditing ? (
-          <input className="bg-[#2d3b4e] border-l-4 border-blue-500 rounded-r p-2 w-full text-white" value={value} onChange={(e) => setValue(e.target.value)} />
-        ) : (
-          <div className="bg-[#2d3b4e] border-l-4 border-blue-500 rounded-r p-2 text-white">{value || "N/A"}</div>
-        )}
-      </div>
-    );
+  const handleDeletePayslip = async (index) => {
+    const res = await fetch(`https://control-panel-backend-k6fr.vercel.app/staffpay/${id}/payslip/${index}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    const data = await res.json();
+    setPayslips(data.payslips || []);
   };
-  // ---------------------------
-// Delete Payslip
-// ---------------------------
-const handleDeletePayslip = async (index) => {
-  const res = await fetch(`https://control-panel-backend-k6fr.vercel.app/staffpay/${id}/payslip/${index}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  });
-  const data = await res.json();
-  setPayslips(data.payslips || []);
-};
 
-// ---------------------------
-// Delete Timesheet
-// ---------------------------
-const handleDeleteTimesheet = async (index) => {
-  const res = await fetch(`https://control-panel-backend-k6fr.vercel.app/staffpay/${id}/timesheet/${index}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  });
-  const data = await res.json();
-  setTimesheets(data.timesheets || []);
-};
+  const handleDeleteTimesheet = async (index) => {
+    const res = await fetch(`https://control-panel-backend-k6fr.vercel.app/staffpay/${id}/timesheet/${index}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    });
+    const data = await res.json();
+    setTimesheets(data.timesheets || []);
+  };
 
 
   if (!payInfo) return <div className="text-white">Loading...</div>;
@@ -151,11 +121,11 @@ const handleDeleteTimesheet = async (index) => {
       <div className="bg-[#243041] p-4 rounded-lg">
         <h2 className="text-white text-xl font-semibold mb-4">💵 Pay Grade & Rates</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <EditableField label="Pay Type" field="payType" />
-          <EditableField label="Pay Grade" field="payGrade" />
-          <EditableField label="Hourly Rate" field="hourlyRate" />
-          <EditableField label="Overtime Rate" field="overtimeRate" />
-          <EditableField label="Tax Info" field="taxInfo" />
+          <EditableField label="Pay Type" field="payType" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Pay Grade" field="payGrade" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Hourly Rate" field="hourlyRate" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Overtime Rate" field="overtimeRate" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Tax Info" field="taxInfo" payInfo={payInfo} handleSaveField={handleSaveField} />
         </div>
       </div>
 
@@ -163,10 +133,10 @@ const handleDeleteTimesheet = async (index) => {
       <div className="bg-[#243041] p-4 rounded-lg">
         <h2 className="text-white text-xl font-semibold mb-4">🏦 Bank Account Details</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <EditableField label="Account Name" field="accountName" />
-          <EditableField label="Sort Code" field="sortCode" />
-          <EditableField label="Account Number" field="accountNumber" />
-          <EditableField label="Bank Name" field="bankName" />
+          <EditableField label="Account Name" field="accountName" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Sort Code" field="sortCode" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Account Number" field="accountNumber" payInfo={payInfo} handleSaveField={handleSaveField} />
+          <EditableField label="Bank Name" field="bankName" payInfo={payInfo} handleSaveField={handleSaveField} />
         </div>
       </div>
 
@@ -254,6 +224,46 @@ const handleDeleteTimesheet = async (index) => {
           </table>
         </div>
       </div>
+    </div>
+  );
+};
+
+const EditableField = ({ label, field, payInfo, handleSaveField }) => {
+  const [value, setValue] = useState(payInfo?.[field] || "");
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    setValue(payInfo?.[field] || "");
+  }, [payInfo, field]);
+
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between mb-1">
+        <label className="text-sm text-gray-300">{label}</label>
+        <button
+          className={`flex items-center gap-1 text-xs px-2 py-1 rounded text-white ${
+            isEditing ? "bg-green-600" : "bg-blue-600"
+          }`}
+          onClick={() => {
+            if (isEditing) handleSaveField(field, value);
+            setIsEditing(!isEditing);
+          }}
+        >
+          {isEditing ? <FiSave size={14} /> : <FiEdit2 size={14} />}{" "}
+          {isEditing ? "Save" : "Edit"}
+        </button>
+      </div>
+      {isEditing ? (
+        <input
+          className="bg-[#2d3b4e] border-l-4 border-blue-500 rounded-r p-2 w-full text-white"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      ) : (
+        <div className="bg-[#2d3b4e] border-l-4 border-blue-500 rounded-r p-2 text-white">
+          {value || "N/A"}
+        </div>
+      )}
     </div>
   );
 };
