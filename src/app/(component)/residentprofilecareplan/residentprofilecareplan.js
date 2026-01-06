@@ -2,6 +2,7 @@
 
 import React, { useState ,useEffect} from "react";
 import axios from "axios";
+import Image from "next/image";
 import { FaPlus, FaTrash, FaEye, FaDownload, FaTimes, FaArchive } from "react-icons/fa";
 import { MdOutlineHealthAndSafety } from "react-icons/md";
 import jsPDF from "jspdf";
@@ -670,7 +671,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -686,7 +687,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -750,7 +751,7 @@ useEffect(() => {
     </div>
 
     <div>
-      <label>Use of Products & COSHH Assessment Notes</label>
+      <label>Use of Products &amp; COSHH Assessment Notes</label>
       <textarea
         name="productsNotes"
         placeholder="Only use unscented soap/shampoo. Products must be in original, readable containers."
@@ -808,7 +809,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -824,7 +825,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -924,7 +925,7 @@ useEffect(() => {
     </div>
 
     <div>
-      <label>Equipment Required & Next Service Date</label>
+      <label>Equipment Required &amp; Next Service Date</label>
       <textarea
         name="equipment"
         placeholder="E.g., Stand-Aid (Serial #1234), Full-Body Sling (Size M). Service due: 2026-03-01"
@@ -983,7 +984,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -999,7 +1000,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1015,7 +1016,7 @@ useEffect(() => {
 
     {/* Specific Support Interventions & Routines */}
     <div>
-      <label>Dietary Requirements & Consistency</label>
+      <label>Dietary Requirements &amp; Consistency</label>
       <input
         type="text"
         name="dietType"
@@ -1030,7 +1031,7 @@ useEffect(() => {
     </div>
 
     <div>
-      <label>Fluid Requirements & Preferred Drinks</label>
+      <label>Fluid Requirements &amp; Preferred Drinks</label>
       <textarea
         name="fluidRequirements"
         placeholder="Describe fluid requirements & preferred drinks"
@@ -1134,7 +1135,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1150,7 +1151,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1250,7 +1251,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1266,7 +1267,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1306,7 +1307,7 @@ useEffect(() => {
     </div>
 
     <div>
-      <label>Oral Hygiene Schedule & Specific Instructions</label>
+      <label>Oral Hygiene Schedule &amp; Specific Instructions</label>
       <textarea
         name="oralHygieneSchedule"
         placeholder="E.g., Brush natural teeth/clean dentures twice daily. Requires verbal prompts only."
@@ -1383,7 +1384,7 @@ useEffect(() => {
 
     {/* My Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1399,7 +1400,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1486,7 +1487,7 @@ useEffect(() => {
 
     {/* Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1502,7 +1503,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1591,7 +1592,7 @@ useEffect(() => {
 
     {/* Current Ability & Support Needs */}
     <div>
-      <label>My Current Ability & Support Needs ("What I can do")</label>
+      <label>My Current Ability &amp; Support Needs ('What I can do')</label>
       <textarea
         name="currentAbility"
         placeholder="Describe the individual's current abilities and preferences related to this care area."
@@ -1607,7 +1608,7 @@ useEffect(() => {
 
     {/* Care Plan Aims & Outcomes */}
     <div>
-      <label>Care Plan Aims & Outcomes ("Aims")</label>
+      <label>Care Plan Aims &amp; Outcomes ('Aims')</label>
       <textarea
         name="careAims"
         placeholder="What are the specific, measurable goals for this care plan?"
@@ -1703,9 +1704,11 @@ useEffect(() => {
         {viewPlan.client?.avatar && (
           <div>
             <strong>Profile Image:</strong>
-            <img
+            <Image
               src={viewPlan.client.avatar}
               alt="Patient"
+              width={96}
+              height={96}
               className="w-24 h-24 object-cover rounded mt-1"
             />
           </div>
@@ -1715,9 +1718,11 @@ useEffect(() => {
         {viewPlan.status === "Accepted" && viewPlan.signature && (
           <div>
             <strong>Signature:</strong>
-            <img
+            <Image
               src={viewPlan.signature}
               alt="Signature"
+              width={160}
+              height={80}
               className="w-40 h-20 object-contain mt-1"
             />
           </div>
