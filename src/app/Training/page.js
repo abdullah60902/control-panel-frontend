@@ -33,7 +33,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-import Image from "next/image";
 import jsPDF from "jspdf";
 import "jspdf-autotable"; 
 import { MdMedicationLiquid } from "react-icons/md";
