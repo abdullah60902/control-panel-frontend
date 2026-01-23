@@ -40,7 +40,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
 
-import StafProfileDocuments from "@/app/(component)/stafprofiledocuments/StafProfileDocuments";
+import ResidentProfileDocuments from "@/app/(component)/residentprofiledocuments/ResidentProfileDocuments";
 import ResidentProfileAboutMe from "@/app/(component)/residentprofileaboutme/ResidentProfileAboutMe"
 
 import { useSearchParams } from "next/navigation";
@@ -1102,9 +1102,8 @@ text-xs sm:text-sm md:text-base lg:text-lg"
 {/* Documents */}
 
 {activeTab === "documents" && 
-<StafProfileDocuments staffId={id}
- />
- }
+<ResidentProfileDocuments clientId={id} />
+}
 
           </div>
         </main>
