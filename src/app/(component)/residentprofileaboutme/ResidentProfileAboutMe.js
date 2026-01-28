@@ -12,7 +12,7 @@ const ResidentProfileAboutMe = ({ clientId }) => {
 
     const token = localStorage.getItem("token");
 
-    fetch(`http://localhost:3000/client/${clientId}`, {
+    fetch(`https://control-panel-backend-k6fr.vercel.app/client/${clientId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -28,7 +28,7 @@ const ResidentProfileAboutMe = ({ clientId }) => {
   // ------------ UPDATE FIELD IN BACKEND ----------
   const updateField = async (field, value) => {
     try {
-      await fetch(`http://localhost:3000/client/${clientId}`, {
+      await fetch(`https://control-panel-backend-k6fr.vercel.app/client/${clientId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

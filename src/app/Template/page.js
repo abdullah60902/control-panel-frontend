@@ -397,14 +397,14 @@ const Page = () => {
       if (editingUserId) {
         // 🟢 Update existing template
         response = await axios.put(
-          `http://localhost:3000/templates/${editingUserId}`,
+          `https://control-panel-backend-k6fr.vercel.app/templates/${editingUserId}`,
           data,
           config
         );
       } else {
         // 🟢 Create new template
         response = await axios.post(
-          "http://localhost:3000/templates",
+          "https://control-panel-backend-k6fr.vercel.app/templates",
           data,
           config
         );
@@ -427,7 +427,7 @@ const Page = () => {
       setAttachments([]);
 
       // 🔄 Refresh the list of templates
-      const res = await axios.get("http://localhost:3000/templates", config);
+      const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/templates", config);
       setStaffData(res.data);
     } catch (err) {
       console.error("❌ Full Error:", err);
@@ -472,7 +472,7 @@ const Page = () => {
     const fetchHR = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/templates", {
+        const res = await axios.get("https://control-panel-backend-k6fr.vercel.app/templates", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStaffData(res.data); // no .users needed, your backend returns an array
@@ -491,7 +491,7 @@ const Page = () => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`http://localhost:3000/templates/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/templates/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -242,12 +242,12 @@ const handleChange6 = (e) => {
 
     const request = editingUserId
       ? axios.put(
-          `http://localhost:3000/user/${editingUserId}`,
+          `https://control-panel-backend-k6fr.vercel.app/user/${editingUserId}`,
           payload,
           config
         )
       : axios.post(
-          "http://localhost:3000/user/signup",
+          "https://control-panel-backend-k6fr.vercel.app/user/signup",
           { ...payload, confirmPassword },
           config
         ); // 🟢 Must include config here too
@@ -266,7 +266,7 @@ const handleChange6 = (e) => {
         });
         setShowForm6(false);
         toast.success("Add successfuly");
-        return axios.get("http://localhost:3000/user", config);
+        return axios.get("https://control-panel-backend-k6fr.vercel.app/user", config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -283,7 +283,7 @@ const handleChange6 = (e) => {
   
   useEffect(() => {
     axios
-      .get("http://localhost:3000/user", {
+      .get("https://control-panel-backend-k6fr.vercel.app/user", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -324,7 +324,7 @@ const handleChange6 = (e) => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`http://localhost:3000/user/${id}`, {
+      .delete(`https://control-panel-backend-k6fr.vercel.app/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -347,7 +347,7 @@ useEffect(() => {
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('http://localhost:3000/hr', {
+  axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(response => {
@@ -366,7 +366,7 @@ useEffect(() => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("http://localhost:3000/client", {
+      .get("https://control-panel-backend-k6fr.vercel.app/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

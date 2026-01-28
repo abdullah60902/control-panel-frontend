@@ -35,7 +35,7 @@ The **Performance Management Module** supports long-term quality control by trac
 
 ## 3. 🔌 API Reference
 
-### Base URL: `http://localhost:3000/performance`
+### Base URL: `https://control-panel-backend-k6fr.vercel.app/performance`
 
 ### Endpoints
 *   **GET** `/` - List all records.
