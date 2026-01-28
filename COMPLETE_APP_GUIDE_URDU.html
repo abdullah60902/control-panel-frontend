@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ur">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Care Home System - Mukammal Guide (Urdu)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Inter:wght@300;400;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', 'Noto Nastaliq Urdu', sans-serif;
+      line-height: 1.8;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      color: #1f2937;
+    }
+
+    .cover {
+      height: 297mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      page-break-after: always;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 40px;
+    }
+
+    .cover h1 {
+      font-size: 3.5rem;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .cover p {
+      font-size: 1.5rem;
+      opacity: 0.95;
+    }
+
+    h1 {
+      color: #111827;
+      border-bottom: 4px solid #667eea;
+      padding-bottom: 12px;
+      margin-top: 50px;
+      page-break-before: always;
+      font-size: 2rem;
+    }
+
+    h2 {
+      color: #374151;
+      margin-top: 35px;
+      border-left: 6px solid #667eea;
+      padding-left: 20px;
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      color: #4b5563;
+      margin-top: 25px;
+      font-size: 1.2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 25px 0;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th,
+    td {
+      border: 1px solid #e5e7eb;
+      padding: 14px;
+      text-align: left;
+    }
+
+    th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    .btn-demo {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 4px;
+    }
+
+    .alert-box {
+      background: #fef3c7;
+      border-left: 5px solid #f59e0b;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .success-box {
+      background: #d1fae5;
+      border-left: 5px solid #10b981;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .download-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #667eea;
+      color: white;
+      padding: 18px 35px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+      border: none;
+      z-index: 1000;
+      font-size: 1.1rem;
+    }
+
+    .download-btn:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.5);
+    }
+
+    @media print {
+      body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .no-print {
+        display: none;
+      }
+    }
+
+    .module-card {
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .feature-list li:before {
+      content: "✓ ";
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    code {
+      background: #1f2937;
+      color: #10b981;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Download Button -->
+  <button class="download-btn no-print" onclick="window.print()">📥 PDF Download Karein</button>
+
+  <!-- Cover Page -->
+  <div class="cover">
+    <h1>🏥 Care Home Management System</h1>
+    <p>Mukammal Application Guide</p>
+    <p style="margin-top: 40px; font-size: 1.2rem;">Har Module, Har Button, Har Functionality</p>
+    <p style="margin-top: 20px; opacity: 0.8;">Version 1.0 - 2026</p>
+  </div>
+
+  <!-- Table of Contents -->
+  <h1>📑 Fihrist (Table of Contents)</h1>
+  <ol style="font-size: 1.1rem; line-height: 2;">
+    <li><strong>System Overview</strong> - System kya hai aur kaise kaam karta hai</li>
+    <li><strong>Dashboard Module</strong> - Home screen ki complete details</li>
+    <li><strong>Resident Management</strong> - Residents ki profiles aur care plans</li>
+    <li><strong>Medication (eMAR)</strong> - Dawai ka system</li>
+    <li><strong>Staff/HR Management</strong> - Staff ki profiles aur rota</li>
+    <li><strong>Compliance & Audits</strong> - Regulatory checks</li>
+    <li><strong>Incident Reports</strong> - Accidents aur events</li>
+    <li><strong>User Management</strong> - Login aur permissions</li>
+  </ol>
+
+  <!-- PART 1: SYSTEM OVERVIEW -->
+  <h1>🏗️ Part 1: System Overview</h1>
+
+  <h2>System Kya Hai?</h2>
+  <p>Yeh ek <strong>Care Home Management System</strong> hai jo care homes ko digitally manage karne ke liye banaya gaya
+    hai. Isme residents, staff, medications, compliance, aur daily operations sab kuch track hota hai.</p>
+
+  <div class="success-box">
+    <strong>🎯 Main Purpose:</strong> Paper-based records ko replace karke sab kuch digital, safe, aur accessible
+    banana.
+  </div>
+
+  <h2>System Ke Main Modules</h2>
+  <table>
+    <tr>
+      <th>Module Name</th>
+      <th>Kya Karta Hai</th>
+      <th>Kis Liye Use Hota Hai</th>
+    </tr>
+    <tr>
+      <td><strong>Dashboard</strong></td>
+      <td>Quick overview dikhata hai</td>
+      <td>Alerts, stats, aur quick actions</td>
+    </tr>
+    <tr>
+      <td><strong>Resident Management</strong></td>
+      <td>Residents ki profiles manage karta hai</td>
+      <td>Care plans, documents, medical history</td>
+    </tr>
+    <tr>
+      <td><strong>Medication (eMAR)</strong></td>
+      <td>Medicines track karta hai</td>
+      <td>Dosage, timing, stock management</td>
+    </tr>
+    <tr>
+      <td><strong>HR/Staff Management</strong></td>
+      <td>Staff records maintain karta hai</td>
+      <td>Rota, training, payroll, documents</td>
+    </tr>
+    <tr>
+      <td><strong>Compliance & Audits</strong></td>
+      <td>Regulatory checks track karta hai</td>
+      <td>Safety inspections, certifications</td>
+    </tr>
+    <tr>
+      <td><strong>Incident Reports</strong></td>
+      <td>Accidents log karta hai</td>
+      <td>Falls, injuries, incidents</td>
+    </tr>
+    <tr>
+      <td><strong>User Management</strong></td>
+      <td>Login aur permissions control karta hai</td>
+      <td>Security aur access control</td>
+    </tr>
+  </table>
+
+  <!-- PART 2: DASHBOARD -->
+  <h1>📊 Part 2: Dashboard Module</h1>
+
+  <h2>Dashboard Kya Dikhata Hai?</h2>
+  <p>Dashboard aapka <strong>"Mission Control"</strong> hai. Yahan se aap puri care home ki status ek nazar mein dekh
+    sakte hain.</p>
+
+  <h3>Dashboard Ke Components:</h3>
+  <table>
+    <tr>
+      <th>Component</th>
+      <th>Icon/Location</th>
+      <th>Functionality</th>
+    </tr>
+    <tr>
+      <td><strong>Search Bar</strong></td>
+      <td>🔍 Top center</td>
+      <td>Kisi bhi resident ya staff ka naam type karein aur unki profile instantly open ho jayegi</td>
+    </tr>
+    <tr>
+      <td><strong>Alerts Bell</strong></td>
+      <td>🔔 Top right</td>
+      <td>Important notifications: Low stock, overdue tasks, incidents. Click karein to details dekhein</td>
+    </tr>
+    <tr>
+      <td><strong>Quick Stats Cards</strong></td>
+      <td>📈 Top row</td>
+      <td>Total residents, occupancy rate, staff on duty, pending tasks</td>
+    </tr>
+    <tr>
+      <td><strong>Occupancy Chart</strong></td>
+      <td>📊 Center</td>
+      <td>Kitne rooms occupied hain, kitne empty hain - visual graph</td>
+    </tr>
+    <tr>
+      <td><strong>Recent Activity</strong></td>
+      <td>📋 Bottom left</td>
+      <td>Latest actions: "Medication given", "Incident reported", etc.</td>
+    </tr>
+    <tr>
+      <td><strong>Quick Actions</strong></td>
+      <td>⚡ Bottom right</td>
+      <td>Shortcuts: "Add Resident", "Report Incident", "View Rota"</td>
+    </tr>
+  </table>
+
+  <div class="alert-box">
+    <strong>⚠️ Important:</strong> Red color ka alert urgent action chahiye. Yellow warnings ko jaldi address karein.
+  </div>
+
+  <!-- PART 3: RESIDENT MANAGEMENT -->
+  <h1>👥 Part 3: Resident Management</h1>
+
+  <h2>Resident Profile Kaise Banayein?</h2>
+  <ol>
+    <li>Dashboard par <span class="btn-demo">+ Add Resident</span> button click karein</li>
+    <li>Basic details bharein: Name, DOB, Room Number, Admission Date</li>
+    <li><span class="btn-demo">Save</span> click karein</li>
+    <li>Profile ban jayegi aur aap additional details add kar sakte hain</li>
+  </ol>
+
+  <h2>Resident Profile Ke Sections:</h2>
+
+  <div class="module-card">
+    <h3>1. About Me (Personal Info)</h3>
+    <ul class="feature-list">
+      <li><strong>Personal Details:</strong> Name, age, gender, contact info</li>
+      <li><strong>Emergency Contacts:</strong> Family members ke numbers</li>
+      <li><strong>Medical History:</strong> Allergies, chronic conditions</li>
+      <li><strong>Preferences:</strong> Food likes/dislikes, hobbies</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Edit</span> - Information update karne ke liye</li>
+      <li><span class="btn-demo">Save</span> - Changes save karne ke liye</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>2. Care Plan</h3>
+    <ul class="feature-list">
+      <li><strong>Daily Care Needs:</strong> Bathing, dressing, mobility support</li>
+      <li><strong>Care Goals:</strong> "Improve walking", "Reduce anxiety"</li>
+      <li><strong>Review Dates:</strong> Kab next review hoga</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Add Care Plan</span> - Naya plan banayein</li>
+      <li><span class="btn-demo">Update Plan</span> - Existing plan edit karein</li>
+      <li><span class="btn-demo">Print PDF</span> - Care plan print karein</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>3. Medication (eMAR)</h3>
+    <ul class="feature-list">
+      <li><strong>Medicine List:</strong> Sari medicines ka naam, dosage, timing</li>
+      <li><strong>MAR Chart:</strong> Kon si medicine kab di gayi</li>
+      <li><strong>Stock Levels:</strong> Kitni tablets/bottles remaining hain</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">GIVE</span> - Medicine di gayi (green button)</li>
+      <li><span class="btn-demo">REFUSE</span> - Resident ne refuse kiya (red button, reason mandatory)</li>
+      <li><span class="btn-demo">Add Medicine</span> - Nayi medicine add karein</li>
+      <li><span class="btn-demo">View History</span> - Past medication records</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>4. Daily Log</h3>
+    <ul class="feature-list">
+      <li><strong>Daily Notes:</strong> Staff ke observations</li>
+      <li><strong>Food/Fluid Intake:</strong> Kitna khaya/piya</li>
+      <li><strong>Mood/Behavior:</strong> Resident ka mood kaisa tha</li>
+      <li><strong>Activities:</strong> Kya activities kiye</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Add Entry</span> - Naya log entry</li>
+      <li><span class="btn-demo">Filter by Date</span> - Specific date ke logs</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>5. Risk Assessment</h3>
+    <ul class="feature-list">
+      <li><strong>Fall Risk:</strong> Girne ka khatra kitna hai</li>
+      <li><strong>Choking Risk:</strong> Khane mein problem</li>
+      <li><strong>Skin Integrity:</strong> Pressure sores ka risk</li>
+      <li><strong>Mental Capacity:</strong> Decision-making ability</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Assess Risk</span> - Naya assessment</li>
+      <li><span class="btn-demo">Update</span> - Existing assessment update</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>6. Documents</h3>
+    <ul class="feature-list">
+      <li><strong>Upload Documents:</strong> Scanned papers, certificates</li>
+      <li><strong>Categories:</strong> Medical reports, consent forms, photos</li>
+      <li><strong>View/Download:</strong> Documents ko dekh aur download kar sakte hain</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Upload</span> - Nayi file upload karein</li>
+      <li><span class="btn-demo">View</span> - Document open karein</li>
+      <li><span class="btn-demo">Delete</span> - Document remove karein (admin only)</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>7. Handover Notes</h3>
+    <ul class="feature-list">
+      <li><strong>Shift Handover:</strong> Ek shift se dusri shift ko information</li>
+      <li><strong>Important Updates:</strong> "Resident unwell", "Family visiting"</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Add Handover</span> - Naya note likhein</li>
+      <li><span class="btn-demo">Mark as Read</span> - Note padh liya</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>8. PBS Plan (Positive Behavior Support)</h3>
+    <ul class="feature-list">
+      <li><strong>Behavior Triggers:</strong> Kya cheez se resident upset hota hai</li>
+      <li><strong>De-escalation:</strong> Kaise calm karein</li>
+      <li><strong>Strategies:</strong> Behavior manage karne ke tareeqe</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Create Plan</span> - Naya PBS plan</li>
+      <li><span class="btn-demo">Update</span> - Plan modify karein</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>9. Goals & Outcomes</h3>
+    <ul class="feature-list">
+      <li><strong>Set Goals:</strong> "Walk 10 steps daily"</li>
+      <li><strong>Track Progress:</strong> Goal achieve ho raha hai ya nahi</li>
+      <li><strong>Outcomes:</strong> Results record karein</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Add Goal</span> - Naya goal set karein</li>
+      <li><span class="btn-demo">Update Progress</span> - Progress record karein</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>10. Consent Forms</h3>
+    <ul class="feature-list">
+      <li><strong>Medical Consent:</strong> Treatment ke liye permission</li>
+      <li><strong>Photo Consent:</strong> Photos lene ki permission</li>
+      <li><strong>Activity Consent:</strong> Outings ke liye consent</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Upload Consent</span> - Signed form upload karein</li>
+      <li><span class="btn-demo">View</span> - Consent form dekhein</li>
+    </ul>
+  </div>
+
+  <!-- PART 4: MEDICATION MODULE -->
+  <h1>💊 Part 4: Medication Module (eMAR)</h1>
+
+  <h2>eMAR Kya Hai?</h2>
+  <p><strong>Electronic Medication Administration Record</strong> - Digital MAR chart jo paper charts replace karta hai.
+  </p>
+
+  <h2>Medication Round Kaise Karein?</h2>
+  <ol>
+    <li>Sidebar se <strong>Medication</strong> section open karein</li>
+    <li>Time slot select karein: Morning (8am), Afternoon (2pm), Evening (6pm), Night (10pm)</li>
+    <li>Har resident ke liye medicines list dikhegi</li>
+    <li>Medicine dene ke baad <span class="btn-demo">GIVE</span> button click karein</li>
+    <li>Agar resident refuse kare to <span class="btn-demo">REFUSE</span> click karein aur reason likhen</li>
+  </ol>
+
+  <h3>Medication Screen Ke Buttons:</h3>
+  <table>
+    <tr>
+      <th>Button</th>
+      <th>Color</th>
+      <th>Kya Hota Hai</th>
+    </tr>
+    <tr>
+      <td><strong>GIVE</strong></td>
+      <td>Green</td>
+      <td>Medicine di gayi. Stock automatically reduce hota hai. Timestamp record hota hai.</td>
+    </tr>
+    <tr>
+      <td><strong>REFUSE</strong></td>
+      <td>Red</td>
+      <td>Resident ne medicine refuse ki. Reason mandatory hai (e.g., "Sleeping", "Nausea")</td>
+    </tr>
+    <tr>
+      <td><strong>Add Medicine</strong></td>
+      <td>Blue</td>
+      <td>Naya prescription add karein. Name, dosage, frequency, start date bharein.</td>
+    </tr>
+    <tr>
+      <td><strong>Edit</strong></td>
+      <td>Yellow</td>
+      <td>Existing medicine ki details change karein (dosage, timing)</td>
+    </tr>
+    <tr>
+      <td><strong>Discontinue</strong></td>
+      <td>Red</td>
+      <td>Medicine band karni hai (doctor's order chahiye)</td>
+    </tr>
+    <tr>
+      <td><strong>Stock Alert</strong></td>
+      <td>Orange</td>
+      <td>Agar stock kam hai to alert dikhata hai. Reorder karne ka reminder.</td>
+    </tr>
+    <tr>
+      <td><strong>Print MAR</strong></td>
+      <td>Gray</td>
+      <td>Monthly MAR chart PDF mein download karein</td>
+    </tr>
+  </table>
+
+  <div class="alert-box">
+    <strong>⚠️ Important:</strong> Agar medicine <strong>PRN</strong> (as needed) hai, to har baar dene se pehle reason
+    likhna mandatory hai.
+  </div>
+
+  <!-- PART 5: STAFF/HR MANAGEMENT -->
+  <h1>👔 Part 5: Staff/HR Management</h1>
+
+  <h2>Staff Profile Kaise Banayein?</h2>
+  <ol>
+    <li><strong>HR Management</strong> section open karein</li>
+    <li><span class="btn-demo">+ Add Staff</span> click karein</li>
+    <li>Details bharein: Name, Position, Start Date, Contact</li>
+    <li><span class="btn-demo">Save</span> click karein</li>
+  </ol>
+
+  <h2>Staff Profile Ke Sections:</h2>
+
+  <div class="module-card">
+    <h3>1. Personal/Employment Info</h3>
+    <ul class="feature-list">
+      <li><strong>Basic Info:</strong> Name, address, phone, email</li>
+      <li><strong>Job Details:</strong> Position, department, salary</li>
+      <li><strong>Contract:</strong> Full-time/Part-time, contract end date</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Edit</span> - Information update karein</li>
+      <li><span class="btn-demo">Save</span> - Changes save karein</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>2. Documents</h3>
+    <ul class="feature-list">
+      <li><strong>DBS Certificate:</strong> Background check document</li>
+      <li><strong>Qualifications:</strong> NVQ, diplomas</li>
+      <li><strong>Contract:</strong> Employment contract</li>
+      <li><strong>ID Proof:</strong> Passport, driving license</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Upload</span> - Document upload karein</li>
+      <li><span class="btn-demo">View</span> - Document dekhein</li>
+      <li><span class="btn-demo">Delete</span> - Remove document</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>3. Training</h3>
+    <ul class="feature-list">
+      <li><strong>Mandatory Training:</strong> Fire safety, first aid, safeguarding</li>
+      <li><strong>Completion Status:</strong> Completed/Pending/Expired</li>
+      <li><strong>Renewal Dates:</strong> Kab training renew karni hai</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Add Training</span> - Naya training record</li>
+      <li><span class="btn-demo">Mark Complete</span> - Training complete mark karein</li>
+      <li><span class="btn-demo">Upload Certificate</span> - Training certificate upload</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>4. Rota/Schedule</h3>
+    <ul class="feature-list">
+      <li><strong>Weekly Rota:</strong> Kon kab duty par hai</li>
+      <li><strong>Shift Patterns:</strong> Morning (8-4), Evening (4-12), Night (12-8)</li>
+      <li><strong>Days Off:</strong> Green color = OFF, Red color = Working</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Edit Rota</span> - Schedule change karein</li>
+      <li><span class="btn-demo">Assign Shift</span> - Naya shift assign karein</li>
+      <li><span class="btn-demo">Print Rota</span> - Weekly rota print karein</li>
+      <li><span class="btn-demo">Swap Shift</span> - Do staff members ke shifts swap karein</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>5. Payroll/Timesheet</h3>
+    <ul class="feature-list">
+      <li><strong>Hours Worked:</strong> Total hours in a month</li>
+      <li><strong>Overtime:</strong> Extra hours calculation</li>
+      <li><strong>Salary:</strong> Monthly pay calculation</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">View Timesheet</span> - Hours dekhein</li>
+      <li><span class="btn-demo">Export</span> - Payroll data export karein</li>
+    </ul>
+  </div>
+
+  <div class="module-card">
+    <h3>6. Performance</h3>
+    <ul class="feature-list">
+      <li><strong>Appraisals:</strong> Performance reviews</li>
+      <li><strong>Feedback:</strong> Manager feedback</li>
+      <li><strong>Goals:</strong> Staff development goals</li>
+    </ul>
+    <p><strong>Buttons:</strong></p>
+    <ul>
+      <li><span class="btn-demo">Add Review</span> - Naya performance review</li>
+      <li><span class="btn-demo">View History</span> - Past reviews dekhein</li>
+    </ul>
+  </div>
+
+  <!-- PART 6: COMPLIANCE & AUDITS -->
+  <h1>✅ Part 6: Compliance & Audits</h1>
+
+  <h2>Compliance Kya Hai?</h2>
+  <p>Regulatory requirements ko meet karna - CQC, Health & Safety, Fire Safety, etc.</p>
+
+  <h2>Compliance Module Ke Features:</h2>
+  <table>
+    <tr>
+      <th>Check Type</th>
+      <th>Frequency</th>
+      <th>Kya Check Hota Hai</th>
+    </tr>
+    <tr>
+      <td><strong>Fire Alarm Test</strong></td>
+      <td>Weekly</td>
+      <td>Fire alarm kaam kar raha hai ya nahi</td>
+    </tr>
+    <tr>
+      <td><strong>Emergency Lighting</strong></td>
+      <td>Monthly</td>
+      <td>Emergency lights functional hain</td>
+    </tr>
+    <tr>
+      <td><strong>Water Temperature</strong></td>
+      <td>Daily</td>
+      <td>Hot water safe temperature par hai (43°C max)</td>
+    </tr>
+    <tr>
+      <td><strong>Fridge Temperature</strong></td>
+      <td>Daily</td>
+      <td>Food storage safe hai (1-5°C)</td>
+    </tr>
+    <tr>
+      <td><strong>Equipment PAT</strong></td>
+      <td>Yearly</td>
+      <td>Electrical equipment safe hai</td>
+    </tr>
+    <tr>
+      <td><strong>Gas Safety</strong></td>
+      <td>Yearly</td>
+      <td>Gas appliances certified hain</td>
+    </tr>
+  </table>
+
+  <h3>Compliance Screen Ke Buttons:</h3>
+  <table>
+    <tr>
+      <th>Button</th>
+      <th>Function</th>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Add Check</span></td>
+      <td>Naya compliance check record karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Mark Complete</span></td>
+      <td>Check complete mark karein with timestamp</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Upload Evidence</span></td>
+      <td>Certificate ya photo upload karein as proof</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Action Required Filter</span></td>
+      <td>Sirf overdue checks dikhayein (RED alerts)</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Export Report</span></td>
+      <td>Compliance report PDF mein download karein (CQC inspection ke liye)</td>
+    </tr>
+  </table>
+
+  <div class="alert-box">
+    <strong>⚠️ Red Alert:</strong> Agar koi check overdue hai to immediately complete karein. CQC inspection mein
+    problem ho sakti hai.
+  </div>
+
+  <!-- PART 7: INCIDENT REPORTS -->
+  <h1>📋 Part 7: Incident Reports</h1>
+
+  <h2>Incident Report Kab Banayein?</h2>
+  <ul class="feature-list">
+    <li>Resident gir gaya (Fall)</li>
+    <li>Injury hui (Cut, bruise, etc.)</li>
+    <li>Medication error (Wrong dose, missed dose)</li>
+    <li>Behavioral incident (Aggression, wandering)</li>
+    <li>Equipment failure (Hoist broke, bed malfunction)</li>
+    <li>Safeguarding concern (Abuse suspicion)</li>
+  </ul>
+
+  <h2>Incident Report Kaise Banayein?</h2>
+  <ol>
+    <li>Dashboard ya sidebar se <strong>Incident Reports</strong> open karein</li>
+    <li><span class="btn-demo">+ New Incident</span> click karein</li>
+    <li>Form bharein:
+      <ul>
+        <li>Incident Type select karein</li>
+        <li>Date & Time</li>
+        <li>Location (Room number, bathroom, etc.)</li>
+        <li>Description (Kya hua detail mein)</li>
+        <li>Witnesses (Kon present tha)</li>
+        <li>Action Taken (Kya kiya - first aid, doctor call, etc.)</li>
+      </ul>
+    </li>
+    <li><span class="btn-demo">Submit</span> click karein</li>
+    <li>Manager ko automatically notification jayegi</li>
+  </ol>
+
+  <h3>Incident Report Ke Buttons:</h3>
+  <table>
+    <tr>
+      <th>Button</th>
+      <th>Function</th>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">New Incident</span></td>
+      <td>Naya incident report create karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">View Details</span></td>
+      <td>Existing incident ki full details dekhein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Add Follow-up</span></td>
+      <td>Incident ke baad kya action liya, update karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Upload Photo</span></td>
+      <td>Injury ya damage ki photo upload karein (evidence)</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Mark Reviewed</span></td>
+      <td>Manager ne review kar liya (approval)</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Export PDF</span></td>
+      <td>Incident report print karein (insurance/legal)</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">6-Month Overview</span></td>
+      <td>Chart dikhata hai - kitne incidents hue, trends kya hain</td>
+    </tr>
+  </table>
+
+  <div class="success-box">
+    <strong>✓ Best Practice:</strong> Incident report 24 hours ke andar complete karein. Family ko inform karein agar
+    serious incident hai.
+  </div>
+
+  <!-- PART 8: USER MANAGEMENT -->
+  <h1>🔐 Part 8: User Management</h1>
+
+  <h2>User Roles Aur Permissions:</h2>
+  <table>
+    <tr>
+      <th>Role</th>
+      <th>Access Level</th>
+      <th>Kya Kar Sakte Hain</th>
+    </tr>
+    <tr>
+      <td><strong>Admin</strong></td>
+      <td>Full Access</td>
+      <td>Sab kuch - Add/Edit/Delete residents, staff, records. System settings change kar sakte hain.</td>
+    </tr>
+    <tr>
+      <td><strong>Manager</strong></td>
+      <td>High Access</td>
+      <td>Residents aur staff manage kar sakte hain. Reports dekh sakte hain. Delete nahi kar sakte.</td>
+    </tr>
+    <tr>
+      <td><strong>Staff/Carer</strong></td>
+      <td>Limited Access</td>
+      <td>Sirf care plans, medications, daily logs. Financial ya HR data nahi dekh sakte.</td>
+    </tr>
+    <tr>
+      <td><strong>Nurse</strong></td>
+      <td>Medical Access</td>
+      <td>Medications, care plans, medical records. HR data nahi dekh sakte.</td>
+    </tr>
+    <tr>
+      <td><strong>Client/Family</strong></td>
+      <td>View Only</td>
+      <td>Sirf apne family member ka profile dekh sakte hain. Edit nahi kar sakte.</td>
+    </tr>
+  </table>
+
+  <h2>User Management Ke Buttons:</h2>
+  <table>
+    <tr>
+      <th>Button</th>
+      <th>Function</th>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Add User</span></td>
+      <td>Naya user account create karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Edit Permissions</span></td>
+      <td>User ke access rights change karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Reset Password</span></td>
+      <td>User ka password reset karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Deactivate</span></td>
+      <td>User account temporarily disable karein</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Delete User</span></td>
+      <td>User account permanently remove karein (admin only)</td>
+    </tr>
+    <tr>
+      <td><span class="btn-demo">Activity Log</span></td>
+      <td>User ne kya kya actions kiye, history dekhein</td>
+    </tr>
+  </table>
+
+  <div class="alert-box">
+    <strong>🔒 Security:</strong> Har user ko sirf utna access dein jitna zaruri hai. Passwords strong rakhein (8+
+    characters, numbers, symbols).
+  </div>
+
+  <!-- SUMMARY -->
+  <h1>🎯 Summary: System Kaise Kaam Karta Hai</h1>
+
+  <h2>Daily Workflow Example:</h2>
+  <ol style="font-size: 1.1rem; line-height: 2;">
+    <li><strong>Morning (8am):</strong>
+      <ul>
+        <li>Login karein</li>
+        <li>Dashboard check karein - koi alerts?</li>
+        <li>Medication round karein - har resident ko medicines dein, <code>GIVE</code> button click karein</li>
+        <li>Daily logs mein notes likhein - "Mrs. Smith slept well"</li>
+      </ul>
+    </li>
+    <li><strong>Afternoon (2pm):</strong>
+      <ul>
+        <li>Lunch medication round</li>
+        <li>Agar koi incident ho (fall, etc.) to incident report banayein</li>
+        <li>Care plans review karein</li>
+      </ul>
+    </li>
+    <li><strong>Evening (6pm):</strong>
+      <ul>
+        <li>Evening medication round</li>
+        <li>Handover notes likhein next shift ke liye</li>
+        <li>Compliance checks complete karein (water temp, fridge temp)</li>
+      </ul>
+    </li>
+    <li><strong>Night (10pm):</strong>
+      <ul>
+        <li>Night medication round</li>
+        <li>Final checks</li>
+        <li>Logout</li>
+      </ul>
+    </li>
+  </ol>
+
+  <h2>Key Points Yaad Rakhein:</h2>
+  <div class="success-box">
+    <ul class="feature-list">
+      <li><strong>Green Buttons</strong> = Positive actions (Save, Give, Complete)</li>
+      <li><strong>Red Buttons</strong> = Negative/Delete actions (Refuse, Delete, Discontinue)</li>
+      <li><strong>Blue Buttons</strong> = Add/Create new records</li>
+      <li><strong>Yellow Buttons</strong> = Edit/Update existing records</li>
+      <li><strong>Red Alerts</strong> = Urgent action required</li>
+      <li><strong>Yellow Alerts</strong> = Warning, jaldi address karein</li>
+    </ul>
+  </div>
+
+  <h2>PDF Kaise Download Karein?</h2>
+  <ol style="font-size: 1.1rem;">
+    <li>Is page ke top-right corner mein <strong>"📥 PDF Download Karein"</strong> button hai</li>
+    <li>Us button par click karein</li>
+    <li>Print dialog open hoga</li>
+    <li><strong>"Save as PDF"</strong> option select karein</li>
+    <li>File name dein aur <strong>Save</strong> click karein</li>
+    <li>PDF download ho jayegi!</li>
+  </ol>
+
+  <div class="success-box" style="margin-top: 40px; text-align: center; font-size: 1.2rem;">
+    <strong>🎉 Congratulations!</strong><br>
+    Ab aap puri system ko samajh gaye hain. Har module, har button, har functionality clear hai.<br>
+    Agar koi sawal ho to admin se contact karein.
+  </div>
+
+  <p style="text-align: center; margin-top: 60px; font-size: 1.3rem; font-weight: bold; color: #667eea;">
+    --- Document Complete ---
+  </p>
+
+</body>
+
+</html>

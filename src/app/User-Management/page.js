@@ -242,12 +242,12 @@ const handleChange6 = (e) => {
 
     const request = editingUserId
       ? axios.put(
-          `https://control-panel-backend-k6fr.vercel.app/user/${editingUserId}`,
+          `http://localhost:3000/user/${editingUserId}`,
           payload,
           config
         )
       : axios.post(
-          "https://control-panel-backend-k6fr.vercel.app/user/signup",
+          "http://localhost:3000/user/signup",
           { ...payload, confirmPassword },
           config
         ); // 🟢 Must include config here too
@@ -266,7 +266,7 @@ const handleChange6 = (e) => {
         });
         setShowForm6(false);
         toast.success("Add successfuly");
-        return axios.get("https://control-panel-backend-k6fr.vercel.app/user", config);
+        return axios.get("http://localhost:3000/user", config);
       })
       .then((res) => {
         setStaffData(res.data);
@@ -283,7 +283,7 @@ const handleChange6 = (e) => {
   
   useEffect(() => {
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/user", {
+      .get("http://localhost:3000/user", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -324,7 +324,7 @@ const handleChange6 = (e) => {
 
     const token = localStorage.getItem("token");
     axios
-      .delete(`https://control-panel-backend-k6fr.vercel.app/user/${id}`, {
+      .delete(`http://localhost:3000/user/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -347,7 +347,7 @@ useEffect(() => {
   const token = localStorage.getItem('token');
   if (!token) return;
 
-  axios.get('https://control-panel-backend-k6fr.vercel.app/hr', {
+  axios.get('http://localhost:3000/hr', {
     headers: { Authorization: `Bearer ${token}` }
   })
     .then(response => {
@@ -366,7 +366,7 @@ useEffect(() => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

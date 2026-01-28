@@ -208,7 +208,7 @@ const Page = () => {
 
     axios
       .post(
-        `https://control-panel-backend-k6fr.vercel.app/carePlanning`,
+        `http://localhost:3000/carePlanning`,
         formData,
         config
       )
@@ -244,7 +244,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -263,7 +263,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/client", {
+      .get("http://localhost:3000/client", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -291,7 +291,7 @@ const Page = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://control-panel-backend-k6fr.vercel.app/training",
+          "http://localhost:3000/training",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -370,7 +370,7 @@ const Page = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://control-panel-backend-k6fr.vercel.app/incident/all",
+          "http://localhost:3000/incident/all",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -440,7 +440,7 @@ const Page = () => {
 
     axios
       .post(
-        `https://control-panel-backend-k6fr.vercel.app/incident/`,
+        `http://localhost:3000/incident/`,
         data,
         config
       )
@@ -523,7 +523,7 @@ const Page = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://control-panel-backend-k6fr.vercel.app/hr",
+          "http://localhost:3000/hr",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -565,7 +565,7 @@ const Page = () => {
     };
 
     axios
-      .post(`https://control-panel-backend-k6fr.vercel.app/hr`, payload, config)
+      .post(`http://localhost:3000/hr`, payload, config)
 
       .then((res) => {
         setLoading(false); // Reset loading state
@@ -601,7 +601,7 @@ const Page = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          "https://control-panel-backend-k6fr.vercel.app/client",
+          "http://localhost:3000/client",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -660,7 +660,7 @@ const Page = () => {
 
     axios
       .post(
-        `https://control-panel-backend-k6fr.vercel.app/client`,
+        `http://localhost:3000/client`,
         payload,
         config
       )
@@ -677,7 +677,7 @@ const Page = () => {
         toast.success("Add successfuly");
 
         return axios.get(
-          "https://control-panel-backend-k6fr.vercel.app/client",
+          "http://localhost:3000/client",
           config
         );
       })
@@ -787,7 +787,7 @@ const Page = () => {
     formData.append("attachments", file); // same name used in backend
   });
   axios
-    .post(`https://control-panel-backend-k6fr.vercel.app/training`, formData, config)
+    .post(`http://localhost:3000/training`, formData, config)
     .then((res) => {
       setFormData4({
         staffName: "",
@@ -816,7 +816,7 @@ const Page = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get("https://control-panel-backend-k6fr.vercel.app/hr", {
+      .get("http://localhost:3000/hr", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -926,97 +926,161 @@ const Page = () => {
 
         {/* Main Dashboard Content */}
         <main className="flex-1  overflow-y-hidden bg-gray-900 p-6">
-          <h2 className="text-xl font-semibold text-gray-200 mb-6 hidden md:block">
-            Dashboard
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1 */}
+          {/* Welcome Banner */}
+          <div className="mb-8 bg-gradient-to-r from-[#1c2434] via-[#273142] to-[#1c2434] rounded-2xl p-6 border border-gray-700 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                  Welcome back, {user?.fullName?.split(' ')[0] || 'User'}! 👋
+                </h2>
+                <p className="text-gray-400 text-sm md:text-base">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              </div>
+              <div className="mt-4 md:mt-0 flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-[#273142] px-4 py-2 rounded-lg border border-gray-700">
+                  <span className="flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  <span className="text-sm text-gray-300">System Online</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Card 1 - Total Patients */}
             <Link href="/Client-Management">
               <div
-                className="bg-gray-800 p-6 rounded-lg shadow-sm 
-                   flex items-center cursor-pointer 
-                   hover:shadow-lg hover:-translate-y-1  border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300  "
+                className="group relative bg-gradient-to-br from-[#1c2434] to-[#273142] p-6 rounded-xl shadow-lg 
+                   flex items-center cursor-pointer overflow-hidden
+                   hover:shadow-2xl hover:-translate-y-2 border border-gray-700 hover:border-[#4a48d4] 
+                   transition-all duration-300 ease-out"
               >
-                <div className="p-3 rounded-full bg-gray-700 text-primary text-gray-200">
-                  <HiUsers className="text-xl text-white" />
+                {/* Animated background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#4a48d4]/0 via-[#4a48d4]/5 to-[#4a48d4]/0 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div className="relative p-4 rounded-xl bg-gradient-to-br from-[#4a48d4] to-[#6366f1] 
+                  shadow-lg group-hover:shadow-[#4a48d4]/50 transition-shadow duration-300">
+                  <HiUsers className="text-2xl text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-400">
-                    Total Patient
+                <div className="ml-4 relative z-10">
+                  <p className="text-sm font-medium text-gray-400 mb-1">
+                    Total Residents
                   </p>
-                  <p className="text-2xl font-semibold text-gray-200">
+                  <p className="text-3xl font-bold text-white group-hover:text-[#4a48d4] transition-colors">
                     {totalClients}
                   </p>
                 </div>
+                {/* Corner accent */}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[#4a48d4]/10 rounded-bl-full 
+                  group-hover:scale-150 transition-transform duration-500"></div>
               </div>
             </Link>
 
-            {/* Card 2 */}
-
+            {/* Card 2 - Staff Members */}
             <Link href="/HR-Management">
               <div
-                className="bg-gray-800 p-6 rounded-lg shadow-sm  
-                        flex items-center cursor-pointer 
-                        hover:shadow-lg hover:-translate-y-1    border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300 "
+                className="group relative bg-gradient-to-br from-[#1c2434] to-[#273142] p-6 rounded-xl shadow-lg  
+                   flex items-center cursor-pointer overflow-hidden
+                   hover:shadow-2xl hover:-translate-y-2 border border-gray-700 hover:border-[#10b981] 
+                   transition-all duration-300 ease-out"
               >
-                <div className="p-3 rounded-full bg-gray-700 text-gray-200">
-                  <FaUsers className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#10b981]/0 via-[#10b981]/5 to-[#10b981]/0 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div className="relative p-4 rounded-xl bg-gradient-to-br from-[#10b981] to-[#059669] 
+                  shadow-lg group-hover:shadow-[#10b981]/50 transition-shadow duration-300">
+                  <FaUsers className="text-2xl text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-400">
+                <div className="ml-4 relative z-10">
+                  <p className="text-sm font-medium text-gray-400 mb-1">
                     Staff Members
                   </p>
-                  <p className="text-2xl font-semibold text-gray-200">
+                  <p className="text-3xl font-bold text-white group-hover:text-[#10b981] transition-colors">
                     {totalStaffno}
                   </p>
                 </div>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[#10b981]/10 rounded-bl-full 
+                  group-hover:scale-150 transition-transform duration-500"></div>
               </div>
             </Link>
 
             {/* Card 3 - Open Incidents */}
             <Link href="/Incident-Reports">
               <div
-                className="bg-gray-800 p-6 rounded-lg shadow-sm  
-                        flex items-center cursor-pointer 
-                        hover:shadow-lg hover:-translate-y-1     border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300"
+                className="group relative bg-gradient-to-br from-[#1c2434] to-[#273142] p-6 rounded-xl shadow-lg  
+                   flex items-center cursor-pointer overflow-hidden
+                   hover:shadow-2xl hover:-translate-y-2 border border-gray-700 hover:border-[#ef4444] 
+                   transition-all duration-300 ease-out"
               >
-                <div className="p-3 rounded-full bg-red-900 text-red-300">
-                  <FaExclamationCircle className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#ef4444]/0 via-[#ef4444]/5 to-[#ef4444]/0 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div className="relative p-4 rounded-xl bg-gradient-to-br from-[#ef4444] to-[#dc2626] 
+                  shadow-lg group-hover:shadow-[#ef4444]/50 transition-shadow duration-300
+                  animate-pulse">
+                  <FaExclamationCircle className="text-2xl text-white" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-400">
+                <div className="ml-4 relative z-10">
+                  <p className="text-sm font-medium text-gray-400 mb-1">
                     Open Incidents
                   </p>
-                  <p className="text-2xl font-semibold text-gray-200">{open}</p>
+                  <p className="text-3xl font-bold text-white group-hover:text-[#ef4444] transition-colors">
+                    {open}
+                  </p>
                 </div>
+                {open > 0 && (
+                  <div className="absolute top-2 right-2">
+                    <span className="flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  </div>
+                )}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[#ef4444]/10 rounded-bl-full 
+                  group-hover:scale-150 transition-transform duration-500"></div>
               </div>
             </Link>
 
             {/* Card 4 - Tasks Due Today */}
-
             <div className="relative">
-              {/* Main Card */}
               <div
-                className="bg-gray-800 p-6 rounded-lg shadow-sm  
-                        flex items-center cursor-pointer 
-                        hover:shadow-lg hover:-translate-y-1     border border-gray-700 hover:border-[#4a48d4] transition-colors duration-300"
+                className="group relative bg-gradient-to-br from-[#1c2434] to-[#273142] p-6 rounded-xl shadow-lg  
+                   flex items-center cursor-pointer overflow-hidden
+                   hover:shadow-2xl hover:-translate-y-2 border border-gray-700 hover:border-[#f59e0b] 
+                   transition-all duration-300 ease-out"
                 onClick={() => setShowBox(true)}
               >
-                <div className="p-3 rounded-full bg-yellow-900 text-yellow-300">
-                  <FaClipboardCheck className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#f59e0b]/0 via-[#f59e0b]/5 to-[#f59e0b]/0 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div className="relative p-4 rounded-xl bg-gradient-to-br from-[#f59e0b] to-[#d97706] 
+                  shadow-lg group-hover:shadow-[#f59e0b]/50 transition-shadow duration-300">
+                  <FaClipboardCheck className="text-2xl text-white" />
                 </div>
-
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-400">
+                <div className="ml-4 relative z-10">
+                  <p className="text-sm font-medium text-gray-400 mb-1">
                     Tasks Due Today
                   </p>
-                  <p className="text-2xl font-semibold text-gray-200">
+                  <p className="text-3xl font-bold text-white group-hover:text-[#f59e0b] transition-colors">
                     {totalLowStock +
                       trainingStats.expired +
                       totalToday +
                       totalOverdue}
                   </p>
                 </div>
+                {(totalLowStock + trainingStats.expired + totalToday + totalOverdue) > 0 && (
+                  <div className="absolute top-2 right-2">
+                    <span className="flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+                    </span>
+                  </div>
+                )}
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[#f59e0b]/10 rounded-bl-full 
+                  group-hover:scale-150 transition-transform duration-500"></div>
               </div>
 
               {/* Popup + Background Blur */}
@@ -1088,22 +1152,31 @@ const Page = () => {
           </div>
 
           {/* Quick Actions */}
-
-          {/* <div className="mt-8"> */}
-          <div className="mt-8 bg-gray-800 p-6 mb-8 rounded-lg shadow-sm border border-gray-700">
-            <h3 className="text-lg font-medium text-gray-200 mb-4">
-              Quick Actions
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="mt-8 bg-gradient-to-br from-[#1c2434] to-[#273142] p-6 mb-8 rounded-2xl shadow-xl border border-gray-700">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-[#4a48d4]"></span>
+                Quick Actions
+              </h3>
+              <p className="text-sm text-gray-400">Frequently used actions</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {/* Add Resident */}
               <button
                 onClick={() => setShowModal(hasClients ? false : true)}
-                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-[#273142] to-[#1c2434] 
+                  rounded-xl hover:from-[#4a48d4] hover:to-[#6366f1] transition-all duration-300 
+                  border border-gray-700 hover:border-[#4a48d4] hover:shadow-lg hover:shadow-[#4a48d4]/20
+                  hover:-translate-y-1 cursor-pointer overflow-hidden"
               >
-                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-                  <FaUserPlus className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-3 rounded-xl bg-[#1c2434] group-hover:bg-white/10 
+                  transition-colors duration-300 mb-3">
+                  <FaUserPlus className="text-2xl text-[#4a48d4] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">
+                <span className="relative text-sm font-medium text-gray-300 group-hover:text-white 
+                  transition-colors text-center">
                   Add Resident
                 </span>
               </button>
@@ -1111,47 +1184,82 @@ const Page = () => {
               {/* New Care Plan */}
               <button
                 onClick={() => setShowFormCare(hasClients ? false : true)}
-                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-[#273142] to-[#1c2434] 
+                  rounded-xl hover:from-[#10b981] hover:to-[#059669] transition-all duration-300 
+                  border border-gray-700 hover:border-[#10b981] hover:shadow-lg hover:shadow-[#10b981]/20
+                  hover:-translate-y-1 cursor-pointer overflow-hidden"
               >
-                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-                  <FaFileMedical className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-3 rounded-xl bg-[#1c2434] group-hover:bg-white/10 
+                  transition-colors duration-300 mb-3">
+                  <FaFileMedical className="text-2xl text-[#10b981] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">New Care Plan</span>
+                <span className="relative text-sm font-medium text-gray-300 group-hover:text-white 
+                  transition-colors text-center">
+                  New Care Plan
+                </span>
               </button>
-            
 
               {/* Report Incident */}
               <button
                 onClick={() => setShowModal2(hasClients ? false : true)}
-                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-[#273142] to-[#1c2434] 
+                  rounded-xl hover:from-[#ef4444] hover:to-[#dc2626] transition-all duration-300 
+                  border border-gray-700 hover:border-[#ef4444] hover:shadow-lg hover:shadow-[#ef4444]/20
+                  hover:-translate-y-1 cursor-pointer overflow-hidden"
               >
-                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-                  <FaExclamationTriangle className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-3 rounded-xl bg-[#1c2434] group-hover:bg-white/10 
+                  transition-colors duration-300 mb-3">
+                  <FaExclamationTriangle className="text-2xl text-[#ef4444] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">Report Incident</span>
+                <span className="relative text-sm font-medium text-gray-300 group-hover:text-white 
+                  transition-colors text-center">
+                  Report Incident
+                </span>
               </button>
 
               {/* Add Staff */}
               <button
                 onClick={() => setShowModal3(hasClients ? false : true)}
-                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-[#273142] to-[#1c2434] 
+                  rounded-xl hover:from-[#8b5cf6] hover:to-[#7c3aed] transition-all duration-300 
+                  border border-gray-700 hover:border-[#8b5cf6] hover:shadow-lg hover:shadow-[#8b5cf6]/20
+                  hover:-translate-y-1 cursor-pointer overflow-hidden"
               >
-                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-                  <FaUserTie className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-3 rounded-xl bg-[#1c2434] group-hover:bg-white/10 
+                  transition-colors duration-300 mb-3">
+                  <FaUserTie className="text-2xl text-[#8b5cf6] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">Add Staff</span>
+                <span className="relative text-sm font-medium text-gray-300 group-hover:text-white 
+                  transition-colors text-center">
+                  Add Staff
+                </span>
               </button>
 
               {/* Staff Schedule */}
               <button
                 onClick={() => setShowForm4(hasClients ? false : true)}
-                className="cursor-pointer flex flex-col items-center p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                className="group relative flex flex-col items-center p-5 bg-gradient-to-br from-[#273142] to-[#1c2434] 
+                  rounded-xl hover:from-[#f59e0b] hover:to-[#d97706] transition-all duration-300 
+                  border border-gray-700 hover:border-[#f59e0b] hover:shadow-lg hover:shadow-[#f59e0b]/20
+                  hover:-translate-y-1 cursor-pointer overflow-hidden"
                 data-module="hr"
               >
-                <div className="p-2 rounded-full bg-gray-600 text-gray-200 mb-2">
-                  <FaCalendarAlt size={20} className="text-xl text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent 
+                  opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="relative p-3 rounded-xl bg-[#1c2434] group-hover:bg-white/10 
+                  transition-colors duration-300 mb-3">
+                  <FaCalendarAlt className="text-2xl text-[#f59e0b] group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300">Staff Schedule</span>
+                <span className="relative text-sm font-medium text-gray-300 group-hover:text-white 
+                  transition-colors text-center">
+                  Staff Schedule
+                </span>
               </button>
             </div>
           </div>

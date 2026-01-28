@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Care Home Management System - Official Manual</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+            max-width: 210mm; /* A4 width */
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+
+        /* Cover Page Styling */
+        .cover-page {
+            height: 297mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            page-break-after: always;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: white;
+            border-radius: 8px;
+        }
+
+        .cover-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #4a90e2;
+        }
+
+        .cover-subtitle {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+
+        /* Content Styling */
+        h1 {
+            color: #111827;
+            border-bottom: 3px solid #4f46e5;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            page-break-before: always;
+        }
+
+        h2 {
+            color: #374151;
+            margin-top: 30px;
+            border-left: 5px solid #4f46e5;
+            padding-left: 15px;
+        }
+
+        h3 {
+            color: #4b5563;
+            margin-top: 25px;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: 700;
+        }
+
+        /* Mockup Containers */
+        .mockup {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.85rem;
+            border: 1px solid #374151;
+        }
+
+        .button-ref {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        /* Print Specifics */
+        @media print {
+            body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+            a {
+                text-decoration: none;
+                color: black;
+            }
+        }
+
+        .download-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4f46e5;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            z-index: 1000;
+        }
+        .download-btn:hover {
+            background: #4338ca;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Download Button (Visible on screen only) -->
+    <button class="download-btn no-print" onclick="window.print()">🖨️ CLICK TO SAVE AS PDF</button>
+
+    <!-- Cover Page -->
+    <div class="cover-page">
+        <div class="cover-title">Care Home System</div>
+        <div class="cover-subtitle">Complete Operational Manual</div>
+        <div style="margin-top: 50px; font-size: 1.2rem;">Official Documentation v1.0</div>
+        <div style="margin-top: 20px; opacity: 0.7;">2026 Edition</div>
+    </div>
+
+    <!-- Table of Contents -->
+    <h1>📑 Table of Contents</h1>
+    <ul>
+        <li><strong>Part 1:</strong> System Overview & Core Workflow</li>
+        <li><strong>Part 2:</strong> Visual User Guide (Screens & Buttons)</li>
+        <li><strong>Part 3:</strong> Detailed Module Guide (Audit, Meds, HR)</li>
+        <li><strong>Part 4:</strong> Troubleshooting & Support</li>
+    </ul>
+
+    <!-- CONTENT START -->
+
+    <h1>🏗️ Part 1: How the System Works</h1>
+    <p>This system is designed to manage the entire lifecycle of a care home, from admitting a resident to managing the staff who care for them.</p>
+
+    <h2>The Core Workflow</h2>
+    <p>The system connects <strong>three main pillars</strong>:</p>
+    <ol>
+        <li><strong>Residents:</strong> The people you care for.</li>
+        <li><strong>Staff (HR):</strong> The people providing the care.</li>
+        <li><strong>Operations:</strong> The building, stock, and compliance.</li>
+    </ol>
+
+    <div class="mockup">
+RESIDENT ADMITTED -> CARE PLAN CREATED -> MEDICATION SCHEDULED
+       |                    |                     |
+       v                    v                     v
+  STAFF ASSIGNED  ->  DAILY LOGS RECORDED ->  COMPLIANCE AUDITED
+    </div>
+
+    <hr>
+
+    <h1>🖼️ Part 2: Visual User Guide</h1>
+    <p>A breakdown of the key screens and what every button does.</p>
+
+    <h2>1. The Dashboard (Home Screen)</h2>
+    <p>This is your "Mission Control". It gives you an instant summary of the home's safety status.</p>
+    <table>
+        <tr>
+            <th>Button / Area</th>
+            <th>Icon</th>
+            <th>Function</th>
+        </tr>
+        <tr>
+            <td><strong>Search Bar</strong></td>
+            <td>🔍</td>
+            <td>Type any name ("Alice", "John") to jump straight to their file.</td>
+        </tr>
+        <tr>
+            <td><strong>Alerts Bell</strong></td>
+            <td>🔔</td>
+            <td>Shows <span style="color:red">Red Alerts</span> for Low Stock or Accidents.</td>
+        </tr>
+        <tr>
+            <td><strong>Quick Actions</strong></td>
+            <td>⚡</td>
+            <td>Shortcuts to "Add Resident" or "Report Incident" without navigating menus.</td>
+        </tr>
+    </table>
+
+    <h2>2. Medication Screen (eMAR)</h2>
+    <p>Replacing paper MAR charts with a digital safety system.</p>
+    <div class="mockup">
++-----------------------------------------------------------+
+|  MEDICATION ROUND: MORNING (08:00)                        |
++-----------------------------------------------------------+
+|  1. Paracetamol 500mg                                     |
+|     Dose: 2 Tablets  |  Stock: 24 (OK)                    |
+|     [ GIVE (Green) ]      [ REFUSE (Red) ]                |
++-----------------------------------------------------------+
+    </div>
+    <p><strong>Worklow:</strong></p>
+    <ul>
+        <li>Clicking <span class="button-ref">GIVE</span> reduces the stock count automatically.</li>
+        <li>Clicking <span class="button-ref">REFUSE</span> asks for a mandatory reason (e.g., "Resident Sleeping").</li>
+    </ul>
+
+    <h2>3. Staff Rota (Scheduling)</h2>
+    <p>Located in <strong>HR Management -> Staff Profile</strong>.</p>
+    <div class="mockup">
+| MON | TUE | WED | THU | FRI |
+|-----|-----|-----|-----|-----|
+| 08-20| OFF | 08-20| 08-20| OFF |
+| [Red]| [Grn]| [Red]| [Red]| [Grn]|
+    </div>
+    <p><strong>Red Boxes</strong> = Working. <strong>Green Boxes</strong> = Day Off.</p>
+
+    <hr>
+
+    <h1>📘 Part 3: Detailed Module Guide</h1>
+
+    <h2>1. Resident Management</h2>
+    <p><strong>Purpose:</strong> To store digital care files.</p>
+    <ul>
+        <li><strong>Admitting:</strong> Click "Add Resident", fill in name, DOB, and room number.</li>
+        <li><strong>Risk Assessments:</strong> Upload documents defining fall risks or dietary needs.</li>
+    </ul>
+
+    <h2>2. Incident Reports</h2>
+    <p><strong>Purpose:</strong> Legal documentation of accidents.</p>
+    <p>The system features a <strong>6-Month Overview</strong> chart to track trends (e.g., "Are falls increasing?"). Reports can be exported to PDF for CQC inspections.</p>
+
+    <h2>3. Compliance & Audits</h2>
+    <p><strong>Purpose:</strong> To ensure the home meets regulatory standards.</p>
+    <ul>
+        <li><strong>Action Required Filter:</strong> Instantly shows expired checks (e.g., "Fire Alarm Test Overdue").</li>
+        <li><strong>Evidence:</strong> You can upload photos of safety certificates directly to the record.</li>
+    </ul>
+
+    <h2>4. User Management (Security)</h2>
+    <p><strong>Who can see what?</strong></p>
+    <table>
+        <tr>
+            <th>Role</th>
+            <th>Access Level</th>
+        </tr>
+        <tr>
+            <td><strong>Admin</strong></td>
+            <td>Full Access (Can delete records).</td>
+        </tr>
+        <tr>
+            <td><strong>Staff</strong></td>
+            <td>Care Plans, Meds, and Rota only.</td>
+        </tr>
+        <tr>
+            <td><strong>Client</strong></td>
+            <td>Personal profile view only.</td>
+        </tr>
+    </table>
+
+    <hr>
+
+    <h1>🚀 Summary & Next Steps</h1>
+    <p>This system acts as a "Closed Loop". Every action feeds into a report.</p>
+    <ul>
+        <li>If you give a pill -> Stock drops.</li>
+        <li>If you verify a training cert -> Compliance score goes up.</li>
+        <li>If you log an incident -> Analytics dashboard updates immediately.</li>
+    </ul>
+
+    <p style="text-align: center; margin-top: 50px; font-weight: bold;">
+        --- END OF MANUAL ---
+    </p>
+
+</body>
+</html>
